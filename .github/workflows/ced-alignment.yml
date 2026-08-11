@@ -1,0 +1,64 @@
+name: CED alignment validation
+
+on:
+  pull_request:
+    paths:
+      - index.html
+      - app.js
+      - ced-guide.js
+      - ced-practice.js
+      - .github/workflows/ced-alignment.yml
+  push:
+    branches:
+      - main
+      - agent/ced-alignment-pass-readiness
+    paths:
+      - index.html
+      - app.js
+      - ced-guide.js
+      - ced-practice.js
+      - .github/workflows/ced-alignment.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check ced-guide.js
+          node --check ced-practice.js
+      - name: Verify CED topic coverage and scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          index = Path('index.html').read_text(encoding='utf-8')
+          guide = Path('ced-guide.js').read_text(encoding='utf-8')
+          practice = Path('ced-practice.js').read_text(encoding='utf-8')
+          assert '<script src="app.js"></script>' in index
+          assert '<script src="ced-practice.js"></script>' in index
+          assert '<script src="ced-guide.js"></script>' in index
+          ids = re.findall(r"\['([1-7]\.\d+)'", guide)
+          expected_counts = {'1':7,'2':12,'3':8,'4':10,'5':12,'6':11,'7':8}
+          assert len(ids) == 68, f'Expected 68 CED topics, found {len(ids)}'
+          assert len(set(ids)) == 68, 'Duplicate CED topic IDs found'
+          for unit, expected in expected_counts.items():
+              actual = sum(i.startswith(unit + '.') for i in ids)
+              assert actual == expected, f'Unit {unit}: expected {expected}, found {actual}'
+          questions = re.findall(r"\['Unit ([1-7])'", practice)
+          assert len(questions) == 49, f'Expected 49 added questions, found {len(questions)}'
+          for unit in '1234567':
+              actual = questions.count(unit)
+              assert actual == 7, f'Unit {unit}: expected 7 added questions, found {actual}'
+          assert '60 multiple-choice questions in 60 minutes' in guide
+          assert '3 FRQs in 75 minutes' in guide
+          assert '30–40% of MCQs use stimulus material' in guide
+          assert 'Study Buddy is not affiliated with College Board' in guide
+          print('CED alignment validation passed: 68 topics + 49 targeted questions')
+          PY
