@@ -1,0 +1,54 @@
+name: PR3 AP Exam Lab validation
+
+on:
+  push:
+    branches:
+      - agent/pr3-ap-style-practice
+  pull_request:
+    paths:
+      - index.html
+      - exam-lab.js
+      - ap-simulator.js
+      - .github/workflows/pr3-exam-lab.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check exam-lab.js
+          node --check ap-simulator.js
+      - name: Verify practice coverage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          index=Path('index.html').read_text(encoding='utf-8')
+          lab=Path('exam-lab.js').read_text(encoding='utf-8')
+          sim=Path('ap-simulator.js').read_text(encoding='utf-8')
+          assert '<script src="exam-lab.js"></script>' in index
+          assert '<script src="ap-simulator.js"></script>' in index
+          assert "['examLab','🧪 Exam Lab']" in lab
+          assert "['apSim','⏱️ AP Simulator']" in sim
+          # Seven unit stimulus sets and seven unit FRQs in Exam Lab.
+          set_block=lab.split('const sets=[',1)[1].split('const frqs=[',1)[0]
+          frq_block=lab.split('const frqs=[',1)[1].split('let mode=',1)[0]
+          assert len(re.findall(r"\{unit:\d,title:", set_block)) == 7
+          assert len(re.findall(r"\{unit:\d,title:", frq_block)) == 7
+          for unit in range(1,8):
+              assert f'{{unit:{unit},title:' in set_block
+              assert f'{{unit:{unit},title:' in frq_block
+          # Visual simulator must include map, pyramid, urban model, graph, mixed questions and timed mode.
+          for token in ["id:'map'","id:'pyramid'","id:'urban'","id:'graph'","Mixed-Unit Challenge","Timed Mixed Simulation","Mixed-Unit Synthesis FRQ"]:
+              assert token in sim, token
+          assert sim.count("['A rapidly growing city") == 1
+          assert 'simPool' in sim and 'apSubmitSim' in sim
+          assert 'All stimuli/questions are original' in sim
+          print('PR3 Exam Lab + Simulator validation passed')
+          PY
