@@ -1,0 +1,39 @@
+name: PR4 student UX validation
+
+on:
+  push:
+    branches:
+      - agent/pr4-student-testing-fixes
+  pull_request:
+    paths:
+      - index.html
+      - student-ux.js
+      - .github/workflows/pr4-student-ux.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check student UX JavaScript
+        run: node --check student-ux.js
+      - name: Verify student-flow fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          index=Path('index.html').read_text(encoding='utf-8')
+          ux=Path('student-ux.js').read_text(encoding='utf-8')
+          assert '<script src="student-ux.js"></script>' in index
+          assert "go('ced')" in ux
+          assert "go('quiz')" in ux
+          assert "go('examLab')" in ux
+          assert "go('apSim')" in ux
+          assert 'Mixed-Unit Answer Review' in ux
+          assert 'SIM_SECONDS=19*60' in ux
+          assert 'remaining' in ux
+          print('PR4 student UX validation passed')
+          PY
