@@ -1,6 +1,7 @@
 name: Foundation cleanup migration
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - agent/study-buddy-foundation-cleanup
