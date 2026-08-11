@@ -1,0 +1,55 @@
+name: Foundation cleanup migration
+
+on:
+  push:
+    branches:
+      - agent/study-buddy-foundation-cleanup
+    paths:
+      - scripts/foundation_cleanup.py
+      - .github/workflows/foundation-cleanup.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/study-buddy-foundation-cleanup
+          fetch-depth: 0
+
+      - name: Run migration
+        run: python scripts/foundation_cleanup.py
+
+      - name: Basic static checks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          index=Path('index.html').read_text(encoding='utf-8')
+          js=Path('app.js').read_text(encoding='utf-8')
+          css=Path('styles.css').read_text(encoding='utf-8')
+          assert '<link rel="stylesheet" href="styles.css">' in index
+          assert '<script src="app.js"></script>' in index
+          assert 'May 5, 2026' not in index + js
+          assert 'Grade my answer with AI' not in js
+          assert js.count('function homePage(){') == 1
+          assert 'localStorage.setItem("aphgUnitStats"' in js
+          assert len(js) > 200000
+          assert len(css) > 10000
+          print('Static checks passed')
+          PY
+
+      - name: Commit generated cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html app.js styles.css
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit"
+          else
+            git commit -m "Clean up Study Buddy foundation"
+            git push origin HEAD:agent/study-buddy-foundation-cleanup
+          fi
