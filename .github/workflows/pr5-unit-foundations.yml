@@ -1,0 +1,41 @@
+name: PR5 Unit Foundations validation
+
+on:
+  push:
+    branches:
+      - agent/pr4-student-testing-fixes
+  pull_request:
+    paths:
+      - index.html
+      - unit-foundations.js
+      - .github/workflows/pr5-unit-foundations.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: node --check unit-foundations.js
+      - name: Verify Unit 1 and 2 coverage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          js=Path('unit-foundations.js').read_text(encoding='utf-8')
+          index=Path('index.html').read_text(encoding='utf-8')
+          assert '<script src="unit-foundations.js"></script>' in index
+          for topic in [f'1.{i}' for i in range(1,8)]:
+              assert f"id:'{topic}'" in js, topic
+          for topic in [f'2.{i}' for i in range(1,13)]:
+              assert f"id:'{topic}'" in js, topic
+          for label in ['Learn','Practice','Apply','Master','Master Vocabulary','Common confusion']:
+              assert label in js, label
+          required=['Choropleth map','Dot-density map','Gravity model','Tobler’s First Law of Geography','Environmental determinism','Possibilism','Arithmetic density','Physiological density','Agricultural density','Population momentum','Malthusian theory','Pronatalist policy','Ravenstein’s laws of migration','Refugee','Asylum seeker','Internally displaced person (IDP)','Remittance','Brain drain']
+          for term in required:
+              assert term in js, term
+          print('PR5 Unit Foundations validation passed')
+          PY
