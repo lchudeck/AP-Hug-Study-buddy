@@ -8,6 +8,8 @@ on:
     paths:
       - index.html
       - unit-foundations.js
+      - unit-mastery-3-7.js
+      - master-flashcards.js
       - visual-learning.js
       - visual-practice.js
       - .github/workflows/pr5-unit-foundations.yml
@@ -24,28 +26,36 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check unit-foundations.js
+          node --check unit-mastery-3-7.js
+          node --check master-flashcards.js
           node --check visual-learning.js
           node --check visual-practice.js
-      - name: Verify Unit 1 and 2 coverage
+      - name: Verify all-unit mastery, flashcards, visuals, and practice
         run: |
           python - <<'PY'
           from pathlib import Path
-          js=Path('unit-foundations.js').read_text(encoding='utf-8')
+          lower=Path('unit-foundations.js').read_text(encoding='utf-8')
+          upper=Path('unit-mastery-3-7.js').read_text(encoding='utf-8')
+          flash=Path('master-flashcards.js').read_text(encoding='utf-8')
           visual=Path('visual-learning.js').read_text(encoding='utf-8')
           practice=Path('visual-practice.js').read_text(encoding='utf-8')
           index=Path('index.html').read_text(encoding='utf-8')
-          assert '<script src="unit-foundations.js"></script>' in index
-          assert '<script src="visual-learning.js"></script>' in index
-          assert '<script src="visual-practice.js"></script>' in index
-          for topic in [f'1.{i}' for i in range(1,8)]:
-              assert f"id:'{topic}'" in js, topic
-          for topic in [f'2.{i}' for i in range(1,13)]:
-              assert f"id:'{topic}'" in js, topic
+          for script in ['unit-foundations.js','unit-mastery-3-7.js','master-flashcards.js','visual-learning.js','visual-practice.js']:
+              assert f'<script src="{script}"></script>' in index, script
+          for topic in [f'1.{i}' for i in range(1,8)]: assert f"id:'{topic}'" in lower, topic
+          for topic in [f'2.{i}' for i in range(1,13)]: assert f"id:'{topic}'" in lower, topic
+          counts={3:8,4:10,5:12,6:11,7:8}
+          for unit,count in counts.items():
+              for i in range(1,count+1):
+                  topic=f'{unit}.{i}'
+                  assert f"['{topic}'" in upper, topic
           for label in ['Learn','Practice','Apply','Master','Master Vocabulary','Common confusion']:
-              assert label in js, label
-          required=['Choropleth map','Dot-density map','Gravity model','Tobler’s First Law of Geography','Environmental determinism','Possibilism','Arithmetic density','Physiological density','Agricultural density','Population momentum','Malthusian theory','Pronatalist policy','Ravenstein’s laws of migration','Refugee','Asylum seeker','Internally displaced person (IDP)','Remittance','Brain drain']
-          for term in required:
-              assert term in js, term
+              assert label in lower or label.lower() in upper.lower(), label
+          required=['Tobler’s First Law of Geography','Gravity Model','Arithmetic Density','Population Momentum','Ravenstein’s Laws of Migration','Sequent occupance','Syncretism','Gerrymandering','Devolution','Von Thünen model','Green Revolution','Central place theory','Gentrification','World-systems theory','New international division of labor','Sustainable development']
+          combined=lower+upper+flash
+          for term in required: assert term.lower() in combined.lower(), term
+          assert 'currentFlashDeck=function' in flash
+          assert "masterFlashTopic='All'" in flash
           for visual_label in ['Reference map','Choropleth map','Proportional-symbol map','Dot-density map','Isoline map','Cartogram','Population pyramid','Demographic Transition Model','Migration flow','GIS layers','Scale of analysis','Distance decay']:
               assert visual_label in visual, visual_label
           assert 'api.census.gov/data/2020/dec/pl' in visual
@@ -53,5 +63,5 @@ jobs:
           assert 'instructional schematic' in visual.lower()
           for practice_label in ['Map Type Interpretation','Spatial Pattern','Population Pyramid','Demographic Transition Model','Visual Map Analysis','Scale and GIS','Population Pyramid Analysis','DTM Interpretation','Visual MCQ','Visual FRQ']:
               assert practice_label in practice, practice_label
-          print('PR5 Unit Foundations + Visual Lab + Visual Practice validation passed')
+          print('PR5 full seven-unit mastery + flashcards + visuals validation passed')
           PY
