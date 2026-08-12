@@ -59,13 +59,13 @@ jobs:
               handlers += re.findall(rf'{attr}=["\']([^"\']+)["\']', sources)
           calls=set()
           for h in handlers:
-              calls.update(re.findall(r'\b([A-Za-z_$][\w$]*)\s*\(', h))
-          ignore={'if','for','while','switch','Math','Number','String','parseInt','confirm','alert','setTimeout','setInterval'}
+              calls.update(re.findall(r'(?<!\.)\b([A-Za-z_$][\w$]*)\s*\(', h))
+          ignore={'if','for','while','switch','Math','Number','String','parseInt','confirm','alert','setTimeout','setInterval','getElementById','split','toggle','scrollIntoView','replace','trim','toLowerCase'}
           missing=[]
           for name in sorted(calls-ignore):
               pats=[rf'function\s+{re.escape(name)}\s*\(',rf'window\.{re.escape(name)}\s*=',rf'\b{re.escape(name)}\s*=\s*\(?[^\n=]*=>',rf'\b(?:const|let|var)\s+{re.escape(name)}\s*=']
               if not any(re.search(p,sources) for p in pats): missing.append(name)
           if missing:
               raise SystemExit('Potential dead button handlers: '+', '.join(missing))
-          print(f'Button audit passed: {len(handlers)} handlers / {len(calls)} called functions checked')
+          print(f'Button audit passed: {len(handlers)} handlers / {len(calls)} app-level functions checked')
           PY
