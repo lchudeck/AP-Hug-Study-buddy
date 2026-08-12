@@ -35,9 +35,9 @@ jobs:
           index=Path('index.html').read_text(encoding='utf-8')
           files=['practice-bank-expanded.js','image-mcq-bank.js','stimulus-sets.js','stimulus-sets-extra.js','real-data-stimulus.js','practice-mastery.js','reflection-fix.js']
           for src in files: assert f'<script src="{src}"></script>' in index, src
-          for label in ['Practice & Mastery','Cumulative · 30 Q','Review Missed','CED Topic Readiness','Stimulus set:']:
+          for label in ['What should I do next?','Start 5-Minute Practice','Review My Mistakes','Progress by Topic','Use this source:']:
               assert label in js, label
-          for token in ['seenKey','buildDeck','chooseSets','setToQuestions','shuffle(q.choices)','APHG_REAL_DATA_QUESTIONS']:
+          for token in ['seenKey','buildDeck','chooseSets','setToQuestions','saved?.id','shuffle(q.choices)','APHG_REAL_DATA_QUESTIONS']:
               assert token in js, token
           assert 'APHG_EXPANDED_BANK' not in js, 'answer-leaking draft bank must not be served'
           sets=Path('stimulus-sets.js').read_text(encoding='utf-8')+Path('stimulus-sets-extra.js').read_text(encoding='utf-8')
