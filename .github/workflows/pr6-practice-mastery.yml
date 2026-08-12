@@ -14,6 +14,7 @@ on:
       - stimulus-sets-extra.js
       - real-data-stimulus.js
       - reflection-fix.js
+      - mini-frq-feedback.js
       - .github/workflows/pr6-practice-mastery.yml
 
 permissions:
@@ -26,14 +27,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check JavaScript syntax
         run: |
-          for f in practice-mastery.js practice-bank-expanded.js image-mcq-bank.js stimulus-sets.js stimulus-sets-extra.js real-data-stimulus.js reflection-fix.js; do node --check "$f"; done
-      - name: Verify mastery, visual sets, and real data
+          for f in practice-mastery.js practice-bank-expanded.js image-mcq-bank.js stimulus-sets.js stimulus-sets-extra.js real-data-stimulus.js reflection-fix.js mini-frq-feedback.js; do node --check "$f"; done
+      - name: Verify mastery, visual sets, real data, and mini-FRQ feedback
         run: |
           python - <<'PY'
           from pathlib import Path
           js=Path('practice-mastery.js').read_text(encoding='utf-8')
           index=Path('index.html').read_text(encoding='utf-8')
-          files=['practice-bank-expanded.js','image-mcq-bank.js','stimulus-sets.js','stimulus-sets-extra.js','real-data-stimulus.js','practice-mastery.js','reflection-fix.js']
+          files=['practice-bank-expanded.js','image-mcq-bank.js','stimulus-sets.js','stimulus-sets-extra.js','real-data-stimulus.js','practice-mastery.js','reflection-fix.js','mini-frq-feedback.js']
           for src in files: assert f'<script src="{src}"></script>' in index, src
           for label in ['What should I do next?','Start 5-Minute Practice','Review My Mistakes','Progress by Topic','Use this source:']:
               assert label in js, label
@@ -46,6 +47,9 @@ jobs:
           for source in ['U.S. Census Bureau','World Bank','TIGERweb','2024 ACS']:
               assert source in real, source
           assert 'logReason' in Path('reflection-fix.js').read_text(encoding='utf-8')
+          mini=Path('mini-frq-feedback.js').read_text(encoding='utf-8')
+          for label in ['Check my FRQ answer','Likely earns the practice point','Strong rewrite example']:
+              assert label in mini, label
           print('PR6 Practice & Mastery validation passed')
           PY
       - name: Static student button audit
