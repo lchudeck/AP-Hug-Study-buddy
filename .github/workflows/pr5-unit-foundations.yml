@@ -9,6 +9,7 @@ on:
       - index.html
       - unit-foundations.js
       - visual-learning.js
+      - visual-practice.js
       - .github/workflows/pr5-unit-foundations.yml
   workflow_dispatch:
 
@@ -24,15 +25,18 @@ jobs:
         run: |
           node --check unit-foundations.js
           node --check visual-learning.js
+          node --check visual-practice.js
       - name: Verify Unit 1 and 2 coverage
         run: |
           python - <<'PY'
           from pathlib import Path
           js=Path('unit-foundations.js').read_text(encoding='utf-8')
           visual=Path('visual-learning.js').read_text(encoding='utf-8')
+          practice=Path('visual-practice.js').read_text(encoding='utf-8')
           index=Path('index.html').read_text(encoding='utf-8')
           assert '<script src="unit-foundations.js"></script>' in index
           assert '<script src="visual-learning.js"></script>' in index
+          assert '<script src="visual-practice.js"></script>' in index
           for topic in [f'1.{i}' for i in range(1,8)]:
               assert f"id:'{topic}'" in js, topic
           for topic in [f'2.{i}' for i in range(1,13)]:
@@ -47,5 +51,7 @@ jobs:
           assert 'api.census.gov/data/2020/dec/pl' in visual
           assert 'us-atlas@3.0.1/states-albers-10m.json' in visual
           assert 'instructional schematic' in visual.lower()
-          print('PR5 Unit Foundations + Visual Lab validation passed')
+          for practice_label in ['Map Type Interpretation','Spatial Pattern','Population Pyramid','Demographic Transition Model','Visual Map Analysis','Scale and GIS','Population Pyramid Analysis','DTM Interpretation','Visual MCQ','Visual FRQ']:
+              assert practice_label in practice, practice_label
+          print('PR5 Unit Foundations + Visual Lab + Visual Practice validation passed')
           PY
