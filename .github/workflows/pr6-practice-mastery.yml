@@ -45,14 +45,9 @@ jobs:
           global.drillHtml=()=>'';global.render=()=>{};global.drillIndex=0;global.drillAnswer='';global.drillChecked=false;
           require('./strict-frq-drill-grading.js');
           const g=global.__gradeStrictDrill;
-          const cases=[
-            ['',false],
-            ['asdfgh qwrtypl zzzxxxx',false],
-            ['War and conflict',false],
-            ['Job opportunities',true],
-            ['Higher wages attract migrants',true]
-          ];
-          for(const [answer,want] of cases){const got=g(0,answer).earned;if(got!==want)throw new Error(`Drill grading failed for ${answer}: ${got} != ${want}`)}
+          for(const [answer,want] of [['',false],['asdfgh qwrtypl zzzxxxx',false],['War and conflict',false],['Job opportunities',true],['Higher wages attract migrants',true]]){
+            const got=g(0,answer).earned;if(got!==want)throw new Error(`Drill grading failed for ${answer}: ${got} != ${want}`)
+          }
           console.log('Strict 1-point drill attack tests passed');
           NODE
 
@@ -84,21 +79,16 @@ jobs:
           required=['practice-mastery.js','reflection-fix.js','mini-frq-feedback.js','strict-frq-drill-grading.js','frq-part-scoring.js','frq-feedback-polish.js','unit-mastery-unified.js','unit-review.js','contact-report.js','pyramid-next-fix.js','responsive-student-ux.js']
           for src in required: assert f'<script src="{src}"></script>' in index, src
           js=Path('practice-mastery.js').read_text(encoding='utf-8')
-          for token in ['seenKey','buildDeck','chooseSets','setToQuestions','shuffle(q.choices)','APHG_REAL_DATA_QUESTIONS']:
-              assert token in js, token
+          for token in ['seenKey','buildDeck','chooseSets','setToQuestions','shuffle(q.choices)','APHG_REAL_DATA_QUESTIONS']: assert token in js, token
           assert 'APHG_EXPANDED_BANK' not in js, 'answer-leaking generated bank must stay quarantined'
           unit=Path('unit-review.js').read_text(encoding='utf-8')
-          for token in ["35","seenKey","TOPICS","Take a different 35-question test","Practice my weak areas","Next question →"]:
-              assert token in unit, token
+          for token in ['35','seenKey','TOPICS','vocabQuestions','Take a different 35-question test','Practice my weak areas','Next question →','__unitReviewBuild']: assert token in unit, token
           unified=Path('unit-mastery-unified.js').read_text(encoding='utf-8')
-          assert "['unitMasteryAll','📚 Unit Mastery']" in unified
-          assert "['foundations','mastery37','unitMasteryAll']" in unified
+          assert "['unitMasteryAll','📚 Unit Mastery']" in unified and "['foundations','mastery37','unitMasteryAll']" in unified
           feedback=Path('frq-feedback-polish.js').read_text(encoding='utf-8')
-          for token in ['1/1 — Point earned','0/1 — Point not earned','Strong rewrite/model','Rewrite and try again']:
-              assert token in feedback, token
+          for token in ['1/1 — Point earned','0/1 — Point not earned','Strong rewrite/model','Rewrite and try again']: assert token in feedback, token
           responsive=Path('responsive-student-ux.js').read_text(encoding='utf-8')
-          for token in ['max-width:760px','max-width:420px','overflow-x:auto','min-height:44px']:
-              assert token in responsive, token
+          for token in ['max-width:760px','max-width:420px','overflow-x:auto','min-height:44px']: assert token in responsive, token
           sets=Path('stimulus-sets.js').read_text(encoding='utf-8')+Path('stimulus-sets-extra.js').read_text(encoding='utf-8')
           for u in range(1,8): assert f'unit:{u}' in sets, f'visual set missing unit {u}'
           real=Path('real-data-stimulus.js').read_text(encoding='utf-8')
@@ -113,8 +103,7 @@ jobs:
           from pathlib import Path
           sources='\n'.join(p.read_text(encoding='utf-8') for p in Path('.').glob('*.js'))+'\n'+Path('index.html').read_text(encoding='utf-8')
           handlers=[]
-          for attr in ('onclick','onchange','oninput'):
-              handlers += re.findall(rf'{attr}=["\']([^"\']+)["\']', sources)
+          for attr in ('onclick','onchange','oninput'): handlers += re.findall(rf'{attr}=["\']([^"\']+)["\']', sources)
           calls=set()
           for h in handlers: calls.update(re.findall(r'(?<!\.)\b([A-Za-z_$][\w$]*)\s*\(', h))
           ignore={'if','for','while','switch','Math','Number','String','parseInt','confirm','alert','setTimeout','setInterval','getElementById','split','toggle','scrollIntoView','replace','trim','toLowerCase'}
@@ -123,9 +112,62 @@ jobs:
               pats=[rf'function\s+{re.escape(name)}\s*\(',rf'window\.{re.escape(name)}\s*=',rf'\b{re.escape(name)}\s*=\s*\(?[^\n=]*=>',rf'\b(?:const|let|var)\s+{re.escape(name)}\s*=']
               if not any(re.search(p,sources) for p in pats): missing.append(name)
           if missing: raise SystemExit('Potential dead button handlers: '+', '.join(missing))
-          # Verify known student-facing fixes have actual behavior, not just labels.
           for name in ['logReason','strictGradeDrill','strictNextDrill','umOpen','urUnit','urStart','urChoose','urNext','urWeak']:
-              if not re.search(rf'(?:window\.)?{name}\s*=',sources) and not re.search(rf'function\s+{name}\s*\(',sources):
-                  raise SystemExit('Missing required button handler: '+name)
+              if not re.search(rf'(?:window\.)?{name}\s*=',sources) and not re.search(rf'function\s+{name}\s*\(',sources): raise SystemExit('Missing required button handler: '+name)
           print(f'Button audit passed: {len(handlers)} inline handlers and required PR6 controls checked')
           PY
+
+      - name: Runtime student click-through audit
+        run: |
+          npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
+          python3 -m http.server 8765 >/tmp/aphg-http.log 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER' EXIT
+          node <<'NODE'
+          const {JSDOM,VirtualConsole}=require('jsdom');
+          const URL='http://127.0.0.1:8765/index.html';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          let runtimeErrors=[];
+          async function load(){
+            const vc=new VirtualConsole();
+            vc.on('jsdomError',e=>{if(e.type==='unhandled-exception')runtimeErrors.push(String(e.cause||e.message))});
+            const dom=await JSDOM.fromURL(URL,{resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});w.requestAnimationFrame=cb=>setTimeout(cb,0);}});
+            await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));await sleep(80);return dom;
+          }
+          function byText(root,selector,text){return [...root.querySelectorAll(selector)].find(x=>(x.textContent||'').trim()===text)}
+          let dom=await load(),w=dom.window,d=w.document;
+          const navTexts=[...d.querySelectorAll('#nav button')].map(b=>b.textContent.trim());
+          if(navTexts.filter(x=>x.includes('Unit Mastery')).length!==1||navTexts.some(x=>x.includes('Units 3–7 Mastery')))throw new Error('Unit Mastery navigation is not unified');
+          // Push every button initially rendered on every nav page. Reload each page between clicks so one action cannot invalidate the next control.
+          let clicked=0;
+          for(const navText of navTexts){
+            let probe=await load(),pd=probe.window.document;let nb=byText(pd,'#nav button',navText);if(!nb)throw new Error('Missing nav '+navText);nb.click();await sleep(20);
+            const specs=[...pd.querySelectorAll('#app button:not([disabled])')].map(b=>({text:(b.textContent||'').trim(),oc:b.getAttribute('onclick')||''}));probe.window.close();
+            for(const spec of specs){
+              const x=await load(),xd=x.window.document;const n=byText(xd,'#nav button',navText);n.click();await sleep(15);
+              const candidates=[...xd.querySelectorAll('#app button:not([disabled])')];const b=candidates.find(el=>(el.getAttribute('onclick')||'')===spec.oc&&(el.textContent||'').trim()===spec.text)||candidates.find(el=>(el.textContent||'').trim()===spec.text);
+              if(!b){x.window.close();continue;}try{b.click();await sleep(10);clicked++;}catch(e){throw new Error(`Button failed [${navText}] ${spec.text}: ${e.message}`)}x.window.close();
+            }
+          }
+          // Quiz wrong-answer reflection buttons must visibly respond.
+          dom=await load();w=dom.window;d=w.document;let qnav=[...d.querySelectorAll('#nav button')].find(b=>/Practice Quiz/i.test(b.textContent));
+          if(qnav){qnav.click();await sleep(20);let choices=[...d.querySelectorAll('.choice-btn')];let gotReflection=false;for(let i=0;i<Math.min(choices.length,4)&&!gotReflection;i++){if(i){dom.window.close();dom=await load();w=dom.window;d=w.document;[...d.querySelectorAll('#nav button')].find(b=>/Practice Quiz/i.test(b.textContent)).click();await sleep(10);choices=[...d.querySelectorAll('.choice-btn')];}choices[i].click();await sleep(15);gotReflection=!!d.querySelector('.reflection');}
+            if(!gotReflection)throw new Error('Could not produce wrong-answer reflection state');const rbs=[...d.querySelectorAll('.why-btn')];if(rbs.length!==4)throw new Error('Expected four reflection reason buttons');for(const b of rbs){b.click();await sleep(5);if(!d.querySelector('.reflection-feedback'))throw new Error('Reflection button produced no visible feedback');}
+          }
+          dom.window.close();
+          // FRQ nonsense must score zero per part and show nonblank rewrite/model text.
+          dom=await load();w=dom.window;d=w.document;let fnav=[...d.querySelectorAll('#nav button')].find(b=>/FRQ Coach/i.test(b.textContent));if(fnav){fnav.click();await sleep(20);const ta=d.querySelector('#mainAnswer');ta.value='A. qwrty zzzxxx\nB. nonsense words only\nC. because because because\nD. qqq www eee\nE. random random random\nF. zxcvbn asdfgh\nG. blah blah blah';ta.dispatchEvent(new w.Event('input',{bubbles:true}));const check=[...d.querySelectorAll('button')].find(b=>/Check my answer/i.test(b.textContent));check.click();await sleep(350);const score=d.querySelector('.score-circle')?.textContent||'';if(!/^0\s*\/m.test(score.trim()))throw new Error('Nonsense FRQ did not score 0');const rewrites=[...d.querySelectorAll('.part-fix')].map(x=>x.textContent.trim());if(!rewrites.length||rewrites.some(x=>!/Strong rewrite\/model:/i.test(x)||x.endsWith('Strong rewrite/model:')))throw new Error('A missed FRQ part has blank rewrite/model feedback');}
+          dom.window.close();
+          // 1-point drill nonsense must earn 0/1.
+          dom=await load();w=dom.window;d=w.document;fnav=[...d.querySelectorAll('#nav button')].find(b=>/FRQ Coach/i.test(b.textContent));if(fnav){fnav.click();await sleep(20);const drillBtn=[...d.querySelectorAll('button')].find(b=>/Check this point/i.test(b.textContent));if(drillBtn){const box=drillBtn.closest('div[style]')||drillBtn.parentElement.parentElement;const ta=[...d.querySelectorAll('textarea')].find(t=>t!==d.querySelector('#mainAnswer')&&t.closest('section.card'));if(ta){ta.value='asdfgh qwrtypl zzzxxxx';ta.dispatchEvent(new w.Event('input',{bubbles:true}));drillBtn.click();await sleep(20);if(!d.body.textContent.includes('0/1 — Point not earned'))throw new Error('Nonsense 1-point drill did not get 0/1');}}}
+          dom.window.close();
+          // Unit Review: every unit makes a 35-question deck, covers every CED topic, and repeat attempts materially rotate.
+          dom=await load();w=dom.window;d=w.document;const urNav=[...d.querySelectorAll('#nav button')].find(b=>/Unit Review/i.test(b.textContent));if(!urNav)throw new Error('Unit Review nav missing');urNav.click();await sleep(20);
+          for(let u=1;u<=7;u++){w.localStorage.clear();const a=w.__unitReviewBuild(u,35,'standard');const b=w.__unitReviewBuild(u,35,'standard');if(a.length!==35||b.length!==35)throw new Error(`Unit ${u} did not build 35 questions`);const topics=new Set(a.map(q=>q.topic));for(const t of w.__unitReviewTopics[u])if(!topics.has(t))throw new Error(`Unit ${u} 35Q review missing CED topic ${t}`);const ids=new Set(a.map(q=>q.id));const overlap=b.filter(q=>ids.has(q.id)).length;if(overlap>5)throw new Error(`Unit ${u} repeat test overlaps too much: ${overlap}/35`);}
+          const standard=[...d.querySelectorAll('#app button')].find(b=>/Standard practice test/i.test(b.textContent));standard.click();await sleep(20);if(!d.body.textContent.includes('1/35'))throw new Error('Unit Review did not start at 1/35');const opt=d.querySelector('.quiz-option');opt.click();await sleep(10);if(![...d.querySelectorAll('button')].some(b=>/Next question/i.test(b.textContent)))throw new Error('Unit Review has no next button after answering');
+          dom.window.close();
+          // Contact/report modal opens and can close.
+          dom=await load();d=dom.window.document;const report=d.querySelector('#aphg-report-btn');if(!report)throw new Error('Report a problem button missing');report.click();await sleep(10);if(!d.querySelector('#aphg-report-modal'))throw new Error('Report modal did not open');const cancel=d.querySelector('#report-cancel');cancel.click();await sleep(5);if(d.querySelector('#aphg-report-modal'))throw new Error('Report modal did not close');dom.window.close();
+          if(runtimeErrors.length)throw new Error('Runtime JS errors: '+runtimeErrors.slice(0,4).join(' | '));
+          console.log(`Runtime click-through passed. ${clicked} initially rendered student buttons clicked plus targeted stateful flows.`);
+          NODE
