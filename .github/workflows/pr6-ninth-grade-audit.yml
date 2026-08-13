@@ -1,0 +1,180 @@
+name: PR6 Ninth Grade Student Audit
+
+on:
+  push:
+    branches: [agent/pr6-practice-mastery]
+  pull_request:
+    paths:
+      - '*.js'
+      - 'index.html'
+      - 'styles.css'
+      - '.github/workflows/pr6-ninth-grade-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  student-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax and static control audit
+        run: |
+          for f in *.js; do node --check "$f"; done
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          src='\n'.join(p.read_text(encoding='utf-8') for p in Path('.').glob('*.js'))+'\n'+Path('index.html').read_text(encoding='utf-8')
+          handlers=[]
+          for attr in ('onclick','onchange','oninput'):
+              handlers += re.findall(rf'{attr}=["\']([^"\']+)["\']',src)
+          calls=set()
+          for h in handlers:
+              calls.update(re.findall(r'(?<!\.)\b([A-Za-z_$][\w$]*)\s*\(',h))
+          ignore={'if','for','while','switch','Math','Number','String','parseInt','confirm','alert','setTimeout','setInterval','getElementById','split','toggle','scrollIntoView','replace','trim','toLowerCase','encodeURIComponent','fetch'}
+          missing=[]
+          for n in sorted(calls-ignore):
+              pats=[rf'function\s+{re.escape(n)}\s*\(',rf'window\.{re.escape(n)}\s*=',rf'\b{re.escape(n)}\s*=\s*\(?[^\n=]*=>',rf'\b(?:const|let|var)\s+{re.escape(n)}\s*=']
+              if not any(re.search(p,src) for p in pats): missing.append(n)
+          if missing: raise SystemExit('Potential dead handlers: '+', '.join(missing))
+          # Any visible student textarea should tell a ninth grader what to write.
+          tags=re.findall(r'<textarea\b[^>]*>',src,re.I)
+          unlabeled=[t for t in tags if 'hidden' not in t.lower() and not re.search(r'(placeholder|aria-label|name=)',t,re.I)]
+          if unlabeled: raise SystemExit('Student textareas without a prompt/label hook: '+str(unlabeled[:5]))
+          print(f'Static audit passed: {len(handlers)} handlers; {len(tags)} textarea templates inspected')
+          PY
+
+      - name: Install browser test dependency
+        run: npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
+
+      - name: Ninth-grade runtime audit
+        run: |
+          python3 -m http.server 8765 >/tmp/aphg-http.log 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER' EXIT
+          node <<'NODE'
+          (async()=>{
+            const {JSDOM,VirtualConsole}=require('jsdom');
+            const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+            const URL='http://127.0.0.1:8765/index.html';
+            const problems=[];
+            async function load(){
+              const runtime=[];const vc=new VirtualConsole();
+              vc.on('jsdomError',e=>{ if(e.type==='unhandled-exception') runtime.push(String(e.cause||e.message)); });
+              const dom=await JSDOM.fromURL(URL,{resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
+                w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});
+                w.requestAnimationFrame=cb=>setTimeout(cb,0);w.fetch=async()=>({ok:true,status:200,text:async()=>''});
+              }});
+              await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));await sleep(100);
+              return {dom,w:dom.window,d:dom.window.document,runtime};
+            }
+            const clickText=(d,re,scope=d)=>[...scope.querySelectorAll('button:not([disabled])')].find(b=>re.test((b.textContent||'').trim()));
+            const navText=(d,re)=>[...d.querySelectorAll('#nav button')].find(b=>re.test((b.textContent||'').trim()));
+
+            // HOME: a ninth grader should immediately understand the three main choices.
+            {
+              const x=await load(),{d}=x;
+              const body=d.body.textContent;
+              for(const phrase of ['What do you want to do today?','Study for my next unit test','Practice what I’m struggling with','Prepare for the AP Exam']) if(!body.includes(phrase)) problems.push('Home missing clear choice: '+phrase);
+              if(/Pass-Ready Dashboard/i.test(body)) problems.push('Old Pass-Ready wording still visible on home');
+              for(const re of [/Study for my next unit test/i,/Practice what I.m struggling with/i,/Prepare for the AP Exam/i]){const b=clickText(d,re);if(!b)problems.push('Home choice button missing '+re);else{b.click();await sleep(10);}}
+              if(x.runtime.length) problems.push('Home runtime error: '+x.runtime.join(' | '));
+            }
+
+            // EVERY NAV SCREEN: click every initially rendered enabled button from a fresh state.
+            {
+              const seed=await load();const labels=[...seed.d.querySelectorAll('#nav button')].map(b=>(b.textContent||'').trim());seed.dom.window.close();
+              let clicked=0;
+              for(const label of labels){
+                const probe=await load();let nb=[...probe.d.querySelectorAll('#nav button')].find(b=>(b.textContent||'').trim()===label);if(!nb){problems.push('Missing nav '+label);continue;}nb.click();await sleep(8);
+                const specs=[...probe.d.querySelectorAll('#app button:not([disabled])')].map(b=>({text:(b.textContent||'').trim(),oc:b.getAttribute('onclick')||''}));probe.dom.window.close();
+                for(const spec of specs){
+                  const x=await load();const n=[...x.d.querySelectorAll('#nav button')].find(b=>(b.textContent||'').trim()===label);n?.click();await sleep(5);
+                  const bs=[...x.d.querySelectorAll('#app button:not([disabled])')];const b=bs.find(el=>(el.textContent||'').trim()===spec.text&&(el.getAttribute('onclick')||'')===spec.oc)||bs.find(el=>(el.textContent||'').trim()===spec.text);
+                  if(b){try{b.click();await sleep(5);clicked++;}catch(e){problems.push(`Button crash [${label}] ${spec.text}: ${e.message}`)}}
+                  if(x.runtime.length)problems.push(`Runtime error [${label}] ${spec.text}: ${x.runtime[0]}`);
+                  x.dom.window.close();
+                }
+              }
+              console.log('Initial-screen button clicks:',clicked);
+            }
+
+            // VOCABULARY: previous, next, flip, status controls must actually change state.
+            {
+              const x=await load(),{d,w}=x;navText(d,/Key Terms|Vocabulary/i)?.click();await sleep(10);
+              const flash=clickText(d,/Flashcard/i);flash?.click();await sleep(10);
+              let front=d.querySelector('.flashcard .front')?.textContent.trim()||d.querySelector('.flashcard')?.textContent.trim();
+              const next=clickText(d,/Next/i);if(!next)problems.push('Vocabulary Next missing');else{next.click();await sleep(8);const after=d.querySelector('.flashcard .front')?.textContent.trim()||d.querySelector('.flashcard')?.textContent.trim();if(after===front)problems.push('Vocabulary Next did not change card');front=after;}
+              const prev=clickText(d,/Previous/i);if(!prev)problems.push('Vocabulary Previous missing');else{prev.click();await sleep(8);}
+              const flip=clickText(d,/Flip card/i);if(!flip)problems.push('Vocabulary Flip missing');else{flip.click();await sleep(8);if(!d.querySelector('.flashcard .back'))problems.push('Vocabulary Flip did not reveal definition');}
+              for(const re of [/Got it/i,/Need.*review|Needs review/i]){const b=clickText(d,re);if(b){b.click();await sleep(5);}}
+              if(x.runtime.length)problems.push('Vocabulary runtime: '+x.runtime.join(' | '));
+            }
+
+            // ALL INITIAL TEXT BOXES: type like a confused ninth grader; input/change events must not crash.
+            {
+              const seed=await load();const labels=[...seed.d.querySelectorAll('#nav button')].map(b=>b.textContent.trim());seed.dom.window.close();
+              let boxes=0;
+              for(const label of labels){
+                const x=await load(),{d,w}=x;[...d.querySelectorAll('#nav button')].find(b=>b.textContent.trim()===label)?.click();await sleep(8);
+                const fields=[...d.querySelectorAll('#app textarea,#app input[type="text"],#app input[type="email"]')];
+                for(const f of fields){
+                  const vals=['asdfgh qwrty zzz','I think this is because people move for jobs.'];
+                  for(const val of vals){try{f.value=val;f.dispatchEvent(new w.Event('input',{bubbles:true}));f.dispatchEvent(new w.Event('change',{bubbles:true}));boxes++;}catch(e){problems.push(`Textbox crash [${label}]: ${e.message}`)}}
+                }
+                if(x.runtime.length)problems.push(`Textbox runtime [${label}]: ${x.runtime[0]}`);x.dom.window.close();
+              }
+              console.log('Textbox entries exercised:',boxes);
+            }
+
+            // FRQ RUBRIC + GRADING: nonsense 0, strong answer earns, each part gives 0/1 + why + model.
+            {
+              const x=await load(),{d,w}=x;navText(d,/FRQ Coach/i)?.click();await sleep(10);
+              const ta=d.querySelector('#mainAnswer');
+              if(!ta)problems.push('FRQ main answer box missing');else{
+                ta.value='A. qwrty\nB. nonsense words only\nC. because because because\nD. random words\nE. blah\nF. zzz\nG. qqq';ta.dispatchEvent(new w.Event('input',{bubbles:true}));clickText(d,/Check my answer/i)?.click();await sleep(350);
+                const score=(d.querySelector('.score-circle')?.textContent||'').trim();if(!/^0\s*\//.test(score))problems.push('Nonsense full FRQ did not score 0: '+score);
+                const partCards=[...d.querySelectorAll('.part-feedback,.frq-part-feedback')];
+                const text=d.body.textContent;
+                if(!/0\/1/.test(text))problems.push('FRQ feedback does not show per-part 0/1');
+                if(!/Strong rewrite\/model/i.test(text))problems.push('FRQ feedback missing Strong rewrite/model');
+                if(!/why|missed|missing|improve/i.test(text))problems.push('FRQ feedback does not explain why/how to improve');
+                const emptyModels=[...d.querySelectorAll('.part-fix')].filter(el=>/Strong rewrite\/model:\s*$/.test(el.textContent.trim()));if(emptyModels.length)problems.push('Blank FRQ strong rewrite/model found');
+              }
+              // All visible rubric blocks must state how a point is earned.
+              const rubricEls=[...d.querySelectorAll('*')].filter(el=>/^Rubric:/i.test((el.textContent||'').trim())||/^Rubric\b/i.test((el.textContent||'').trim())).filter(el=>el.children.length<8);
+              for(const r of rubricEls){const t=r.textContent.trim();if(t.length<30||!/(point|earn|accurate|identify|define|describe|explain|apply|evaluate)/i.test(t))problems.push('Weak/blank rubric: '+t.slice(0,90));}
+              if(x.runtime.length)problems.push('FRQ runtime: '+x.runtime.join(' | '));
+            }
+
+            // 1-POINT DRILL: nonsense must be 0/1 and feedback must explain correction.
+            {
+              const x=await load(),{d,w}=x;navText(d,/FRQ Coach/i)?.click();await sleep(10);
+              const check=clickText(d,/Check this point/i);if(check){const tas=[...d.querySelectorAll('textarea')];const ta=tas[tas.length-1];if(ta){ta.value='asdfgh qwrty zzz';ta.dispatchEvent(new w.Event('input',{bubbles:true}));check.click();await sleep(20);const t=d.body.textContent;if(!t.includes('0/1 — Point not earned'))problems.push('Nonsense 1-point drill did not get 0/1');if(!/(How to improve|Try|needs|valid)/i.test(t))problems.push('1-point wrong answer lacks improvement feedback');}}
+              if(x.runtime.length)problems.push('1-point runtime: '+x.runtime.join(' | '));
+            }
+
+            // UNIT REVIEW: all seven units create 35 questions, cover listed topics, and immediate retake changes.
+            {
+              const x=await load(),{d,w}=x;navText(d,/Unit Review/i)?.click();await sleep(10);
+              if(typeof w.__unitReviewBuild!=='function')problems.push('Unit Review builder missing');else for(let u=1;u<=7;u++){
+                w.localStorage.clear();const a=w.__unitReviewBuild(u,35,'standard'),b=w.__unitReviewBuild(u,35,'standard');
+                if(a.length!==35||b.length!==35)problems.push(`Unit ${u} review not 35 questions`);
+                const topics=new Set(a.map(q=>q.topic));for(const t of w.__unitReviewTopics[u]||[])if(!topics.has(t))problems.push(`Unit ${u} missing CED topic ${t}`);
+                const ids=new Set(a.map(q=>q.id));const overlap=b.filter(q=>ids.has(q.id)).length;if(overlap>5)problems.push(`Unit ${u} immediate retake repeats ${overlap}/35 exact variants`);
+              }
+              const standard=clickText(d,/Standard practice test/i);standard?.click();await sleep(8);if(!d.body.textContent.includes('1/35'))problems.push('35-question Unit Review did not start at 1/35');const option=d.querySelector('.quiz-option');option?.click();await sleep(5);if(!clickText(d,/Next question/i))problems.push('Unit Review missing obvious Next question after answer');
+              if(x.runtime.length)problems.push('Unit Review runtime: '+x.runtime.join(' | '));
+            }
+
+            // REPORT: should submit directly, email optional, never say Create email report.
+            {
+              const x=await load(),{d}=x;const report=d.querySelector('#aphg-report-btn');if(!report)problems.push('Report a problem button missing');else{report.click();await sleep(5);const modal=d.querySelector('#aphg-report-modal');if(!modal)problems.push('Report modal failed to open');else{const text=modal.textContent;if(/Create email report|email app should open/i.test(text))problems.push('Old mailto report wording still present');if(!/Send Report/i.test(text))problems.push('Direct Send Report button missing');if(!/email \(optional\)/i.test(text))problems.push('Optional reply email not clear');}}
+            }
+
+            if(problems.length){console.error('\nNINTH-GRADE AUDIT FAILURES:\n- '+problems.join('\n- '));process.exit(1)}
+            console.log('Ninth-grade audit passed: home clarity, all initial buttons, all initial text fields, flashcard navigation, FRQ rubrics/grading, 1-point grading, Unit Review rotation, and report UX.');
+            process.exit(0);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
