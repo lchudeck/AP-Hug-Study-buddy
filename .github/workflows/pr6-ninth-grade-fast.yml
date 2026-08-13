@@ -68,9 +68,10 @@ jobs:
               const blanks=[...d.querySelectorAll('.part-fix')].filter(x=>/Strong rewrite\/model:\s*$/.test(x.textContent.trim()));if(blanks.length)problems.push('Blank strong rewrite/model found');
             }
 
-            const rubricNodes=[...d.querySelectorAll('#app *')].filter(x=>/^Rubric\b/i.test((x.textContent||'').trim())&&x.children.length<8);
+            const rubricHeads=[...d.querySelectorAll('#app *')].filter(x=>/^Rubric\b/i.test((x.textContent||'').trim())&&x.children.length===0);
+            const rubricNodes=[...new Set(rubricHeads.map(h=>h.parentElement).filter(Boolean))];
             if(!rubricNodes.length)problems.push('No visible FRQ rubric criteria found');
-            for(const r of rubricNodes){const t=r.textContent.trim();if(t.length<25||!/(point|earn|accurate|identify|define|describe|explain|apply|evaluate)/i.test(t))problems.push('Rubric unclear: '+t.slice(0,80));}
+            for(const r of rubricNodes){const t=r.textContent.trim();if(t.length<45||!/(point|earn|accurate|identify|define|describe|explain|apply|evaluate)/i.test(t))problems.push('Rubric box unclear: '+t.slice(0,120));}
 
             reset(/FRQ Coach/i);await sleep(4);const check=btn(/Check this point/i);if(check){const tas=[...d.querySelectorAll('textarea')];const q=tas[tas.length-1];q.value='asdfgh qwrty zzz';q.dispatchEvent(new w.Event('input',{bubbles:true}));check.click();await sleep(10);text=d.body.textContent;if(!text.includes('0/1 — Point not earned'))problems.push('Nonsense 1-point drill awarded credit');if(!/(How to improve|valid|needs|Try)/i.test(text))problems.push('1-point drill lacks corrective feedback');}
 
@@ -80,7 +81,7 @@ jobs:
             const report=d.querySelector('#aphg-report-btn');if(!report)problems.push('Report button missing');else{report.click();await sleep(2);const modal=d.querySelector('#aphg-report-modal');if(!modal)problems.push('Report modal missing');else{const m=modal.textContent;if(/Create email report|email app should open/i.test(m))problems.push('Old email-app reporting still visible');if(!/Send Report/i.test(m))problems.push('Send Report missing');if(!/email \(optional\)/i.test(m))problems.push('Optional return email unclear');}}
 
             if(runtime.length)problems.push('Runtime exceptions: '+runtime.slice(0,3).join(' | '));
-            console.log(`Clicked ${clickCount} rendered buttons; exercised ${fieldCount} field entries; inspected ${rubricNodes.length} rubric nodes.`);
+            console.log(`Clicked ${clickCount} rendered buttons; exercised ${fieldCount} field entries; inspected ${rubricNodes.length} rubric boxes.`);
             if(problems.length){console.error('AUDIT FAILURES:\n- '+problems.join('\n- '));process.exit(1)}
             console.log('Ninth-grade fast audit passed.');process.exit(0);
           })().catch(e=>{console.error(e);process.exit(1)});
