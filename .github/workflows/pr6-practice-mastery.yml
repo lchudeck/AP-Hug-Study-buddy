@@ -1,0 +1,108 @@
+name: PR6 Practice Mastery validation
+
+on:
+  push:
+    branches: [agent/pr6-practice-mastery]
+  pull_request:
+    paths:
+      - index.html
+      - '*.js'
+      - .github/workflows/pr6-practice-mastery.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: |
+          for f in *.js; do node --check "$f"; done
+
+      - name: Attack-test strict FRQ grading
+        run: |
+          node <<'NODE'
+          global.window=global;
+          global.drills=[['Identify','Unit 2','Identify one pull factor for migration.','Job opportunities, higher wages, safety, education, or family reunification.']];
+          global.drillHtml=()=>'';global.render=()=>{};global.drillIndex=0;global.drillAnswer='';global.drillChecked=false;
+          require('./strict-frq-drill-grading.js');
+          const g=global.__gradeStrictDrill;
+          for(const [a,want] of [['',false],['asdfgh qwrtypl zzzxxxx',false],['War and conflict',false],['Job opportunities',true]]) if(g(0,a).earned!==want) throw new Error('1-point drill failed: '+a);
+          require('./pr6-frq-polish.js');
+          const p={parts:[['A','Identify','Identify site.','Site.'],['B','Define','Define situation.','Situation is a place location relative to other places and its connections to them.'],['C','Explain','Explain growth.','A connected location supports city growth because transportation links increase access to markets, jobs, and trade.'],['D','Describe','Describe site.','Access to water is one physical site characteristic.']]};
+          let r=global.localGradeFRQ('A. qwrty\nB. nonsense words only\nC. because because because\nD. random words',p);
+          if(r.score!==0||r.total!==4)throw new Error(`Nonsense FRQ should be 0/4; got ${r.score}/${r.total}`);
+          r=global.localGradeFRQ('A. Site\nB. Situation is a place location relative to other places and connections.\nC. A connected location supports city growth because transportation links increase access to markets, jobs, and trade.\nD. Access to water is a physical site characteristic.',p);
+          if(r.score!==4||r.total!==4)throw new Error(`Strong FRQ should be 4/4; got ${r.score}/${r.total}`);
+          r=global.localGradeFRQ('A. Site\nB. Situation is a place location relative to other places and connections.',p);
+          if(r.score!==2||r.parts[2].earned||r.parts[3].earned)throw new Error('Missing parts must independently score 0/1');
+          if(!r.parts.every(x=>x.model&&x.model.trim()))throw new Error('Every FRQ part needs a nonblank model rewrite');
+          console.log('FRQ attack tests passed');
+          NODE
+
+      - name: Verify PR6 checklist features
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          index=Path('index.html').read_text()
+          required=['unit-mastery-unified.js','unit-review.js','practice-mastery.js','reflection-fix.js','strict-frq-drill-grading.js','pr6-frq-polish.js','contact-report.js','pyramid-next-fix.js','responsive-student-ux.js','pr6-nav-finalize.js']
+          for f in required: assert f'<script src="{f}"></script>' in index, f
+          pm=Path('practice-mastery.js').read_text(); assert 'APHG_EXPANDED_BANK' not in pm; assert 'seenKey' in pm and 'shuffle(q.choices)' in pm
+          ur=Path('unit-review.js').read_text()
+          for t in ['35','TOPICS','seenKey','Take a different 35-question test','Practice my weak areas','Next question →','__unitReviewBuild']: assert t in ur,t
+          nav=Path('pr6-nav-finalize.js').read_text(); assert "['unitMasteryAll','📚 Unit Mastery']" in nav
+          css=Path('responsive-student-ux.js').read_text();
+          for t in ['max-width:760px','max-width:420px','overflow-x:auto','min-height:44px']: assert t in css,t
+          print('Feature gates passed')
+          PY
+
+      - name: Static button-handler audit
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          src='\n'.join(p.read_text() for p in Path('.').glob('*.js'))+'\n'+Path('index.html').read_text()
+          handlers=[]
+          for a in ('onclick','onchange','oninput'): handlers+=re.findall(rf'{a}=["\']([^"\']+)["\']',src)
+          calls=set()
+          for h in handlers: calls.update(re.findall(r'(?<!\.)\b([A-Za-z_$][\w$]*)\s*\(',h))
+          ignore={'if','for','while','switch','Math','Number','String','parseInt','confirm','alert','setTimeout','setInterval','getElementById','split','toggle','scrollIntoView','replace','trim','toLowerCase'}
+          missing=[]
+          for n in sorted(calls-ignore):
+            pats=[rf'function\s+{re.escape(n)}\s*\(',rf'window\.{re.escape(n)}\s*=',rf'\b{re.escape(n)}\s*=\s*\(?[^\n=]*=>',rf'\b(?:const|let|var)\s+{re.escape(n)}\s*=']
+            if not any(re.search(p,src) for p in pats):missing.append(n)
+          if missing:raise SystemExit('Potential dead handlers: '+', '.join(missing))
+          print(f'Static button audit passed: {len(handlers)} handlers')
+          PY
+
+      - name: Fast runtime student click-through
+        run: |
+          npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
+          python3 -m http.server 8765 >/tmp/aphg-http.log 2>&1 &
+          SERVER=$!; trap 'kill $SERVER' EXIT
+          node <<'NODE'
+          (async()=>{
+            const {JSDOM,VirtualConsole}=require('jsdom');const sleep=ms=>new Promise(r=>setTimeout(r,ms));let errors=[];
+            const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(e.type==='unhandled-exception')errors.push(String(e.cause||e.message))});
+            const dom=await JSDOM.fromURL('http://127.0.0.1:8765/index.html',{resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}})}});
+            await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));await sleep(100);const w=dom.window,d=w.document;
+            const nav=()=>[...d.querySelectorAll('#nav button')],find=(re)=>nav().find(b=>re.test(b.textContent));
+            const labels=nav().map(b=>b.textContent.trim());if(labels.filter(x=>x.includes('Unit Mastery')).length!==1||labels.some(x=>x.includes('Units 3–7 Mastery')))throw new Error('Unit Mastery nav duplicated');
+            let clicked=0;
+            for(const label of labels){
+              nav().find(b=>b.textContent.trim()===label)?.click();await sleep(3);
+              const specs=[...d.querySelectorAll('#app button:not([disabled])')].map(b=>({text:b.textContent.trim(),oc:b.getAttribute('onclick')||''}));
+              for(const spec of specs){nav().find(b=>b.textContent.trim()===label)?.click();await sleep(1);const bs=[...d.querySelectorAll('#app button:not([disabled])')];const b=bs.find(x=>x.textContent.trim()===spec.text&&(x.getAttribute('onclick')||'')===spec.oc)||bs.find(x=>x.textContent.trim()===spec.text);if(!b)continue;b.click();await sleep(1);clicked++;}
+            }
+            find(/Practice Quiz/i)?.click();await sleep(3);let got=false;for(let i=0;i<4&&!got;i++){const cs=[...d.querySelectorAll('.choice-btn')];if(!cs[i])break;cs[i].click();await sleep(2);got=!!d.querySelector('.reflection');if(!got)find(/Practice Quiz/i)?.click();}
+            if(got){const reasons=[...d.querySelectorAll('.why-btn')];if(reasons.length!==4)throw new Error('Reflection buttons missing');for(const b of reasons){b.click();if(!d.querySelector('.reflection-feedback'))throw new Error('Reflection button has no visible feedback');}}
+            find(/FRQ Coach/i)?.click();await sleep(3);let ta=d.querySelector('#mainAnswer');if(ta){ta.value='A. qwrty\nB. nonsense words only\nC. because because because\nD. random words\nE. blah\nF. zzz\nG. qqq';ta.dispatchEvent(new w.Event('input',{bubbles:true}));[...d.querySelectorAll('button')].find(b=>/Check my answer/i.test(b.textContent))?.click();await sleep(300);if(!/^0\s*\//.test((d.querySelector('.score-circle')?.textContent||'').trim()))throw new Error('Nonsense full FRQ did not score 0');const fixes=[...d.querySelectorAll('.part-fix')];if(!fixes.length||fixes.some(x=>!x.textContent.includes('Strong rewrite/model:')||x.textContent.trim().endsWith('Strong rewrite/model:')))throw new Error('Blank strong rewrite/model');}
+            find(/Unit Review/i)?.click();await sleep(3);for(let u=1;u<=7;u++){w.localStorage.clear();const a=w.__unitReviewBuild(u,35,'standard'),b=w.__unitReviewBuild(u,35,'standard');if(a.length!==35||b.length!==35)throw new Error(`Unit ${u} not 35 questions`);const topics=new Set(a.map(q=>q.topic));for(const t of w.__unitReviewTopics[u])if(!topics.has(t))throw new Error(`Unit ${u} missing topic ${t}`);const ids=new Set(a.map(q=>q.id));if(b.filter(q=>ids.has(q.id)).length>5)throw new Error(`Unit ${u} repeats too much`);}
+            find(/Unit Review/i)?.click();await sleep(2);const standard=[...d.querySelectorAll('#app button')].find(b=>/Standard practice test/i.test(b.textContent));if(!standard)throw new Error('Standard 35-question button missing');standard.click();await sleep(3);if(!d.body.textContent.includes('1/35'))throw new Error('35-question review did not start');d.querySelector('.quiz-option')?.click();if(![...d.querySelectorAll('button')].some(b=>/Next question/i.test(b.textContent)))throw new Error('No next question button after answer');
+            const report=d.querySelector('#aphg-report-btn');if(!report)throw new Error('Report button missing');report.click();if(!d.querySelector('#aphg-report-modal'))throw new Error('Report modal did not open');d.querySelector('#report-cancel')?.click();
+            if(errors.length)throw new Error('Runtime errors: '+errors.slice(0,3).join(' | '));console.log(`Runtime click-through passed: ${clicked} rendered buttons plus targeted stateful flows.`);process.exit(0);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE

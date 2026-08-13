@@ -1,0 +1,88 @@
+name: PR6 Ninth Grade Fast Audit
+
+on:
+  push:
+    branches: [agent/pr6-practice-mastery]
+  pull_request:
+    paths: ['*.js','index.html','.github/workflows/pr6-ninth-grade-fast.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
+      - name: Student answer-box rubric and navigation audit
+        run: |
+          python3 -m http.server 8765 >/tmp/aphg-http.log 2>&1 &
+          SERVER=$!; trap 'kill $SERVER' EXIT
+          node <<'NODE'
+          (async()=>{
+            const {JSDOM,VirtualConsole}=require('jsdom');
+            const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+            const problems=[],runtime=[];const vc=new VirtualConsole();
+            vc.on('jsdomError',e=>{if(e.type==='unhandled-exception')runtime.push(String(e.cause||e.message))});
+            const dom=await JSDOM.fromURL('http://127.0.0.1:8765/index.html',{resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});w.requestAnimationFrame=cb=>setTimeout(cb,0);w.fetch=async()=>({ok:true,status:200,text:async()=>''});}});
+            await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));await sleep(100);
+            const w=dom.window,d=w.document;
+            const nav=re=>[...d.querySelectorAll('#nav button')].find(b=>re.test(b.textContent));
+            const btn=(re,scope=d)=>[...scope.querySelectorAll('button:not([disabled])')].find(b=>re.test(b.textContent));
+            const reset=re=>{nav(re)?.click();};
+
+            let text=d.body.textContent;
+            for(const phrase of ['What do you want to do today?','Study for my next unit test','Practice what I’m struggling with','Prepare for the AP Exam'])if(!text.includes(phrase))problems.push('Home missing: '+phrase);
+            if(/Pass-Ready Dashboard/i.test(text))problems.push('Pass-Ready still visible on home');
+
+            let clickCount=0;const labels=[...d.querySelectorAll('#nav button')].map(b=>b.textContent.trim());
+            for(const label of labels){
+              [...d.querySelectorAll('#nav button')].find(b=>b.textContent.trim()===label)?.click();await sleep(2);
+              const specs=[...d.querySelectorAll('#app button:not([disabled])')].map(b=>({text:b.textContent.trim(),oc:b.getAttribute('onclick')||''}));
+              for(const s of specs){
+                [...d.querySelectorAll('#nav button')].find(b=>b.textContent.trim()===label)?.click();await sleep(1);
+                const bs=[...d.querySelectorAll('#app button:not([disabled])')];const b=bs.find(x=>x.textContent.trim()===s.text&&(x.getAttribute('onclick')||'')===s.oc)||bs.find(x=>x.textContent.trim()===s.text);
+                if(b){try{b.click();clickCount++;await sleep(1);}catch(e){problems.push(`Button crash ${label} / ${s.text}: ${e.message}`)}}
+              }
+            }
+
+            reset(/Key Terms|Vocabulary/i);await sleep(5);btn(/Flashcard/i)?.click();await sleep(5);
+            let before=d.querySelector('.flashcard .front')?.textContent.trim();
+            const next=btn(/^Next|Next →/i);if(!next)problems.push('Vocabulary Next missing');else{next.click();await sleep(3);let after=d.querySelector('.flashcard .front')?.textContent.trim();if(before&&after===before)problems.push('Vocabulary Next does not advance');}
+            if(!btn(/Previous/i))problems.push('Vocabulary Previous missing');else{btn(/Previous/i).click();await sleep(2);}
+            if(!btn(/Flip card/i))problems.push('Vocabulary Flip missing');else{btn(/Flip card/i).click();await sleep(2);if(!d.querySelector('.flashcard .back'))problems.push('Vocabulary Flip does not reveal definition');}
+
+            let fieldCount=0;
+            for(const label of labels){
+              [...d.querySelectorAll('#nav button')].find(b=>b.textContent.trim()===label)?.click();await sleep(2);
+              const fields=[...d.querySelectorAll('#app textarea,#app input[type=text],#app input[type=email]')];
+              for(const f of fields){for(const val of ['asdfgh qwrty zzz','I think this happens because people move for jobs.']){f.value=val;f.dispatchEvent(new w.Event('input',{bubbles:true}));f.dispatchEvent(new w.Event('change',{bubbles:true}));fieldCount++;}}
+            }
+
+            reset(/FRQ Coach/i);await sleep(5);let ta=d.querySelector('#mainAnswer');
+            if(!ta)problems.push('FRQ main answer box missing');else{
+              ta.value='A. qwrty\nB. nonsense\nC. because because\nD. random\nE. blah\nF. zzz\nG. qqq';ta.dispatchEvent(new w.Event('input',{bubbles:true}));btn(/Check my answer/i)?.click();await sleep(350);
+              const score=d.querySelector('.score-circle')?.textContent.trim()||'';if(!/^0\s*\//.test(score))problems.push('Nonsense FRQ not 0 points: '+score);
+              text=d.body.textContent;if(!/0\/1/.test(text))problems.push('FRQ does not show 0/1 per part');if(!/Strong rewrite\/model/i.test(text))problems.push('FRQ strong model missing');if(!/(How to improve|missing|needs|why)/i.test(text))problems.push('FRQ improvement explanation missing');
+              const blanks=[...d.querySelectorAll('.part-fix')].filter(x=>/Strong rewrite\/model:\s*$/.test(x.textContent.trim()));if(blanks.length)problems.push('Blank strong rewrite/model found');
+            }
+
+            const rubricHeads=[...d.querySelectorAll('#app *')].filter(x=>/^Rubric\b/i.test((x.textContent||'').trim())&&x.children.length===0);
+            const rubricNodes=[...new Set(rubricHeads.map(h=>h.parentElement).filter(Boolean))];
+            if(!rubricNodes.length)problems.push('No visible FRQ rubric criteria found');
+            for(const r of rubricNodes){const t=r.textContent.trim();if(t.length<45||!/(point|earn|accurate|identify|define|describe|explain|apply|evaluate)/i.test(t))problems.push('Rubric box unclear: '+t.slice(0,120));}
+
+            reset(/FRQ Coach/i);await sleep(4);const check=btn(/Check this point/i);if(check){const tas=[...d.querySelectorAll('textarea')];const q=tas[tas.length-1];q.value='asdfgh qwrty zzz';q.dispatchEvent(new w.Event('input',{bubbles:true}));check.click();await sleep(10);text=d.body.textContent;if(!text.includes('0/1 — Point not earned'))problems.push('Nonsense 1-point drill awarded credit');if(!/(How to improve|valid|needs|Try)/i.test(text))problems.push('1-point drill lacks corrective feedback');}
+
+            reset(/Unit Review/i);await sleep(4);if(typeof w.__unitReviewBuild!=='function')problems.push('Unit Review builder missing');else for(let u=1;u<=7;u++){w.localStorage.clear();const a=w.__unitReviewBuild(u,35,'standard'),b=w.__unitReviewBuild(u,35,'standard');if(a.length!==35||b.length!==35)problems.push(`Unit ${u} not 35 questions`);const topics=new Set(a.map(q=>q.topic));for(const t of w.__unitReviewTopics[u]||[])if(!topics.has(t))problems.push(`Unit ${u} missing topic ${t}`);const ids=new Set(a.map(q=>q.id));const overlap=b.filter(q=>ids.has(q.id)).length;if(overlap>5)problems.push(`Unit ${u} repeats ${overlap}/35 exact variants`);}
+            btn(/Standard practice test/i)?.click();await sleep(3);if(!d.body.textContent.includes('1/35'))problems.push('Unit Review does not start at 1/35');d.querySelector('.quiz-option')?.click();await sleep(2);if(!btn(/Next question/i))problems.push('Unit Review lacks Next question after answer');
+
+            const report=d.querySelector('#aphg-report-btn');if(!report)problems.push('Report button missing');else{report.click();await sleep(2);const modal=d.querySelector('#aphg-report-modal');if(!modal)problems.push('Report modal missing');else{const m=modal.textContent;if(/Create email report|email app should open/i.test(m))problems.push('Old email-app reporting still visible');if(!/Send Report/i.test(m))problems.push('Send Report missing');if(!/email \(optional\)/i.test(m))problems.push('Optional return email unclear');}}
+
+            if(runtime.length)problems.push('Runtime exceptions: '+runtime.slice(0,3).join(' | '));
+            console.log(`Clicked ${clickCount} rendered buttons; exercised ${fieldCount} field entries; inspected ${rubricNodes.length} rubric boxes.`);
+            if(problems.length){console.error('AUDIT FAILURES:\n- '+problems.join('\n- '));process.exit(1)}
+            console.log('Ninth-grade fast audit passed.');process.exit(0);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
