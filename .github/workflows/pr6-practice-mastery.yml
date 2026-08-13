@@ -15,6 +15,14 @@ on:
       - real-data-stimulus.js
       - reflection-fix.js
       - mini-frq-feedback.js
+      - strict-frq-drill-grading.js
+      - frq-part-scoring.js
+      - frq-feedback-polish.js
+      - unit-mastery-unified.js
+      - unit-review.js
+      - contact-report.js
+      - pyramid-next-fix.js
+      - responsive-student-ux.js
       - .github/workflows/pr6-practice-mastery.yml
 
 permissions:
@@ -27,31 +35,77 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check JavaScript syntax
         run: |
-          for f in practice-mastery.js practice-bank-expanded.js image-mcq-bank.js stimulus-sets.js stimulus-sets-extra.js real-data-stimulus.js reflection-fix.js mini-frq-feedback.js; do node --check "$f"; done
-      - name: Verify mastery, visual sets, real data, and mini-FRQ feedback
+          for f in practice-mastery.js practice-bank-expanded.js image-mcq-bank.js stimulus-sets.js stimulus-sets-extra.js real-data-stimulus.js reflection-fix.js mini-frq-feedback.js strict-frq-drill-grading.js frq-part-scoring.js frq-feedback-polish.js unit-mastery-unified.js unit-review.js contact-report.js pyramid-next-fix.js responsive-student-ux.js; do node --check "$f"; done
+
+      - name: Attack-test 1-point drill grading
+        run: |
+          node <<'NODE'
+          global.window=global;
+          global.drills=[['Identify','Unit 2','Identify one pull factor for migration.','Job opportunities, higher wages, safety, education, or family reunification.']];
+          global.drillHtml=()=>'';global.render=()=>{};global.drillIndex=0;global.drillAnswer='';global.drillChecked=false;
+          require('./strict-frq-drill-grading.js');
+          const g=global.__gradeStrictDrill;
+          const cases=[
+            ['',false],
+            ['asdfgh qwrtypl zzzxxxx',false],
+            ['War and conflict',false],
+            ['Job opportunities',true],
+            ['Higher wages attract migrants',true]
+          ];
+          for(const [answer,want] of cases){const got=g(0,answer).earned;if(got!==want)throw new Error(`Drill grading failed for ${answer}: ${got} != ${want}`)}
+          console.log('Strict 1-point drill attack tests passed');
+          NODE
+
+      - name: Attack-test per-part FRQ scoring
+        run: |
+          node <<'NODE'
+          global.window=global;require('./frq-part-scoring.js');
+          const prompt={parts:[
+            ['A','Identify','Identify the geographic concept describing physical characteristics of a location.','Site.'],
+            ['B','Define','Define situation.','Situation is a place’s location relative to other places and its connections to them.'],
+            ['C','Explain','Explain how situation can support city growth.','A connected location can support city growth because transportation links increase access to markets, jobs, and trade.'],
+            ['D','Describe','Describe one site characteristic.','Access to water is one physical site characteristic.']
+          ]};
+          let r=global.localGradeFRQ('A. nonsense\nB. qwrty asdfgh zxcvbn\nC. because because because\nD. random words only',prompt);
+          if(r.score!==0||r.total!==4)throw new Error(`Nonsense should be 0/4, got ${r.score}/${r.total}`);
+          r=global.localGradeFRQ('A. Site\nB. Situation is a place location relative to other places and connections.\nC. A connected location supports city growth because transportation links increase access to markets, jobs, and trade.\nD. Access to water is a physical site characteristic.',prompt);
+          if(r.score!==4||r.total!==4)throw new Error(`Strong response should be 4/4, got ${r.score}/${r.total}`);
+          r=global.localGradeFRQ('A. Site\nB. Situation is a place location relative to other places and connections.',prompt);
+          if(r.score!==2||r.parts[2].earned||r.parts[3].earned)throw new Error('Missing C/D must each be 0/1');
+          if(!r.parts.every(p=>p.fix&&p.fix.length))throw new Error('Every part must have a model rewrite');
+          console.log('Per-part FRQ 0/1 scoring attack tests passed');
+          NODE
+
+      - name: Verify checklist features and question quality gates
         run: |
           python - <<'PY'
           from pathlib import Path
-          js=Path('practice-mastery.js').read_text(encoding='utf-8')
           index=Path('index.html').read_text(encoding='utf-8')
-          files=['practice-bank-expanded.js','image-mcq-bank.js','stimulus-sets.js','stimulus-sets-extra.js','real-data-stimulus.js','practice-mastery.js','reflection-fix.js','mini-frq-feedback.js']
-          for src in files: assert f'<script src="{src}"></script>' in index, src
-          for label in ['What should I do next?','Start 5-Minute Practice','Review My Mistakes','Progress by Topic','Use this source:']:
-              assert label in js, label
-          for token in ['seenKey','buildDeck','chooseSets','setToQuestions','saved?.id','shuffle(q.choices)','APHG_REAL_DATA_QUESTIONS']:
+          required=['practice-mastery.js','reflection-fix.js','mini-frq-feedback.js','strict-frq-drill-grading.js','frq-part-scoring.js','frq-feedback-polish.js','unit-mastery-unified.js','unit-review.js','contact-report.js','pyramid-next-fix.js','responsive-student-ux.js']
+          for src in required: assert f'<script src="{src}"></script>' in index, src
+          js=Path('practice-mastery.js').read_text(encoding='utf-8')
+          for token in ['seenKey','buildDeck','chooseSets','setToQuestions','shuffle(q.choices)','APHG_REAL_DATA_QUESTIONS']:
               assert token in js, token
-          assert 'APHG_EXPANDED_BANK' not in js, 'answer-leaking draft bank must not be served'
+          assert 'APHG_EXPANDED_BANK' not in js, 'answer-leaking generated bank must stay quarantined'
+          unit=Path('unit-review.js').read_text(encoding='utf-8')
+          for token in ["35","seenKey","TOPICS","Take a different 35-question test","Practice my weak areas","Next question →"]:
+              assert token in unit, token
+          unified=Path('unit-mastery-unified.js').read_text(encoding='utf-8')
+          assert "['unitMasteryAll','📚 Unit Mastery']" in unified
+          assert "['foundations','mastery37','unitMasteryAll']" in unified
+          feedback=Path('frq-feedback-polish.js').read_text(encoding='utf-8')
+          for token in ['1/1 — Point earned','0/1 — Point not earned','Strong rewrite/model','Rewrite and try again']:
+              assert token in feedback, token
+          responsive=Path('responsive-student-ux.js').read_text(encoding='utf-8')
+          for token in ['max-width:760px','max-width:420px','overflow-x:auto','min-height:44px']:
+              assert token in responsive, token
           sets=Path('stimulus-sets.js').read_text(encoding='utf-8')+Path('stimulus-sets-extra.js').read_text(encoding='utf-8')
           for u in range(1,8): assert f'unit:{u}' in sets, f'visual set missing unit {u}'
           real=Path('real-data-stimulus.js').read_text(encoding='utf-8')
-          for source in ['U.S. Census Bureau','World Bank','TIGERweb','2024 ACS']:
-              assert source in real, source
-          assert 'logReason' in Path('reflection-fix.js').read_text(encoding='utf-8')
-          mini=Path('mini-frq-feedback.js').read_text(encoding='utf-8')
-          for label in ['Check my FRQ answer','Likely earns the practice point','Strong rewrite example']:
-              assert label in mini, label
-          print('PR6 Practice & Mastery validation passed')
+          for source in ['U.S. Census Bureau','World Bank','TIGERweb','2024 ACS']: assert source in real, source
+          print('PR6 checklist feature validation passed')
           PY
+
       - name: Static student button audit
         run: |
           python - <<'PY'
@@ -62,14 +116,16 @@ jobs:
           for attr in ('onclick','onchange','oninput'):
               handlers += re.findall(rf'{attr}=["\']([^"\']+)["\']', sources)
           calls=set()
-          for h in handlers:
-              calls.update(re.findall(r'(?<!\.)\b([A-Za-z_$][\w$]*)\s*\(', h))
+          for h in handlers: calls.update(re.findall(r'(?<!\.)\b([A-Za-z_$][\w$]*)\s*\(', h))
           ignore={'if','for','while','switch','Math','Number','String','parseInt','confirm','alert','setTimeout','setInterval','getElementById','split','toggle','scrollIntoView','replace','trim','toLowerCase'}
           missing=[]
           for name in sorted(calls-ignore):
               pats=[rf'function\s+{re.escape(name)}\s*\(',rf'window\.{re.escape(name)}\s*=',rf'\b{re.escape(name)}\s*=\s*\(?[^\n=]*=>',rf'\b(?:const|let|var)\s+{re.escape(name)}\s*=']
               if not any(re.search(p,sources) for p in pats): missing.append(name)
-          if missing:
-              raise SystemExit('Potential dead button handlers: '+', '.join(missing))
-          print(f'Button audit passed: {len(handlers)} handlers / {len(calls)} app-level functions checked')
+          if missing: raise SystemExit('Potential dead button handlers: '+', '.join(missing))
+          # Verify known student-facing fixes have actual behavior, not just labels.
+          for name in ['logReason','strictGradeDrill','strictNextDrill','umOpen','urUnit','urStart','urChoose','urNext','urWeak']:
+              if not re.search(rf'(?:window\.)?{name}\s*=',sources) and not re.search(rf'function\s+{name}\s*\(',sources):
+                  raise SystemExit('Missing required button handler: '+name)
+          print(f'Button audit passed: {len(handlers)} inline handlers and required PR6 controls checked')
           PY
