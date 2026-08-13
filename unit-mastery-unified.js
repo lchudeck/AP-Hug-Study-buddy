@@ -2,7 +2,7 @@
 (function(){
   if(window.__unitMasteryUnifiedInstalled||typeof tabs==='undefined'||typeof render==='undefined')return;
   window.__unitMasteryUnifiedInstalled=true;
-  tabs= tabs.filter(t=>!['foundations','mastery37','unitMasteryAll'].includes(t[0]));
+  for(let i=tabs.length-1;i>=0;i--){if(['foundations','mastery37','unitMasteryAll'].includes(tabs[i][0]))tabs.splice(i,1);}
   const at=Math.max(1,tabs.findIndex(t=>t[0]==='ced'));
   tabs.splice(at,0,['unitMasteryAll','📚 Unit Mastery']);
   const baseRender=render;
