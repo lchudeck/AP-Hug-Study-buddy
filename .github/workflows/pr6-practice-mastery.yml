@@ -124,6 +124,7 @@ jobs:
           SERVER=$!
           trap 'kill $SERVER' EXIT
           node <<'NODE'
+          (async()=>{
           const {JSDOM,VirtualConsole}=require('jsdom');
           const URL='http://127.0.0.1:8765/index.html';
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -138,7 +139,6 @@ jobs:
           let dom=await load(),w=dom.window,d=w.document;
           const navTexts=[...d.querySelectorAll('#nav button')].map(b=>b.textContent.trim());
           if(navTexts.filter(x=>x.includes('Unit Mastery')).length!==1||navTexts.some(x=>x.includes('Units 3–7 Mastery')))throw new Error('Unit Mastery navigation is not unified');
-          // Push every button initially rendered on every nav page. Reload each page between clicks so one action cannot invalidate the next control.
           let clicked=0;
           for(const navText of navTexts){
             let probe=await load(),pd=probe.window.document;let nb=byText(pd,'#nav button',navText);if(!nb)throw new Error('Missing nav '+navText);nb.click();await sleep(20);
@@ -149,25 +149,21 @@ jobs:
               if(!b){x.window.close();continue;}try{b.click();await sleep(10);clicked++;}catch(e){throw new Error(`Button failed [${navText}] ${spec.text}: ${e.message}`)}x.window.close();
             }
           }
-          // Quiz wrong-answer reflection buttons must visibly respond.
           dom=await load();w=dom.window;d=w.document;let qnav=[...d.querySelectorAll('#nav button')].find(b=>/Practice Quiz/i.test(b.textContent));
           if(qnav){qnav.click();await sleep(20);let choices=[...d.querySelectorAll('.choice-btn')];let gotReflection=false;for(let i=0;i<Math.min(choices.length,4)&&!gotReflection;i++){if(i){dom.window.close();dom=await load();w=dom.window;d=w.document;[...d.querySelectorAll('#nav button')].find(b=>/Practice Quiz/i.test(b.textContent)).click();await sleep(10);choices=[...d.querySelectorAll('.choice-btn')];}choices[i].click();await sleep(15);gotReflection=!!d.querySelector('.reflection');}
             if(!gotReflection)throw new Error('Could not produce wrong-answer reflection state');const rbs=[...d.querySelectorAll('.why-btn')];if(rbs.length!==4)throw new Error('Expected four reflection reason buttons');for(const b of rbs){b.click();await sleep(5);if(!d.querySelector('.reflection-feedback'))throw new Error('Reflection button produced no visible feedback');}
           }
           dom.window.close();
-          // FRQ nonsense must score zero per part and show nonblank rewrite/model text.
-          dom=await load();w=dom.window;d=w.document;let fnav=[...d.querySelectorAll('#nav button')].find(b=>/FRQ Coach/i.test(b.textContent));if(fnav){fnav.click();await sleep(20);const ta=d.querySelector('#mainAnswer');ta.value='A. qwrty zzzxxx\nB. nonsense words only\nC. because because because\nD. qqq www eee\nE. random random random\nF. zxcvbn asdfgh\nG. blah blah blah';ta.dispatchEvent(new w.Event('input',{bubbles:true}));const check=[...d.querySelectorAll('button')].find(b=>/Check my answer/i.test(b.textContent));check.click();await sleep(350);const score=d.querySelector('.score-circle')?.textContent||'';if(!/^0\s*\/m.test(score.trim()))throw new Error('Nonsense FRQ did not score 0');const rewrites=[...d.querySelectorAll('.part-fix')].map(x=>x.textContent.trim());if(!rewrites.length||rewrites.some(x=>!/Strong rewrite\/model:/i.test(x)||x.endsWith('Strong rewrite/model:')))throw new Error('A missed FRQ part has blank rewrite/model feedback');}
+          dom=await load();w=dom.window;d=w.document;let fnav=[...d.querySelectorAll('#nav button')].find(b=>/FRQ Coach/i.test(b.textContent));if(fnav){fnav.click();await sleep(20);const ta=d.querySelector('#mainAnswer');ta.value='A. qwrty zzzxxx\nB. nonsense words only\nC. because because because\nD. qqq www eee\nE. random random random\nF. zxcvbn asdfgh\nG. blah blah blah';ta.dispatchEvent(new w.Event('input',{bubbles:true}));const check=[...d.querySelectorAll('button')].find(b=>/Check my answer/i.test(b.textContent));check.click();await sleep(350);const score=d.querySelector('.score-circle')?.textContent||'';if(!/^0\s*\//m.test(score.trim()))throw new Error('Nonsense FRQ did not score 0');const rewrites=[...d.querySelectorAll('.part-fix')].map(x=>x.textContent.trim());if(!rewrites.length||rewrites.some(x=>!/Strong rewrite\/model:/i.test(x)||x.endsWith('Strong rewrite/model:')))throw new Error('A missed FRQ part has blank rewrite/model feedback');}
           dom.window.close();
-          // 1-point drill nonsense must earn 0/1.
-          dom=await load();w=dom.window;d=w.document;fnav=[...d.querySelectorAll('#nav button')].find(b=>/FRQ Coach/i.test(b.textContent));if(fnav){fnav.click();await sleep(20);const drillBtn=[...d.querySelectorAll('button')].find(b=>/Check this point/i.test(b.textContent));if(drillBtn){const box=drillBtn.closest('div[style]')||drillBtn.parentElement.parentElement;const ta=[...d.querySelectorAll('textarea')].find(t=>t!==d.querySelector('#mainAnswer')&&t.closest('section.card'));if(ta){ta.value='asdfgh qwrtypl zzzxxxx';ta.dispatchEvent(new w.Event('input',{bubbles:true}));drillBtn.click();await sleep(20);if(!d.body.textContent.includes('0/1 — Point not earned'))throw new Error('Nonsense 1-point drill did not get 0/1');}}}
+          dom=await load();w=dom.window;d=w.document;fnav=[...d.querySelectorAll('#nav button')].find(b=>/FRQ Coach/i.test(b.textContent));if(fnav){fnav.click();await sleep(20);const drillBtn=[...d.querySelectorAll('button')].find(b=>/Check this point/i.test(b.textContent));if(drillBtn){const tas=[...d.querySelectorAll('textarea')].filter(t=>t!==d.querySelector('#mainAnswer'));const ta=tas[tas.length-1];if(ta){ta.value='asdfgh qwrtypl zzzxxxx';ta.dispatchEvent(new w.Event('input',{bubbles:true}));drillBtn.click();await sleep(20);if(!d.body.textContent.includes('0/1 — Point not earned'))throw new Error('Nonsense 1-point drill did not get 0/1');}}}
           dom.window.close();
-          // Unit Review: every unit makes a 35-question deck, covers every CED topic, and repeat attempts materially rotate.
           dom=await load();w=dom.window;d=w.document;const urNav=[...d.querySelectorAll('#nav button')].find(b=>/Unit Review/i.test(b.textContent));if(!urNav)throw new Error('Unit Review nav missing');urNav.click();await sleep(20);
           for(let u=1;u<=7;u++){w.localStorage.clear();const a=w.__unitReviewBuild(u,35,'standard');const b=w.__unitReviewBuild(u,35,'standard');if(a.length!==35||b.length!==35)throw new Error(`Unit ${u} did not build 35 questions`);const topics=new Set(a.map(q=>q.topic));for(const t of w.__unitReviewTopics[u])if(!topics.has(t))throw new Error(`Unit ${u} 35Q review missing CED topic ${t}`);const ids=new Set(a.map(q=>q.id));const overlap=b.filter(q=>ids.has(q.id)).length;if(overlap>5)throw new Error(`Unit ${u} repeat test overlaps too much: ${overlap}/35`);}
           const standard=[...d.querySelectorAll('#app button')].find(b=>/Standard practice test/i.test(b.textContent));standard.click();await sleep(20);if(!d.body.textContent.includes('1/35'))throw new Error('Unit Review did not start at 1/35');const opt=d.querySelector('.quiz-option');opt.click();await sleep(10);if(![...d.querySelectorAll('button')].some(b=>/Next question/i.test(b.textContent)))throw new Error('Unit Review has no next button after answering');
           dom.window.close();
-          // Contact/report modal opens and can close.
           dom=await load();d=dom.window.document;const report=d.querySelector('#aphg-report-btn');if(!report)throw new Error('Report a problem button missing');report.click();await sleep(10);if(!d.querySelector('#aphg-report-modal'))throw new Error('Report modal did not open');const cancel=d.querySelector('#report-cancel');cancel.click();await sleep(5);if(d.querySelector('#aphg-report-modal'))throw new Error('Report modal did not close');dom.window.close();
           if(runtimeErrors.length)throw new Error('Runtime JS errors: '+runtimeErrors.slice(0,4).join(' | '));
           console.log(`Runtime click-through passed. ${clicked} initially rendered student buttons clicked plus targeted stateful flows.`);
+          })().catch(e=>{console.error(e);process.exit(1)});
           NODE
