@@ -21,9 +21,9 @@ jobs:
           src=Path('advanced-reasoning.js').read_text(encoding='utf-8')
           index=Path('index.html').read_text(encoding='utf-8')
           assert '<script src="advanced-reasoning.js"></script>' in index
-          assert src.count('stimulus:') == 7
+          assert src.count('stimulus:') == 21
           for unit in range(1,8): assert f'unit:{unit}' in src
-          for token in ['Why every choice is right or wrong','FRQ rewrite-and-transfer','more evidence needed','five attempts','two Level 3 attempts','80% or better']:
+          for token in ['Why every choice is right or wrong','FRQ rewrite-and-transfer','more evidence needed','five attempts','two Level 3 attempts','80% or better','shuffledQuestion','Mixed challenge','Level 2 · Apply','Level 3 · Defend']:
               assert token in src, token
           for title in ['Migration → Culture','Agriculture → Cities','Development → Population']:
               assert title in src, title
