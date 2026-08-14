@@ -1,0 +1,31 @@
+name: PR8 Advanced AP Reasoning validation
+
+on:
+  pull_request:
+    paths: [advanced-reasoning.js, index.html, .github/workflows/pr8-advanced-reasoning.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check advanced-reasoning.js
+      - name: Verify advanced reasoning gates
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src=Path('advanced-reasoning.js').read_text(encoding='utf-8')
+          index=Path('index.html').read_text(encoding='utf-8')
+          assert '<script src="advanced-reasoning.js"></script>' in index
+          assert src.count('stimulus:') == 7
+          for unit in range(1,8): assert f'unit:{unit}' in src
+          for token in ['Why every choice is right or wrong','FRQ rewrite-and-transfer','more evidence needed','five attempts','two Level 3 attempts','80% or better']:
+              assert token in src, token
+          for title in ['Migration → Culture','Agriculture → Cities','Development → Population']:
+              assert title in src, title
+          print('PR8 advanced reasoning foundation passed')
+          PY
