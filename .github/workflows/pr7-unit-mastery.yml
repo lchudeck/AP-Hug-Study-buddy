@@ -1,0 +1,40 @@
+name: PR7 Unit Mastery validation
+
+on:
+  pull_request:
+    paths:
+      - unit-mastery-3-7.js
+      - unit-review.js
+      - ACCOUNTS_AND_PAYMENTS_ROADMAP.md
+      - .github/workflows/pr7-unit-mastery.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check unit-mastery-3-7.js
+          node --check unit-review.js
+      - name: Verify PR7 topic progress and case studies
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src=Path('unit-mastery-3-7.js').read_text(encoding='utf-8')
+          for token in ['aphgUnitMastery37ProgressV1','m37SaveDraft','m37ToggleComplete','topics marked complete','Saved automatically on this device.']:
+              assert token in src, token
+          for topic in ['3.2','3.4','3.8','4.4','4.6','4.8','5.3','5.5','5.7','5.11','6.4','6.8','6.10','7.4','7.7','7.8']:
+              assert f"'{topic}':" in src, topic
+          roadmap=Path('ACCOUNTS_AND_PAYMENTS_ROADMAP.md').read_text(encoding='utf-8')
+          for phrase in ["free founding classroom","full 2026–27 school year","@netlify/identity","no-account route","Never let a failed payment"]:
+              assert phrase in roadmap, phrase
+          review=Path('unit-review.js').read_text(encoding='utf-8')
+          for phrase in ['Choose any number from 1–60','max="60"','urStartCustom','Math.min(60','maximum of 60 questions']:
+              assert phrase in review, phrase
+          print('PR7 content and roadmap gates passed')
+          PY
