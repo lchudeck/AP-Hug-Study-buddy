@@ -189,6 +189,22 @@ button:active{transform:scale(.98)}
 
 /* Footer */
 footer{text-align:center;color:#94a3b8;font-size:13px;padding:24px}
+footer a{color:#64748b}
+
+/* School launch */
+.student-start-steps{padding-left:24px;margin:12px 0;color:#374151}
+.student-start-steps li{margin:6px 0}
+.privacy-promise{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.privacy-promise>div{background:#f0fdf4;border:1px solid #86efac;border-radius:14px;padding:14px}
+.privacy-promise b,.privacy-promise span{display:block}
+.privacy-promise b{color:#14532d;margin-bottom:4px}
+.privacy-promise span{font-size:14px;color:#374151}
+.school-ready-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.school-ready-actions .btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.privacy-page{display:grid;gap:16px}
+.privacy-page ul{padding-left:24px;color:#374151}
+.privacy-page .btn{display:inline-block;text-decoration:none;margin-top:10px}
+@media(max-width:720px){.privacy-promise{grid-template-columns:1fr}}
 
 
 /* Flashcard FRQ + Practice Exams */

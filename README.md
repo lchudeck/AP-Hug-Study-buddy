@@ -10,7 +10,11 @@ A browser-based AP Human Geography study tool with unit review, multiple-choice 
 
 ## Student data
 
-The site does not require a login. Flashcard and quiz progress used by the adaptive features is stored locally in the student's browser/device.
+The site does not require a login or collect student identity. Flashcard, quiz, and unit-mastery progress used by the adaptive features is stored locally in the student's browser/device. See `privacy.html` for the student- and family-facing classroom notice.
+
+## Netlify
+
+The repository root is a static Netlify site. `netlify.toml` publishes the root directory and sets classroom-appropriate response headers. Git-connected pull requests should receive deploy previews automatically when Deploy Previews are enabled for the site.
 
 ## Validation
 
