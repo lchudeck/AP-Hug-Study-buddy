@@ -1,0 +1,38 @@
+name: School launch validation
+
+on:
+  pull_request:
+    paths: [index.html, privacy.html, school-ready.js, contact-report.js, styles.css, netlify.toml, .github/workflows/school-launch.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate classroom privacy and deployment files
+        run: |
+          node --check school-ready.js
+          node --check contact-report.js
+          python - <<'PY'
+          from pathlib import Path
+          index=Path('index.html').read_text(encoding='utf-8')
+          privacy=Path('privacy.html').read_text(encoding='utf-8')
+          ready=Path('school-ready.js').read_text(encoding='utf-8')
+          report=Path('contact-report.js').read_text(encoding='utf-8')
+          netlify=Path('netlify.toml').read_text(encoding='utf-8')
+          assert '<script src="school-ready.js"></script>' in index
+          assert 'Privacy &amp; classroom use' in index
+          assert 'reply-email' not in index
+          assert 'report-reply' not in report
+          for phrase in ['does not ask for or collect', 'local storage', 'not a class grade', 'Do not enter names']:
+              assert phrase.lower() in privacy.lower(), phrase
+          for phrase in ['Your first 5 minutes', '10-question quick diagnostic', 'Private by default', 'clearStudyBuddyProgress']:
+              assert phrase in ready, phrase
+          for phrase in ['publish = "."', 'X-Content-Type-Options', 'Permissions-Policy']:
+              assert phrase in netlify, phrase
+          print('School launch validation passed')
+          PY
