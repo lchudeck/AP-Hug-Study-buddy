@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Privacy & Classroom Use · APHG Study Buddy</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header><div class="wrap hero"><div class="hero-text"><div style="color:#93c5fd;font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">AP Human Geography</div><h1>Privacy &amp; Classroom Use</h1><p>A plain-language explanation for students, families, and schools.</p></div></div></header>
+  <main class="wrap privacy-page">
+    <section class="card">
+      <h2>What Study Buddy collects</h2>
+      <p>Study Buddy does not ask for or collect a student's name, email address, birthday, school ID, location, or account password. There are no student accounts, advertisements, or payments in the classroom version.</p>
+    </section>
+    <section class="card">
+      <h2>How progress works</h2>
+      <p>Practice progress and written drafts are stored in the web browser's local storage on the device being used. The information stays in that browser and is not sent to a teacher dashboard. Students should use the same assigned device when possible. Clearing browser data can remove saved progress.</p>
+      <button class="btn-secondary" onclick="clearLocalProgress()">Clear Study Buddy progress on this browser</button>
+    </section>
+    <section class="card">
+      <h2>Classroom expectations</h2>
+      <ul>
+        <li>Use Study Buddy for learning and practice; a Study Buddy score is not a class grade or an official AP score.</li>
+        <li>Do not enter names, email addresses, school IDs, or other personal information in written-answer or problem-report boxes.</li>
+        <li>Check explanations and course materials when an answer seems wrong, and use the anonymous problem-report button to flag it.</li>
+        <li>Follow your teacher's directions and your school's acceptable-use rules.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>Important limitation</h2>
+      <p>This is an independent study aid. It is not affiliated with or endorsed by the College Board. AP® and Advanced Placement® are trademarks of the College Board.</p>
+      <a class="btn btn-primary" href="index.html">Return to Study Buddy</a>
+    </section>
+  </main>
+  <script>
+    function clearLocalProgress(){
+      if(!confirm('Clear all Study Buddy progress saved in this browser? This cannot be undone.')) return;
+      const keys=[];
+      for(let i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
+      keys.filter(k=>k&&/^aphg/i.test(k)).forEach(k=>localStorage.removeItem(k));
+      alert('Study Buddy progress has been cleared from this browser.');
+    }
+  </script>
+</body>
+</html>
