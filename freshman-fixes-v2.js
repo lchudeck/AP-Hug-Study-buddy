@@ -27,6 +27,14 @@
           snap.attempted=attempted;
           snap.accuracy=attempted?Math.round(correct/attempted*100):0;
         }
+        const legacy=JSON.parse(localStorage.getItem('aphgPracticeMasteryV4')||'{}');
+        const legacyRows=Object.values(legacy||{}).filter(x=>x&&x.total);
+        const legacyAttempted=legacyRows.reduce((n,x)=>n+(x.total||0),0);
+        const legacyCorrect=legacyRows.reduce((n,x)=>n+(x.right||0),0);
+        if(legacyAttempted>(snap.attempted||0)){
+          snap.attempted=legacyAttempted;
+          snap.accuracy=legacyAttempted?Math.round(legacyCorrect/legacyAttempted*100):0;
+        }
         const weak=window.APHGTopicSkillMastery?.weakTopics(1)?.[0];
         if(weak)snap.weak={unit:weak.unit,name:`Topic ${weak.topic}: ${weak.label}`,topic:weak.topic,topicName:weak.label,mastery:weak.mastery};
       }catch(e){}
@@ -65,6 +73,10 @@
     // Give a manageable next vocabulary set instead of a discouraging total.
     document.querySelectorAll('.mastery-tile').forEach(tile=>{
       const span=tile.querySelector('span');
+      if(span&&span.textContent.trim()==='Quiz accuracy'){
+        const b=tile.querySelector('b'),attempts=Number((tile.querySelector('p')?.textContent.match(/\d+/)||['0'])[0]);
+        if(b&&attempts>0&&b.textContent.trim()==='—%')b.textContent='0%';
+      }
       if(!span||span.textContent.trim()!=='Vocab cards not mastered')return;
       const b=tile.querySelector('b'),p=tile.querySelector('p');
       if(b)b.textContent='10';
@@ -77,6 +89,13 @@
       if(!/Point recipe/.test(box.textContent))return;
       const p=box.querySelector('p');
       if(p)p.innerHTML='Answer the task directly. Clearly connect a cause to its effect. Words such as <b>because</b> or <b>therefore</b> can help, but they are not required. Include a specific APHG concept or consequence.';
+    });
+    document.querySelectorAll('button').forEach(button=>{
+      if(button.textContent.trim()==='Write the matching FRQ')button.textContent='Write a related FRQ';
+    });
+    document.querySelectorAll('p').forEach(p=>{
+      if(p.textContent.includes('one matching FRQ'))p.textContent=p.textContent.replace('one matching FRQ','one related FRQ');
+      if(p.textContent.trim()==='Study Buddy picked this because of your current topic/skill evidence.')p.textContent='Study Buddy selected related FRQ practice from your current unit and skill evidence.';
     });
   }
 
