@@ -12,6 +12,19 @@
     tabs.splice(0,tabs.length,...simplified);
   }
 
+  // Keep the coach focused on writing. The full seven-part pre-writing
+  // checklist duplicated the same directions and pushed the answer boxes far
+  // below the fold.
+  if(typeof frqPage==='function'){
+    const oldFrqPage=frqPage;
+    frqPage=function(){
+      return oldFrqPage()
+        .replace(/<div class="box-yellow">[\s\S]*?<\/div>\s*\$?/,'<div class="box-yellow"><b>Quick FRQ reminder</b><p>Label each part, answer the task verb directly, and use specific APHG evidence. Explain parts need a clear cause-and-effect connection; no particular connector word is required.</p></div>')
+        .replace(/<h3>What you are answering<\/h3>[\s\S]*?(<h3 style="margin-top:18px">Build your answer — one point at a time<\/h3>)/,'$1')
+        .replace(/Use because for explain parts\./g,'Clearly connect cause and effect in explain parts.');
+    };
+  }
+
   // Make the AP Mastery snapshot recognize work completed in Unit Review and
   // Practice & Mastery, not only the original quiz screen.
   if(typeof getMasterySnapshot==='function'){
@@ -64,7 +77,7 @@
     });
 
     // Give a manageable next vocabulary set instead of a discouraging total.
-    document.querySelectorAll('.mastery-tile').forEach(tile=>{
+    document.querySelectorAll('.mastery-tile,.readiness-tile').forEach(tile=>{
       const span=tile.querySelector('span');
       if(span&&span.textContent.trim()==='Quiz accuracy'){
         const b=tile.querySelector('b'),attempts=Number((tile.querySelector('p')?.textContent.match(/\d+/)||['0'])[0]);
@@ -75,6 +88,13 @@
       if(b)b.textContent='10';
       span.textContent='vocab cards in your next set';
       if(p)p.textContent='Study a small set, then come back for another.';
+    });
+    document.querySelectorAll('.mastery-tile,.readiness-tile').forEach(tile=>{
+      const span=tile.querySelector('span');
+      if(!span||span.textContent.trim()!=='still practicing')return;
+      const b=tile.querySelector('b');
+      if(b)b.textContent='10';
+      span.textContent='cards in your first set';
     });
 
     // Explain the goal without implying that specific connector words are required.
