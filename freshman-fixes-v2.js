@@ -21,7 +21,9 @@
       return oldFrqPage()
         .replace(/<div class="box-yellow">[\s\S]*?<\/div>\s*\$?/,'<div class="box-yellow"><b>Quick FRQ reminder</b><p>Label each part, answer the task verb directly, and use specific APHG evidence. Explain parts need a clear cause-and-effect connection; no particular connector word is required.</p></div>')
         .replace(/<h3>What you are answering<\/h3>[\s\S]*?(<h3 style="margin-top:18px">Build your answer — one point at a time<\/h3>)/,'$1')
-        .replace(/Use because for explain parts\./g,'Clearly connect cause and effect in explain parts.');
+        .replace(/Use because for explain parts\./g,'Clearly connect cause and effect in explain parts.')
+        .replace(/Use because, therefore, due to, or this leads to\./g,'Clearly connect the cause to its effect.')
+        .replace(/Did I use because\/therefore for explain parts\?/g,'Did I clearly connect cause and effect in explain parts?');
     };
   }
 
@@ -89,6 +91,14 @@
       span.textContent='vocab cards in your next set';
       if(p)p.textContent='Study a small set, then come back for another.';
     });
+    if(document.body.textContent.includes('Start small: This first set has 10 Unit 1 cards.')){
+      document.querySelectorAll('.mastery-tile,.readiness-tile').forEach(tile=>{
+        const span=tile.querySelector('span'),b=tile.querySelector('b');
+        if(!span||!b)return;
+        if(span.textContent.trim()==='cards in deck')b.textContent='10';
+        if(span.textContent.trim()==='need/new')b.textContent='10';
+      });
+    }
     document.querySelectorAll('.mastery-tile,.readiness-tile').forEach(tile=>{
       const span=tile.querySelector('span');
       if(!span||span.textContent.trim()!=='still practicing')return;
