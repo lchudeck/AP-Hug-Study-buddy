@@ -108,12 +108,13 @@
   function targetTopic(){
     const mis=topMisconceptions(1)[0];if(mis)return mis.topic;
     const s=load(),rows=Object.keys(s.topics).map(t=>[t,topicProof(t)]).filter(x=>x[1]).sort((a,b)=>(a[1].mastered?1:0)-(b[1].mastered?1:0)||a[1].pct-b[1].pct);if(rows[0])return rows[0][0];
+    try{const weak=window.APHGTopicSkillMastery?.weakTopics(1)?.[0];if(weak?.topic)return weak.topic;}catch(e){}
     try{const ts=JSON.parse(localStorage.getItem(TOPIC_STORE)||'{}').topics||{};const k=Object.keys(ts)[0];if(k)return k;}catch(e){}
     return '2.5';
   }
   function chooseFrq(){const topic=targetTopic();return frqBank.find(x=>x.topic===topic)||frqBank.find(x=>x.unit===Number(topic.split('.')[0]))||frqBank[0];}
   function scoreFrq(item,text){
-    const a=(text||'').trim().toLowerCase();const hasCause=item.verb==='Explain'?/(because|therefore|this leads to|as a result|due to)/.test(a):true;
+    const a=(text||'').trim().toLowerCase();const hasCause=item.verb==='Explain'?/(because|therefore|this leads to|as a result|due to|\bso\b|while|when|since|can |may |results? in|raises?|reduces?|increases?|decreases?|creates?|allows?|prevents?)/.test(a):true;
     const words=a.split(/\s+/).filter(Boolean).length;const ideaHits=item.idea.toLowerCase().split(/[,/]| or /).map(x=>x.trim()).filter(x=>x.length>4).some(x=>a.includes(x.split(' ')[0]));
     const score=[words>=12,hasCause,ideaHits].filter(Boolean).length;
     return {score,hasCause,ideaHits,words,note:score===3?'Strong AP-style response. Now prove it again later.':score===2?'Close. Add the missing reasoning before moving on.':'Use the sentence frame and connect the concept to a specific effect.'};
