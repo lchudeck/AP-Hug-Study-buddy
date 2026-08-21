@@ -32,7 +32,7 @@
     if(!text) return {letter,verb,earned:false,feedback:`Part ${letter}: 0/1. This part is missing.`,fix:model};
     if(looksNonsense(text)) return {letter,verb,earned:false,feedback:`Part ${letter}: 0/1. The response does not contain a recognizable AP Human Geography idea that answers this part.`,fix:model};
     const ev=evidence(text,model);
-    const cause=/(because|therefore|this leads to|as a result|due to|which causes|which leads|results in|so that)/i.test(text);
+    const cause=/(because|therefore|this leads to|as a result|due to|which causes|which leads|results in|so that|\bso\b|while|when|since|can |may |raises?|reduces?|increases?|decreases?|creates?|allows?|prevents?)/i.test(text);
     const requiredHits=verb==='Identify'?1:(ev.needed.length>=4?2:1);
     const contentOK=ev.hits.length>=requiredHits;
     let structureOK=true;
