@@ -19,22 +19,15 @@
     getMasterySnapshot=function(){
       const snap=oldSnapshot()||{attempted:0,accuracy:0,weak:null,flashNeed:0};
       try{
-        const shared=JSON.parse(localStorage.getItem('aphgTopicSkillMasteryV1')||'{"topics":{}}');
-        const rows=Object.values(shared.topics||{}).filter(x=>x&&x.attempts);
-        const attempted=rows.reduce((n,x)=>n+(x.attempts||0),0);
-        const correct=rows.reduce((n,x)=>n+(x.correct||0),0);
-        if(attempted>=(snap.attempted||0)){
-          snap.attempted=attempted;
-          snap.accuracy=attempted?Math.round(correct/attempted*100):0;
-        }
         const legacy=JSON.parse(localStorage.getItem('aphgPracticeMasteryV4')||'{}');
         const legacyRows=Object.values(legacy||{}).filter(x=>x&&x.total);
         const legacyAttempted=legacyRows.reduce((n,x)=>n+(x.total||0),0);
         const legacyCorrect=legacyRows.reduce((n,x)=>n+(x.right||0),0);
-        if(legacyAttempted>(snap.attempted||0)){
-          snap.attempted=legacyAttempted;
-          snap.accuracy=legacyAttempted?Math.round(legacyCorrect/legacyAttempted*100):0;
-        }
+        const review=JSON.parse(localStorage.getItem('aphgUnitReviewProgressV1')||'{"attempted":0,"correct":0}');
+        const originalAttempted=snap.attempted||0,originalCorrect=Math.round(originalAttempted*(snap.accuracy||0)/100);
+        snap.attempted=originalAttempted+legacyAttempted+(review.attempted||0);
+        const totalCorrect=originalCorrect+legacyCorrect+(review.correct||0);
+        snap.accuracy=snap.attempted?Math.round(totalCorrect/snap.attempted*100):0;
         const weak=window.APHGTopicSkillMastery?.weakTopics(1)?.[0];
         if(weak)snap.weak={unit:weak.unit,name:`Topic ${weak.topic}: ${weak.label}`,topic:weak.topic,topicName:weak.label,mastery:weak.mastery};
       }catch(e){}
@@ -86,6 +79,7 @@
 
     // Explain the goal without implying that specific connector words are required.
     document.querySelectorAll('.box-yellow').forEach(box=>{
+      if(box.innerHTML.includes('one matching FRQ'))box.innerHTML=box.innerHTML.replace('one matching FRQ','one related FRQ');
       if(!/Point recipe/.test(box.textContent))return;
       const p=box.querySelector('p');
       if(p)p.innerHTML='Answer the task directly. Clearly connect a cause to its effect. Words such as <b>because</b> or <b>therefore</b> can help, but they are not required. Include a specific APHG concept or consequence.';
