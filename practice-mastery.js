@@ -10,7 +10,9 @@
   // Quality-first bank. The old mass-generated bank remains in the repo as drafting inventory,
   // but is intentionally NOT served because some stems reveal the answer by name.
   const setQuestions=[...(window.APHG_STIMULUS_SET_QUESTIONS||[]),...(window.APHG_STIMULUS_SET_QUESTIONS_EXTRA||[]),...(window.APHG_REAL_DATA_QUESTIONS||[])];
-  const nonSetBase=core.concat(window.APHG_IMAGE_MCQ_BANK||[]);
+  const cedBase=(typeof quiz!=='undefined'?quiz:[]).map((q,i)=>({id:`pm-ced-${i+1}`,unit:Number(String(q[0]||'').match(/\d+/)?.[0]||0),topic:String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion(q)||''),prompt:q[1],choices:q[2],answer:q[3],explain:q[4],skill:q.skill,difficulty:q.difficulty,misconception:q.misconception})).filter(q=>q.unit&&q.topic&&q.prompt&&q.choices?.length===4&&q.answer);
+  const unique=new Map();[...core,...(window.APHG_IMAGE_MCQ_BANK||[]),...cedBase].forEach(q=>{if(!unique.has(q.prompt))unique.set(q.prompt,q);});
+  const nonSetBase=[...unique.values()];
   const apFrames=[p=>p,p=>`Choose the best answer. ${p}`,p=>`Use AP Human Geography reasoning. ${p}`];
   function variantize(q){return apFrames.map((f,i)=>({...q,id:`${q.id}-v${i+1}`,prompt:f(q.prompt),variant:i+1}));}
   const variants=nonSetBase.flatMap(variantize);
