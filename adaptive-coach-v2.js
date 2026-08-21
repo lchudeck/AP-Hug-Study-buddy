@@ -37,7 +37,6 @@
     const t=s.topics[meta.topic]||{attempts:0,correct:0,days:[],last:0,next:0,streak:0};
     t.attempts++;if(correct)t.correct++;t.streak=correct?(t.streak||0)+1:0;t.last=Date.now();
     if(!t.days.includes(dayKey()))t.days.push(dayKey());t.days=t.days.slice(-12);
-    // Wrong answers return quickly; successful retrieval stretches from 1 to 3 to 7 days.
     t.next=Date.now()+(correct?(t.streak>=4?7*DAY:t.streak>=2?3*DAY:DAY):0);
     s.topics[meta.topic]=t;
     if(!correct&&meta.misconception){
@@ -57,7 +56,6 @@
   }
   function topMisconceptions(limit=3){return Object.entries(load().misconceptions).map(([key,v])=>({key,...v,label:misconceptionLabels[key]||key})).filter(x=>x.count>0).sort((a,b)=>b.count-a.count||b.last-a.last).slice(0,limit);}
 
-  // Record main quiz evidence after topic-skill-adaptive has already recorded its own evidence.
   if(typeof chooseAnswer==='function'){
     const old=chooseAnswer;
     chooseAnswer=function(choice){
@@ -66,7 +64,6 @@
     };
   }
 
-  // Reorder adaptive practice around unresolved misconceptions and reviews that are due.
   if(typeof adaptiveDeck==='function'){
     const oldAdaptive=adaptiveDeck;
     adaptiveDeck=function(){
@@ -80,7 +77,6 @@
     };
   }
 
-  // Add misconception language and proof-over-time status to the existing weak-spots panel.
   if(typeof weakSpotsHtml==='function'){
     const oldWeak=weakSpotsHtml;
     weakSpotsHtml=function(){
@@ -93,20 +89,20 @@
   }
 
   const frqBank=[
-    {topic:'1.4',unit:1,verb:'Explain',prompt:'Explain how a city’s situation can contribute to economic growth.',must:['because'],idea:'transportation connections, nearby markets, or accessibility'},
-    {topic:'1.6',unit:1,verb:'Explain',prompt:'Explain how changing from a national to a neighborhood scale of analysis could change a conclusion.',must:['because'],idea:'aggregation can hide local variation'},
-    {topic:'2.5',unit:2,verb:'Explain',prompt:'Explain why population growth is often rapid during DTM Stage 2.',must:['because'],idea:'death rates fall before birth rates'},
-    {topic:'2.9',unit:2,verb:'Explain',prompt:'Explain one economic challenge created by an aging population.',must:['because'],idea:'pensions, health care, labor shortages, or dependency'},
-    {topic:'3.4',unit:3,verb:'Explain',prompt:'Explain the difference between relocation diffusion and hierarchical diffusion using one example.',must:['because'],idea:'people physically move versus spread through influential people/places'},
-    {topic:'3.6',unit:3,verb:'Explain',prompt:'Explain how globalization can accelerate cultural diffusion.',must:['because'],idea:'media, travel, trade, and communication reduce time-distance barriers'},
-    {topic:'4.6',unit:4,verb:'Explain',prompt:'Explain how packing can affect political representation.',must:['because'],idea:'concentrating voters can reduce influence across other districts'},
-    {topic:'4.8',unit:4,verb:'Explain',prompt:'Explain how a federal system can reduce devolutionary pressure.',must:['because'],idea:'regional governments receive authority while the state remains unified'},
-    {topic:'5.8',unit:5,verb:'Explain',prompt:'Explain why dairy production is located close to the market in the Von Thünen model.',must:['because'],idea:'perishability and transportation costs'},
-    {topic:'5.8',unit:5,verb:'Evaluate',prompt:'Evaluate one limitation of the Von Thünen model for modern agriculture.',must:['because'],idea:'refrigeration, highways, policy, terrain, or multiple markets'},
-    {topic:'6.11',unit:6,verb:'Explain',prompt:'Explain one way gentrification can cause displacement of longtime residents.',must:['because'],idea:'rents or property taxes rise'},
-    {topic:'6.9',unit:6,verb:'Explain',prompt:'Explain why neighborhood-scale data may reveal urban inequality that a citywide average hides.',must:['because'],idea:'aggregation hides local variation'},
-    {topic:'7.3',unit:7,verb:'Explain',prompt:'Explain why GDP per capita alone is an incomplete measure of development.',must:['because'],idea:'it omits health, education, inequality, or distribution'},
-    {topic:'7.5',unit:7,verb:'Compare',prompt:'Compare Rostow’s model with world-systems theory as explanations of development.',must:[],idea:'stages of growth versus unequal core-periphery relationships'}
+    {topic:'1.4',unit:1,verb:'Explain',prompt:'Explain how a city’s situation can contribute to economic growth.',idea:'transportation connections, nearby markets, or accessibility'},
+    {topic:'1.6',unit:1,verb:'Explain',prompt:'Explain how changing from a national to a neighborhood scale of analysis could change a conclusion.',idea:'aggregation can hide local variation'},
+    {topic:'2.5',unit:2,verb:'Explain',prompt:'Explain why population growth is often rapid during DTM Stage 2.',idea:'death rates fall before birth rates'},
+    {topic:'2.9',unit:2,verb:'Explain',prompt:'Explain one economic challenge created by an aging population.',idea:'pensions, health care, labor shortages, or dependency'},
+    {topic:'3.4',unit:3,verb:'Explain',prompt:'Explain the difference between relocation diffusion and hierarchical diffusion using one example.',idea:'people physically move versus spread through influential people/places'},
+    {topic:'3.6',unit:3,verb:'Explain',prompt:'Explain how globalization can accelerate cultural diffusion.',idea:'media, travel, trade, and communication reduce time-distance barriers'},
+    {topic:'4.6',unit:4,verb:'Explain',prompt:'Explain how packing can affect political representation.',idea:'concentrating voters can reduce influence across other districts'},
+    {topic:'4.8',unit:4,verb:'Explain',prompt:'Explain how a federal system can reduce devolutionary pressure.',idea:'regional governments receive authority while the state remains unified'},
+    {topic:'5.8',unit:5,verb:'Explain',prompt:'Explain why dairy production is located close to the market in the Von Thünen model.',idea:'perishability and transportation costs'},
+    {topic:'5.8',unit:5,verb:'Evaluate',prompt:'Evaluate one limitation of the Von Thünen model for modern agriculture.',idea:'refrigeration, highways, policy, terrain, or multiple markets'},
+    {topic:'6.11',unit:6,verb:'Explain',prompt:'Explain one way gentrification can cause displacement of longtime residents.',idea:'rents or property taxes rise'},
+    {topic:'6.9',unit:6,verb:'Explain',prompt:'Explain why neighborhood-scale data may reveal urban inequality that a citywide average hides.',idea:'aggregation hides local variation'},
+    {topic:'7.3',unit:7,verb:'Explain',prompt:'Explain why GDP per capita alone is an incomplete measure of development.',idea:'it omits health, education, inequality, or distribution'},
+    {topic:'7.5',unit:7,verb:'Compare',prompt:'Compare Rostow’s model with world-systems theory as explanations of development.',idea:'stages of growth versus unequal core-periphery relationships'}
   ];
   let frqState={item:null,answer:'',feedback:null};
   function targetTopic(){
@@ -131,7 +127,6 @@
     return `<main><section class="card"><div class="mastery-mini-nav"><button class="btn-secondary btn-sm" onclick="masteryView='dashboard';render()">← Mastery Dashboard</button></div><h2>✍️ Adaptive FRQ</h2><p>Study Buddy picked this because of your current topic/skill evidence.</p><div class="box-info"><b>Topic ${x.topic}: ${labels[x.topic]||'Targeted CED practice'}</b><p><b>${x.verb}:</b> ${x.prompt}</p></div><div class="box-yellow"><b>Point recipe</b><p>Answer the task directly. ${x.verb==='Explain'?'Use <b>because</b> or <b>therefore</b> to show cause and effect.':''} Include a specific APHG concept or consequence.</p></div><textarea class="answer-textarea" style="min-height:150px" oninput="adaptiveFrqInput(this.value)" placeholder="Write 2–4 strong sentences...">${frqState.answer}</textarea><div class="mastery-actions"><button class="btn-primary" onclick="adaptiveFrqCheck()">Check my response</button><button class="btn-secondary" onclick="adaptiveFrqNext()">Give me another target</button></div>${f?`<div class="${f.score===3?'box-good':f.score===2?'box-yellow':'box-warn'}"><b>${f.score}/3 coaching checks</b><p>${f.note}</p><p>${f.hasCause?'✅':'⬜'} Cause/effect reasoning · ${f.ideaHits?'✅':'⬜'} Relevant APHG idea · ${f.words>=12?'✅':'⬜'} Enough development</p><p><b>What a strong answer should connect:</b> ${x.idea}.</p></div>`:''}</section></main>`;
   }
 
-  // Intercept mastery page for adaptive FRQ and add a simple next-action card to the normal dashboard.
   if(typeof apMasteryPage==='function'){
     const oldMastery=apMasteryPage;
     apMasteryPage=function(){
@@ -140,14 +135,13 @@
       if(masteryView==='dashboard'){
         const topic=targetTopic(),p=topicProof(topic),mis=topMisconceptions(1)[0];
         const reason=mis?`You are mixing up <b>${mis.label}</b>.`:(p?`Topic ${topic} is at <b>${p.pct}%</b> with evidence on ${p.acrossDays} day${p.acrossDays===1?'':'s'}.`:`Study Buddy needs a little more evidence.`);
-        const action=`<section class="card" style="margin-top:16px"><h2>🧭 Do this next</h2><p>${reason}</p><div class="box-yellow"><b>8–12 minute plan:</b><p>1. Do 5 adaptive MCQs on the target. 2. Read every explanation. 3. Write one matching FRQ response. 4. Come back on a later day before the topic is marked mastered.</p></div><div class="mastery-actions"><button class="btn-primary" onclick="startAdaptiveQuiz()">Start 5 targeted questions</button><button class="btn-secondary" onclick="openAdaptiveFrq()">Write the matching FRQ</button></div></section>`;
+        const action=`<section class="card" style="margin-top:16px"><h2>🧭 Do this next</h2><p>${reason}</p><div class="box-yellow"><b>8–12 minute plan:</b><p>1. Do 5 adaptive MCQs on the target. 2. Read every explanation. 3. Write one matching FRQ response. 4. Come back on a later day before the topic is marked mastered.</p></div><div class="mastery-actions"><button class="btn-primary" onclick="startAdaptivePractice()">Start targeted practice</button><button class="btn-secondary" onclick="openAdaptiveFrq()">Write the matching FRQ</button></div></section>`;
         html=html.replace('</main>',action+'</main>');
       }
       return html;
     };
   }
 
-  // Make the general personalized plan student-facing and action-first.
   if(typeof personalizedPlanItems==='function'){
     personalizedPlanItems=function(){
       const topic=targetTopic(),mis=topMisconceptions(1)[0],p=topicProof(topic);const name=labels[topic]||`Topic ${topic}`;
