@@ -8,6 +8,7 @@
   const NAMES=['Thinking Geographically','Population & Migration','Cultural Patterns','Political Patterns','Agriculture','Cities','Development & Industry'];
   const FRAMES=[p=>p,p=>`Choose the best answer. ${p}`,p=>`Use AP Human Geography reasoning. ${p}`,p=>`Apply what you know to this situation. ${p}`];
   const seenKey='aphgUnitReviewRecentV2';
+  const progressKey='aphgUnitReviewProgressV1';
   let s={view:'home',unit:1,mode:'standard',count:35,deck:[],i:0,selected:null,answers:[],results:null};
   function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}
   function seen(){try{return JSON.parse(localStorage.getItem(seenKey)||'{}')}catch(e){return {}}} function saveSeen(v){localStorage.setItem(seenKey,JSON.stringify(v));}
@@ -41,7 +42,7 @@
   window.__unitReviewBuild=build;window.__unitReviewVariants=variants;window.__unitReviewTopics=TOPICS;
   function start(mode,count){s.mode=mode;s.count=count;s.deck=build(s.unit,count,mode);s.i=0;s.selected=null;s.answers=[];s.results=null;s.view='test';render();}
   window.urUnit=u=>{s.unit=Number(u);s.view='home';render();};window.urStart=(m,c)=>start(m,Number(c));
-  window.urChoose=i=>{if(s.selected!==null)return;s.selected=Number(i);const q=s.deck[s.i],correct=q.choices[s.selected]===q.answer;s.answers.push({q,correct});try{window.APHGTopicSkillMastery?.recordEvidence(q,correct);}catch(e){}render();};
+  window.urChoose=i=>{if(s.selected!==null)return;s.selected=Number(i);const q=s.deck[s.i],correct=q.choices[s.selected]===q.answer;s.answers.push({q,correct});try{window.APHGTopicSkillMastery?.recordEvidence(q,correct);}catch(e){}try{const p=JSON.parse(localStorage.getItem(progressKey)||'{"attempted":0,"correct":0}');p.attempted++;if(correct)p.correct++;localStorage.setItem(progressKey,JSON.stringify(p));}catch(e){}render();};
   window.urNext=()=>{s.i++;s.selected=null;if(s.i>=s.deck.length){s.results=calc();s.view='results';}render();};window.urHome=()=>{s.view='home';render();};window.urWeak=()=>{const weak=new Set((s.results?.weak||[]));const pool=variants(s.unit).filter(q=>weak.has(q.topic));s.deck=shuffle(pool).slice(0,Math.min(15,pool.length)).map(q=>({...q,choices:shuffle(q.choices)}));s.i=0;s.selected=null;s.answers=[];s.view='test';render();};
   function calc(){const right=s.answers.filter(x=>x.correct).length,total=s.answers.length,by={};s.answers.forEach(x=>{by[x.q.topic]??={r:0,t:0};by[x.q.topic].t++;if(x.correct)by[x.q.topic].r++;});const weak=Object.entries(by).filter(([,v])=>v.r/v.t<.7).map(([t])=>t);return {right,total,pct:total?Math.round(right/total*100):0,by,weak};}
   const old=render;render=function(){if(active==='unitReview'){renderNav();document.getElementById('app').innerHTML=page();return;}old();};
