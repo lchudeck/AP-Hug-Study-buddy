@@ -1,0 +1,36 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Content-Type = "application/xml; charset=UTF-8"
+
+[[redirects]]
+  from = "/study-guide"
+  to = "/ap-human-geography-study-guide.html"
+  status = 301
+
+[[redirects]]
+  from = "/frq-practice"
+  to = "/aphg-frq-practice.html"
+  status = 301
+
+[[redirects]]
+  from = "/practice-test"
+  to = "/aphg-practice-test.html"
+  status = 301
+
+[[redirects]]
+  from = "/compare"
+  to = "/compare-aphg-study-tools.html"
+  status = 301

@@ -33,7 +33,7 @@
     const [letter,verb,prompt,model]=part;
     const wc=norm(text).split(' ').filter(Boolean).length;
     const overlap=meaningfulOverlap(text,model);
-    const cause=/(because|therefore|as a result|due to|this leads to|which leads to|which causes|so that)/i.test(text);
+    const cause=/(because|therefore|as a result|due to|this leads to|which leads to|which causes|results in|so that|\bso\b|while|when|since|can |may |raises?|reduces?|increases?|decreases?|creates?|allows?|prevents?)/i.test(text);
     const bad=nonsense(text);
     const contentHits=overlap.hits.length;
     let contentOK=contentHits>=1;
@@ -50,7 +50,7 @@
       if(contentHits<1)reasons.push('The response does not include the geographic idea needed for this part.');
       if(verb==='Define'&&wc<6)reasons.push('A definition needs enough meaning to show what the term actually means.');
       if(['Describe','Apply','Evaluate','Compare'].includes(verb)&&wc<5)reasons.push('The response is too short or vague to demonstrate the requested skill.');
-      if(verb==='Explain'&&!cause)reasons.push('Explain requires a cause-and-effect link such as because, therefore, or this leads to.');
+      if(verb==='Explain'&&!cause)reasons.push('The explanation needs a clear cause-and-effect connection.');
       if(verb==='Explain'&&wc<7)reasons.push('The explanation needs enough detail to show the causal relationship.');
     }
     return {letter,verb,prompt,model,text,earned,reasons};
