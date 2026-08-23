@@ -1,11 +1,14 @@
 name: Notify IndexNow
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - "*.html"
       - "sitemap.xml"
       - "robots.txt"
+      - "seo-indexnow.js"
+      - ".github/workflows/indexnow.yml"
 permissions:
   contents: read
 jobs:
