@@ -1,0 +1,58 @@
+name: Maps visual and retry variant validation
+
+on:
+  pull_request:
+    paths:
+      - 'final-freshman-polish.js'
+      - '.github/workflows/visual-retry-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
+      - name: Validate visual route and retry variation
+        run: |
+          python3 -m http.server 8765 >/tmp/aphg-http.log 2>&1 &
+          SERVER=$!; trap 'kill $SERVER' EXIT
+          node <<'NODE'
+          (async()=>{
+            const fs=require('fs');
+            const {JSDOM}=require('jsdom');
+            const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+            const dom=await JSDOM.fromURL('http://127.0.0.1:8765/index.html',{
+              resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,
+              beforeParse(w){
+                w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};
+                w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});
+                w.requestAnimationFrame=cb=>setTimeout(cb,0);
+                w.fetch=async()=>({ok:false,status:503,json:async()=>({}),text:async()=>''});
+              }
+            });
+            await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));
+            await sleep(150);
+            const d=dom.window.document;
+            const visual=[...d.querySelectorAll('#nav button')].find(b=>/Maps & Visual Practice|Visual Lab/i.test(b.textContent));
+            if(!visual)throw new Error('Maps & Visual Practice nav button missing');
+            visual.click();await sleep(30);
+            if(!/Maps & Visual Practice/i.test(d.querySelector('#app')?.textContent||''))throw new Error('Visual practice did not open after click');
+            const spatial=[...d.querySelectorAll('#app button')].find(b=>/Spatial Concepts/i.test(b.textContent));
+            if(!spatial)throw new Error('Spatial Concepts button missing');spatial.click();await sleep(10);
+            if(!/Clustered, dispersed, and linear/i.test(d.querySelector('#app')?.textContent||''))throw new Error('Spatial visual section did not render');
+            const guard=dom.window.__aphgRetryVariantGuard;
+            if(!guard)throw new Error('Retry variant guard missing');
+            const a=['Unit 3','Which type of diffusion occurs when migrants carry a religion to a new country?',[], 'Relocation diffusion'];
+            const b=['Unit 3','A family moves abroad and establishes a place of worship from its home culture. Which diffusion process is illustrated?',[], 'Relocation diffusion'];
+            if(guard.signature(a)===guard.signature(b))throw new Error('Variant signatures should differ');
+            if(guard.conceptKey(a)!==guard.conceptKey(b))throw new Error('Differently worded same-concept questions should share concept key');
+            const src=fs.readFileSync('final-freshman-polish.js','utf8');
+            if(!src.includes("deck.filter(q=>sig(q)!==missed.sig)"))throw new Error('Exact-repeat exclusion missing');
+            if(!src.includes('remaining:3'))throw new Error('Missed-question cooldown missing');
+            console.log('Maps visual and retry variant validation passed.');
+            dom.window.close();process.exit(0);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
