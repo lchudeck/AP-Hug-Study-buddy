@@ -1,0 +1,41 @@
+name: Final Freshman Polish validation
+
+on:
+  pull_request:
+    paths: ['final-freshman-polish.js','final-freshman-polish.css','index.html','.github/workflows/final-freshman-polish.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
+      - name: Validate navigation hierarchy and progress payoff
+        run: |
+          python3 -m http.server 8765 >/tmp/aphg-http.log 2>&1 &
+          SERVER=$!; trap 'kill $SERVER' EXIT
+          node <<'NODE'
+          (async()=>{
+            const {JSDOM}=require('jsdom');
+            const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+            const dom=await JSDOM.fromURL('http://127.0.0.1:8765/index.html',{resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});w.requestAnimationFrame=cb=>setTimeout(cb,0);w.fetch=async()=>({ok:true,status:200,text:async()=>''});}});
+            await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));await sleep(100);
+            const d=dom.window.document;
+            const labels=[...d.querySelectorAll('#nav button')].map(b=>b.textContent.trim());
+            const core=[...d.querySelectorAll('#nav .nav-core')].map(b=>b.textContent.trim());
+            for(const re of [/Home/i,/Unit Review/i,/Practice.*Mastery|Mastery.*Practice/i,/Key Terms|Vocabulary/i,/FRQ Coach/i]) if(!core.some(x=>re.test(x))) throw new Error('Core nav missing '+re);
+            if(labels.length!==d.querySelectorAll('#nav button').length) throw new Error('Navigation changed unexpectedly');
+            const frq=[...d.querySelectorAll('#nav button')].find(b=>/FRQ Coach/i.test(b.textContent));
+            if(!frq)throw new Error('FRQ nav missing'); frq.click(); await sleep(20);
+            const ta=d.querySelector('#mainAnswer'); if(!ta)throw new Error('FRQ answer box missing');
+            ta.value='A. qwrty\nB. nonsense\nC. random\nD. blah\nE. zzz\nF. qqq\nG. nope';ta.dispatchEvent(new dom.window.Event('input',{bubbles:true}));
+            const check=[...d.querySelectorAll('button')].find(b=>/Check my answer/i.test(b.textContent)); if(!check)throw new Error('FRQ check button missing');check.click();await sleep(400);
+            if(!d.querySelector('.freshman-progress-payoff'))throw new Error('Progress payoff missing after result');
+            const actions=[...d.querySelectorAll('.payoff-actions button')].map(b=>b.textContent.trim());
+            for(const x of ['Practice a weak spot','Review my unit',"I'm done for now"]) if(!actions.includes(x))throw new Error('Payoff action missing '+x);
+            console.log('Final freshman polish passed.');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
