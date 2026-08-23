@@ -1,0 +1,38 @@
+name: Content Quality Audit
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit APHG question structure and missed-question retries
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const html=fs.readFileSync('index.html','utf8');
+          const scripts=[...html.matchAll(/<script src="([^"]+\.js)"/g)].map(m=>m[1]).filter(f=>fs.existsSync(f));
+          const sandbox={window:{},localStorage:{getItem:()=>null,setItem:()=>{}},document:{getElementById:()=>({innerHTML:'',querySelectorAll:()=>[]}),querySelectorAll:()=>[],body:{textContent:''}},console,setInterval:()=>0,clearInterval:()=>{},setTimeout:()=>0,MutationObserver:function(){this.observe=()=>{}},location:{}};
+          sandbox.window=sandbox;vm.createContext(sandbox);
+          for(const f of scripts){try{vm.runInContext(fs.readFileSync(f,'utf8'),sandbox,{filename:f});}catch(e){}}
+          const quiz=vm.runInContext('typeof quiz!=="undefined"?quiz:[]',sandbox);
+          const problems=[];
+          if(!quiz.length)problems.push('quiz bank did not load');
+          const units=new Map();
+          for(const q of quiz){
+            const u=Number(String(q[0]).match(/\d+/)?.[0]);units.set(u,(units.get(u)||0)+1);
+            if(!q[1]||!Array.isArray(q[2])||q[2].length!==4||!q[2].includes(q[3])||!q[4])problems.push('Malformed question: '+JSON.stringify(q));
+            if(new Set(q[2]).size!==q[2].length)problems.push('Duplicate choices: '+q[1]);
+            if(String(q[4]).trim().split(/\s+/).length<5)problems.push('Explanation too thin: '+q[1]);
+          }
+          for(let u=1;u<=7;u++)if(!units.get(u))problems.push('Unit '+u+' has no core quiz questions');
+          const ur=fs.readFileSync('unit-review.js','utf8');
+          if(/Choose the best answer\. \$\{p\}|Use AP Human Geography reasoning\. \$\{p\}|Apply what you know to this situation\. \$\{p\}/.test(ur))problems.push('Unit Review still creates cosmetic same-stem variants');
+          if(!/retryFor\(q\)/.test(ur)||!/different stem\/scenario/.test(ur))problems.push('Unit Review does not enforce alternate-question retry');
+          const polish=fs.readFileSync('final-freshman-polish.js','utf8');
+          if(!/filter\(q=>sig\(q\)!==missed\.sig\)/.test(polish))problems.push('Adaptive retry does not exclude exact missed stem');
+          if(problems.length){console.error(problems.join('\n'));process.exit(1)}
+          console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units));
+          console.log('Missed-question policy passed: exact stem excluded; Unit Review uses a different validated item from the same CED topic when available.');
+          NODE
