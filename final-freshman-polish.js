@@ -64,8 +64,13 @@
   }
   try{
     if(typeof tabs!=='undefined'){
-      const visualTab=tabs.find(t=>t[0]==='visualLab');
-      if(visualTab) visualTab[1]='🗺️ Maps & Visual Practice';
+      let visualTab=tabs.find(t=>t[0]==='visualLab');
+      if(!visualTab){
+        const insertAt=Math.max(1,tabs.findIndex(t=>/frq/i.test(String(t[1]||''))));
+        tabs.splice(insertAt>0?insertAt:Math.max(1,tabs.length-1),0,['visualLab','🗺️ Maps & Visual Practice']);
+        visualTab=tabs.find(t=>t[0]==='visualLab');
+      }
+      visualTab[1]='🗺️ Maps & Visual Practice';
       if(typeof renderNav==='function') renderNav();
     }
   }catch(e){}
@@ -84,11 +89,12 @@
   function unitOf(q){return Number(String(q&&q[0]||'').match(/\d+/)?.[0]||0);}
   function conceptKey(q){
     if(q&&q.topic)return String(q.topic);
-    const u=unitOf(q),t=sig(q);
+    const u=unitOf(q),t=sig(q),answer=String(q&&q[3]||'').toLowerCase().replace(/\s+/g,' ').trim();
+    if(answer&&answer.length>2&&!/^\d+$/.test(answer))return `${u}:answer:${answer}`;
     const patterns=[
       [/site|situation/,'site-situation'],[/scale of analysis|scale/,'scale'],[/gis|remote sensing/,'geodata'],[/choropleth|cartogram|map projection|map type/,'maps'],
       [/population pyramid|age structure|dependency ratio/,'age-structure'],[/demographic transition|dtm|stage [1-5]/,'dtm'],[/push factor|pull factor|migration|refugee/,'migration'],
-      [/relocation diffusion|contagious diffusion|hierarchical diffusion|stimulus diffusion/,'diffusion'],[/language|religion|lingua franca/,'culture-spread'],
+      [/relocation diffusion|contagious diffusion|hierarchical diffusion|stimulus diffusion|diffusion process/,'diffusion'],[/language|religion|lingua franca/,'culture-spread'],
       [/gerrymander|packing|cracking/,'gerrymandering'],[/centripetal|centrifugal/,'political-forces'],[/devolution/,'devolution'],[/sovereignty|nation-state|nation|state/,'state-nation'],
       [/von th[uü]nen/,'von-thunen'],[/green revolution/,'green-revolution'],[/subsistence|commercial agriculture/,'ag-systems'],
       [/gentrification|displacement/,'gentrification'],[/concentric|sector model|multiple nuclei/,'urban-models'],[/sprawl|smart growth/,'urban-growth'],
@@ -120,8 +126,6 @@
     adaptiveDeck=function(){
       const deck=baseAdaptiveDeck();
       if(!missed||!Array.isArray(deck)||deck.length<2)return deck;
-      // Never immediately recycle the exact missed prompt. Keep it out until the
-      // student has answered several other questions.
       const filtered=deck.filter(q=>sig(q)!==missed.sig);
       if(!filtered.length)return deck;
       const alts=filtered.filter(q=>conceptKey(q)===missed.key);
@@ -129,7 +133,6 @@
         const preferred=alts[Math.abs((typeof qIndex==='number'?qIndex:0))%alts.length];
         const i=filtered.indexOf(preferred);
         if(i>=0)filtered.splice(i,1);
-        // Put an equivalent but differently written item near the student's next position.
         const target=Math.min(filtered.length,Math.max(0,(typeof qIndex==='number'?qIndex+1:0)%Math.max(1,filtered.length+1)));
         filtered.splice(target,0,preferred);
       }
