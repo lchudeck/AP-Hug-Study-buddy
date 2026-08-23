@@ -1,0 +1,27 @@
+/* Final freshman polish: emphasize core paths without removing advanced tools */
+#nav{align-items:flex-end;gap:4px}
+#nav .nav-core{color:#e2e8f0;background:rgba(255,255,255,.055)}
+#nav .nav-core:hover{background:rgba(255,255,255,.12);color:#fff}
+#nav .nav-core.active{background:#f8fafc;color:#0f172a}
+#nav .nav-more{font-size:13px;color:#94a3b8;opacity:.88}
+#nav .nav-more:hover{opacity:1;color:#fff;background:rgba(255,255,255,.07)}
+#nav .nav-more.active{opacity:1;background:#f0f4f8;color:#0f172a}
+
+.freshman-progress-payoff{display:flex;gap:14px;align-items:flex-start;margin-top:18px;padding:16px;border:1px solid #bbf7d0;background:linear-gradient(135deg,#f0fdf4,#f8fafc);border-radius:16px}
+.payoff-check{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:50%;background:#166534;color:#fff;font-weight:900;font-size:20px}
+.payoff-copy{min-width:0}
+.payoff-copy b{display:block;color:#14532d;font-size:17px;margin-bottom:3px}
+.payoff-copy span{display:block;color:#475569;font-size:14px;line-height:1.5}
+.payoff-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.payoff-actions button{padding:9px 12px;font-size:13px;background:white;color:#1e293b;border:1px solid #cbd5e1;box-shadow:none}
+.payoff-actions button:first-child{background:#0f172a;color:white;border-color:#0f172a}
+
+@media(max-width:700px){
+  #nav{gap:2px}
+  #nav button{padding:10px 12px}
+  #nav .nav-core{font-size:14px}
+  #nav .nav-more{font-size:12px;padding-left:10px;padding-right:10px}
+  .freshman-progress-payoff{padding:14px;gap:10px}
+  .payoff-actions{display:grid;grid-template-columns:1fr;width:100%}
+  .payoff-actions button{width:100%}
+}
