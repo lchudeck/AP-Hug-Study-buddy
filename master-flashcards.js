@@ -83,6 +83,7 @@
   }
   // Add topic filtering to the existing adaptive flashcard deck without replacing its progress system.
   window.masterFlashTopic='All';
+  try{if(!Object.keys(flashProgress||{}).length){flashUnit='1';flashMode='new';}}catch(e){}
   const oldCurrent=currentFlashDeck;
   currentFlashDeck=function(){
     let cards=oldCurrent();
@@ -90,6 +91,7 @@
       const scoped=cards.filter(c=>c.topic===masterFlashTopic);
       if(scoped.length) cards=scoped;
     }
+    if(String(flashUnit)==='1'&&flashMode==='new'&&masterFlashTopic==='All') cards=cards.slice(0,10);
     return cards;
   };
   const oldAdaptive=adaptiveFlashcardsHtml;
@@ -99,6 +101,7 @@
     const topics=[...new Set(flashcards.filter(c=>c.unit===Number(flashUnit)&&c.topic).map(c=>c.topic))].sort((a,b)=>Number(a.split('.')[1])-Number(b.split('.')[1]));
     if(!topics.length) return base;
     const controls=`<div class="box-info" style="margin-bottom:12px"><b>Study by CED topic:</b><div class="filter-row" style="margin-top:8px"><button class="filter-btn ${masterFlashTopic==='All'?'active':''}" onclick="masterFlashTopic='All';flashIndex=0;flashFlipped=false;render()">Whole Unit</button>${topics.map(t=>`<button class="filter-btn ${masterFlashTopic===t?'active':''}" onclick="masterFlashTopic='${t}';flashIndex=0;flashFlipped=false;render()">${t}</button>`).join('')}</div></div>`;
-    return controls+base;
+    const starter=String(flashUnit)==='1'&&flashMode==='new'&&masterFlashTopic==='All'?'<div class="box-good" style="margin-bottom:12px"><b>Start small:</b> This first set has 10 Unit 1 cards. Finish it, then choose another topic or mode.</div>':'';
+    return starter+controls+base;
   };
 })();

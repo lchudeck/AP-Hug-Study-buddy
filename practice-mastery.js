@@ -10,15 +10,10 @@
   // Quality-first bank. The old mass-generated bank remains in the repo as drafting inventory,
   // but is intentionally NOT served because some stems reveal the answer by name.
   const setQuestions=[...(window.APHG_STIMULUS_SET_QUESTIONS||[]),...(window.APHG_STIMULUS_SET_QUESTIONS_EXTRA||[]),...(window.APHG_REAL_DATA_QUESTIONS||[])];
-  const nonSetBase=core.concat(window.APHG_IMAGE_MCQ_BANK||[]);
-  const apFrames=[
-    p=>p,
-    p=>`Based on the geographic evidence described, ${p.charAt(0).toLowerCase()+p.slice(1)}`,
-    p=>`A geographer evaluating this situation would ask: ${p}`,
-    p=>`Which answer best applies AP Human Geography reasoning to the following? ${p}`,
-    p=>`For an AP-style application of this concept, ${p.charAt(0).toLowerCase()+p.slice(1)}`,
-    p=>`Using the most relevant geographic concept, ${p.charAt(0).toLowerCase()+p.slice(1)}`
-  ];
+  const cedBase=(typeof quiz!=='undefined'?quiz:[]).map((q,i)=>({id:`pm-ced-${i+1}`,unit:Number(String(q[0]||'').match(/\d+/)?.[0]||0),topic:String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion(q)||''),prompt:q[1],choices:q[2],answer:q[3],explain:q[4],skill:q.skill,difficulty:q.difficulty,misconception:q.misconception})).filter(q=>q.unit&&q.topic&&q.prompt&&q.choices?.length===4&&q.answer);
+  const unique=new Map();[...core,...(window.APHG_IMAGE_MCQ_BANK||[]),...cedBase].forEach(q=>{if(!unique.has(q.prompt))unique.set(q.prompt,q);});
+  const nonSetBase=[...unique.values()];
+  const apFrames=[p=>p,p=>`Choose the best answer. ${p}`,p=>`Use AP Human Geography reasoning. ${p}`];
   function variantize(q){return apFrames.map((f,i)=>({...q,id:`${q.id}-v${i+1}`,prompt:f(q.prompt),variant:i+1}));}
   const variants=nonSetBase.flatMap(variantize);
   const bank=variants.concat(setQuestions);
@@ -26,8 +21,8 @@
   const storeKey='aphgPracticeMasteryV4'; const seenKey='aphgPracticeRecentSeenV2'; let state={mode:'dashboard',unit:1,deck:[],index:0,selected:null,session:[]};
   function load(){try{return JSON.parse(localStorage.getItem(storeKey)||'{}')}catch(e){return {}}} function save(p){localStorage.setItem(storeKey,JSON.stringify(p));}
   function loadSeen(){try{return JSON.parse(localStorage.getItem(seenKey)||'{}')}catch(e){return {}}} function saveSeen(x){localStorage.setItem(seenKey,JSON.stringify(x));}
-  function record(q,correct){const p=load(),x=p[q.topic]||{right:0,total:0,missed:[],recent:[]};x.total++;if(correct)x.right++;else if(!x.missed.includes(q.id))x.missed.push(q.id);if(correct)x.missed=x.missed.filter(id=>id!==q.id);x.recent=(x.recent||[]).concat(correct?1:0).slice(-8);p[q.topic]=x;save(p);}
-  function score(t){const x=load()[t];if(!x||!x.total)return null;const recent=x.recent||[];const pct=Math.round(recent.reduce((a,b)=>a+b,0)/recent.length*100);return {pct,attempts:x.total,mastered:x.total>=5&&recent.length>=5&&pct>=80};}
+  function record(q,correct){const p=load(),x=p[q.topic]||{right:0,total:0,missed:[],recent:[],days:[],streak:0};x.total++;if(correct)x.right++;else if(!x.missed.includes(q.id))x.missed.push(q.id);if(correct)x.missed=x.missed.filter(id=>id!==q.id);x.recent=(x.recent||[]).concat(correct?1:0).slice(-8);x.streak=correct?(x.streak||0)+1:0;const day=new Date().toISOString().slice(0,10);x.days=x.days||[];if(!x.days.includes(day))x.days.push(day);x.days=x.days.slice(-12);p[q.topic]=x;save(p);try{window.APHGTopicSkillMastery?.recordEvidence(q,correct);}catch(e){}}
+  function score(t){const x=load()[t];if(!x||!x.total)return null;const recent=x.recent||[];const pct=Math.round(recent.reduce((a,b)=>a+b,0)/recent.length*100);return {pct,attempts:x.total,days:(x.days||[]).length,mastered:x.total>=5&&recent.length>=5&&pct>=80&&(x.days||[]).length>=2&&(x.streak||0)>=2};}
   function shuffle(a){const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
   function keyFor(mode,unit){return mode==='unit'?`unit-${unit}`:mode;}
   function setToQuestions(set){return set.questions.map((q,i)=>{const saved=setQuestions.find(x=>x.setId===set.id&&x.setIndex===i);return {id:saved?.id||`set-${set.id}-${i+1}`,unit:set.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:q[3],stimulus:set.stimulus,stimulusTitle:set.title,setId:set.id,setIndex:i,setSize:set.questions.length,authentic:/^real-/.test(set.id)};});}
@@ -46,9 +41,9 @@
   window.pmStart=start;window.pmChoose=i=>{if(state.selected!==null)return;const q=state.deck[state.index];state.selected=i;const ok=q.choices[i]===q.answer;record(q,ok);state.session.push({q,correct:ok});render();};window.pmNext=()=>{state.index++;state.selected=null;state.showHelp=false;if(state.index>=state.deck.length)state.mode='results';render();};window.pmHelp=()=>{state.showHelp=true;render();};window.pmSetUnit=u=>{state.unit=Number(u)||1;render();};window.pmDashboard=()=>{state.mode='dashboard';render();};window.pmReset=()=>{if(confirm('Reset Practice & Mastery progress?')){localStorage.removeItem(storeKey);localStorage.removeItem(seenKey);state.mode='dashboard';render();}};
   const oldRender=render;render=function(){if(active==='practiceMastery'){renderNav();document.getElementById('app').innerHTML=page();return;}oldRender();};
   function page(){return `<main class="wrap">${state.mode==='dashboard'?dash():state.mode==='session'?session():results()}</main>`;}
-  function topicStatus(s){if(!s)return 'Not practiced yet';if(s.mastered)return 'Ready ✓';if(s.attempts<5)return `Keep practicing · ${5-s.attempts} more attempt${5-s.attempts===1?'':'s'} needed`;return s.pct>=80?'Almost ready':'Keep practicing';}
+  function topicStatus(s){if(!s)return 'Not practiced yet';if(s.mastered)return 'Ready ✓';if(s.attempts<5)return `Keep practicing · ${5-s.attempts} more attempt${5-s.attempts===1?'':'s'} needed`;if(s.pct>=80&&s.days<2)return 'Come back another day to prove it';return s.pct>=80?'Almost ready — get two correct in a row':'Keep practicing';}
   function dash(){
-    const topics=[...new Set(bank.map(q=>q.topic))],stats=topics.map(t=>[t,score(t)]),attempted=stats.filter(x=>x[1]),mastered=stats.filter(x=>x[1]?.mastered),p=load(),missed=Object.values(p).reduce((n,x)=>n+(x.missed||[]).length,0);
+    const topics=[...new Set(bank.filter(q=>Number(q.unit)===state.unit&&String(q.topic).startsWith(state.unit+'.')).map(q=>q.topic))],stats=topics.map(t=>[t,score(t)]),attempted=stats.filter(x=>x[1]),mastered=stats.filter(x=>x[1]?.mastered),p=load(),missed=Object.values(p).reduce((n,x)=>n+(x.missed||[]).length,0);
     const next=missed?`<button class="btn-primary" onclick="pmStart('missed')">Review My Mistakes</button>`:`<button class="btn-primary" onclick="pmStart('quick',${state.unit})">Start 5-Minute Practice</button>`;
     return `<section class="card"><h2>🎯 What should I do next?</h2><p>${missed?'Start with questions you missed. Read the explanation, then try each idea again.':'Choose the unit you are learning and complete five questions. We will show you what to review next.'}</p><div class="button-row">${next}<label class="pill">Unit <select onchange="pmSetUnit(this.value)">${[1,2,3,4,5,6,7].map(u=>`<option value="${u}" ${u===state.unit?'selected':''}>${u}</option>`).join('')}</select></label></div></section>
     <section class="card"><h2>Your Progress</h2><p>Progress is saved on this device. “Ready” means at least 80% correct after five or more attempts.</p><div class="readiness-grid"><div class="readiness-tile"><b>${mastered.length}/${topics.length}</b><span>ready</span></div><div class="readiness-tile"><b>${attempted.length}</b><span>practiced</span></div><div class="readiness-tile"><b>${missed}</b><span>mistakes to review</span></div></div></section>
