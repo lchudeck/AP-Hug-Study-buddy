@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aphugstudybuddy.netlify.app/sitemap.xml

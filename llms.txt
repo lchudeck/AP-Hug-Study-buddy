@@ -1,0 +1,16 @@
+# APHUG Study Buddy by C&C Digital Ventures
+
+APHUG Study Buddy is a teacher-built AP Human Geography learning application designed especially for ninth-grade students. It provides unit review, CED-aligned practice questions, adaptive topic mastery, vocabulary flashcards, models and maps, AP-style stimulus practice, and point-by-point FRQ coaching.
+
+The application requires no student login and collects no student identity. Learning progress remains in the student's browser on that device.
+
+Primary pages:
+- https://aphugstudybuddy.netlify.app/
+- https://aphugstudybuddy.netlify.app/ap-human-geography-study-guide.html
+- https://aphugstudybuddy.netlify.app/aphg-frq-practice.html
+- https://aphugstudybuddy.netlify.app/aphg-practice-test.html
+- https://aphugstudybuddy.netlify.app/compare-aphg-study-tools.html
+- https://aphugstudybuddy.netlify.app/about.html
+- https://aphugstudybuddy.netlify.app/privacy.html
+
+APHUG Study Buddy is an independent educational resource. AP and Advanced Placement are trademarks of the College Board, which does not endorse this product.
