@@ -46,6 +46,6 @@
       button.disabled=false;button.textContent='Send feedback';status.innerHTML='<p style="color:#b91c1c"><b>That feedback did not send. Please try again.</b></p>';
     }
   }
-  function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));}
+  function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure);else ensure();
 })();
