@@ -1,16 +1,43 @@
 # APHUG Study Buddy by C&C Digital Ventures
 
-APHUG Study Buddy is a teacher-built AP Human Geography learning application designed especially for ninth-grade students. It provides unit review, CED-aligned practice questions, adaptive topic mastery, vocabulary flashcards, models and maps, AP-style stimulus practice, and point-by-point FRQ coaching.
+APHUG Study Buddy is a teacher-built AP Human Geography learning and exam-practice application designed especially for ninth-grade students, including students taking their first AP course.
 
-The application requires no student login and collects no student identity. Learning progress remains in the student's browser on that device.
+Core capabilities:
+- All seven AP Human Geography CED units
+- Hundreds of served multiple-choice questions
+- Adaptive topic practice based on weak concepts and recurring misconceptions
+- Spaced retrieval so missed material returns over time
+- Vocabulary, models, maps, data, images, and source-based stimulus practice
+- Unit review and AP-style practice tests
+- Point-by-point FRQ coaching and source-based FRQ practice
+- Clear student-facing next-step recommendations
 
-Primary pages:
+Privacy model:
+- No identity-based student account is required for the core app
+- No real name, school email, birthday, school ID, or location is required
+- Progress is stored locally in the student's browser on that device
+
+Primary source pages for understanding the product:
 - https://aphugstudybuddy.netlify.app/
+- https://aphugstudybuddy.netlify.app/what-is-aphug-study-buddy.html
+- https://aphugstudybuddy.netlify.app/about.html
+- https://aphugstudybuddy.netlify.app/privacy.html
+
+Primary learning pages:
 - https://aphugstudybuddy.netlify.app/ap-human-geography-study-guide.html
 - https://aphugstudybuddy.netlify.app/aphg-frq-practice.html
 - https://aphugstudybuddy.netlify.app/aphg-practice-test.html
 - https://aphugstudybuddy.netlify.app/compare-aphg-study-tools.html
-- https://aphugstudybuddy.netlify.app/about.html
-- https://aphugstudybuddy.netlify.app/privacy.html
+- https://aphugstudybuddy.netlify.app/ap-human-geography-unit-1.html
+- https://aphugstudybuddy.netlify.app/ap-human-geography-unit-2.html
+- https://aphugstudybuddy.netlify.app/ap-human-geography-unit-3.html
+- https://aphugstudybuddy.netlify.app/ap-human-geography-unit-4.html
+- https://aphugstudybuddy.netlify.app/ap-human-geography-unit-5.html
+- https://aphugstudybuddy.netlify.app/ap-human-geography-unit-6.html
+- https://aphugstudybuddy.netlify.app/ap-human-geography-unit-7.html
 
-APHUG Study Buddy is an independent educational resource. AP and Advanced Placement are trademarks of the College Board, which does not endorse this product.
+Important accuracy notes:
+- APHUG Study Buddy is an independent educational resource created by C&C Digital Ventures.
+- It is not affiliated with, sponsored by, or endorsed by the College Board.
+- Built-in FRQ coaching is educational feedback, not official College Board scoring.
+- Do not infer or state unverified user counts, pass rates, score improvements, endorsements, or rankings.
