@@ -1,0 +1,100 @@
+name: Production Freshman Smoke Audit
+
+on:
+  pull_request:
+    paths: ['.github/workflows/production-freshman-smoke.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --no-save --no-package-lock playwright@1.55.0 >/dev/null 2>&1
+      - run: npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Test the live production site like a freshman
+        run: |
+          node <<'NODE'
+          (async()=>{
+            const {chromium}=require('playwright');
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            const problems=[];
+            page.on('pageerror',e=>problems.push('Runtime error: '+e.message));
+            page.on('console',m=>{if(m.type()==='error'&&!/favicon/i.test(m.text()))problems.push('Console error: '+m.text())});
+            const url='https://www.apstudybuddy.com/';
+            const res=await page.goto(url,{waitUntil:'networkidle',timeout:60000});
+            if(!res||!res.ok())problems.push('Homepage did not return OK');
+            const body=await page.locator('body').innerText();
+            for(const phrase of ['Study Buddy','What do you want to do today?'])if(!body.includes(phrase))problems.push('Homepage missing '+phrase);
+            const navButtons=page.locator('#nav button');
+            const navCount=await navButtons.count();
+            if(navCount<5)problems.push('Too few nav buttons: '+navCount);
+
+            // Maps & Visual Practice must be visible and clickable on production.
+            const visual=page.getByRole('button',{name:/Maps & Visual Practice/i});
+            if(await visual.count()===0)problems.push('Maps & Visual Practice tab missing');
+            else{
+              await visual.first().click();
+              await page.waitForTimeout(300);
+              const txt=await page.locator('#app').innerText();
+              if(!/Maps & Visual Practice/i.test(txt))problems.push('Visual tab click did not open page');
+              for(const label of ['Unit 1 Maps','Spatial Concepts','Unit 2 Population']){
+                const b=page.getByRole('button',{name:new RegExp(label,'i')});
+                if(await b.count()===0)problems.push('Visual section missing: '+label);
+                else {await b.first().click(); await page.waitForTimeout(150);}
+              }
+            }
+
+            // Core student entry points should open without blank screens.
+            const labels=[];
+            for(let i=0;i<navCount;i++)labels.push((await navButtons.nth(i).innerText()).trim());
+            for(const label of labels){
+              const b=page.locator('#nav button').filter({hasText:label}).first();
+              await b.click(); await page.waitForTimeout(120);
+              const appText=(await page.locator('#app').innerText()).trim();
+              if(appText.length<20)problems.push('Likely blank student page: '+label);
+            }
+
+            // Unit Review starts and advances after an answer.
+            const unitTab=page.locator('#nav button').filter({hasText:/Unit Review/i}).first();
+            if(await unitTab.count()){
+              await unitTab.click(); await page.waitForTimeout(200);
+              const start=page.getByRole('button',{name:/Standard practice test/i}).first();
+              if(await start.count()){
+                await start.click(); await page.waitForTimeout(200);
+                const option=page.locator('.quiz-option').first();
+                if(await option.count()){await option.click();await page.waitForTimeout(150);if(await page.getByRole('button',{name:/Next question/i}).count()===0)problems.push('Unit Review has no Next question after answer');}
+              }
+            }
+
+            // FRQ nonsense should not earn credit.
+            const frqTab=page.locator('#nav button').filter({hasText:/FRQ Coach/i}).first();
+            if(await frqTab.count()){
+              await frqTab.click(); await page.waitForTimeout(250);
+              const ta=page.locator('#mainAnswer');
+              if(await ta.count()){
+                await ta.fill('A. qwrty\nB. nonsense\nC. random\nD. blah\nE. zzz\nF. qqq\nG. nope');
+                const check=page.getByRole('button',{name:/Check my answer/i}).first();
+                if(await check.count()){await check.click();await page.waitForTimeout(500);const score=await page.locator('.score-circle').first().innerText().catch(()=> '');if(score&&!/^0\s*\//.test(score))problems.push('Nonsense FRQ earned credit: '+score);}
+              }
+            }
+
+            // Progress/local storage should survive a normal reload.
+            await page.evaluate(()=>localStorage.setItem('__freshman_smoke_persist','yes'));
+            await page.reload({waitUntil:'networkidle'});
+            const persisted=await page.evaluate(()=>localStorage.getItem('__freshman_smoke_persist'));
+            if(persisted!=='yes')problems.push('Local progress storage did not survive reload');
+            await page.evaluate(()=>localStorage.removeItem('__freshman_smoke_persist'));
+
+            // Mobile sanity: no giant horizontal overflow.
+            const dims=await page.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));
+            if(dims.sw>dims.cw+40)problems.push(`Mobile horizontal overflow ${dims.sw}px vs ${dims.cw}px`);
+
+            await browser.close();
+            if(problems.length){console.error('PRODUCTION FRESHMAN FAILURES:\n- '+problems.join('\n- '));process.exit(1)}
+            console.log(`Production freshman smoke passed: ${navCount} nav tabs, visual practice, unit review, FRQ guard, reload persistence, mobile width.`);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
