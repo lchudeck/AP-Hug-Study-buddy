@@ -1,6 +1,6 @@
 // Submit canonical public pages to IndexNow after production deploys.
 const urls=[
-  '/', '/ap-human-geography-study-guide.html','/aphg-frq-practice.html','/aphg-practice-test.html',
+  '/', '/what-is-aphug-study-buddy.html','/ap-human-geography-study-guide.html','/aphg-frq-practice.html','/aphg-practice-test.html',
   '/compare-aphg-study-tools.html','/about.html','/privacy.html',
   ...Array.from({length:7},(_,i)=>`/ap-human-geography-unit-${i+1}.html`)
 ];
