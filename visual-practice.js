@@ -43,6 +43,8 @@
       ['C','Explain','one social change that can contribute to declining birth rates in Stage 3.','Urbanization, women’s education/employment, later marriage, or access to contraception can reduce fertility.']]}
   ];
 
+  window.__visualPractice12={sets,frqs};
+
   let mode='mcq',si=0,qi=0,selected=null,fi=0,answers={},reveal=false;
   const oldRender=render;
   render=function(){if(active==='visualPractice'){renderNav();document.getElementById('app').innerHTML=page();return;}oldRender();};
