@@ -63,6 +63,16 @@ jobs:
           if(!/filter\(n=>n<=variants\(s\.unit\)\.length\)/.test(ur))problems.push('Unit Review offers a custom size larger than its validated bank');
           const polish=fs.readFileSync('final-freshman-polish.js','utf8');
           if(!/filter\(q=>sig\(q\)!==missed\.sig\)/.test(polish))problems.push('Adaptive retry does not exclude exact missed stem');
+          if(/LEAST likely to be confused|Which explanation would earn the strongest APHG point|An FRQ asks students to explain this idea/.test(allSource))problems.push('Full simulator still contains mechanically generated question stems');
+          for(const examNum of [1,2,3]){
+            let exam;try{exam=vm.runInContext(`buildPracticeExam(${examNum})`,sandbox)}catch(e){problems.push('Simulator '+examNum+' failed to build: '+e.message);continue}
+            if(exam.mcq.length!==60)problems.push('Simulator '+examNum+' does not contain exactly 60 MCQs');
+            if(new Set(exam.mcq.map(q=>String(q.q).trim().toLowerCase())).size!==60)problems.push('Simulator '+examNum+' repeats an exact stem');
+            const stimulusCount=exam.mcq.filter(q=>q.stimulus).length;
+            if(stimulusCount<18||stimulusCount>24)problems.push('Simulator '+examNum+' stimulus share is outside the CED-aligned 30–40% range');
+            for(let u=1;u<=7;u++)if(!exam.mcq.some(q=>Number(q.unit)===u))problems.push('Simulator '+examNum+' omits Unit '+u);
+            for(const q of exam.mcq)if(!q.q||!Array.isArray(q.choices)||q.choices.length!==4||new Set(q.choices).size!==4||!q.choices.includes(q.answer)||!q.why)problems.push('Malformed simulator question: '+JSON.stringify(q));
+          }
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
           console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units),'Expanded/stimulus questions:',expanded.length,'Visual questions:',visualQuestions.length);
           console.log('Missed-question policy passed: exact stem excluded; Unit Review uses a different validated item from the same CED topic when available.');
