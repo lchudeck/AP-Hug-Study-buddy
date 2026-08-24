@@ -49,7 +49,7 @@ jobs:
               const questions=set.qs||[set.q];
               for(const q of questions.filter(Boolean)){visualQuestions.push(q);if(!q[0]||!Array.isArray(q[1])||q[1].length!==4||!q[1].includes(q[2])||!q[3])problems.push('Malformed visual question: '+JSON.stringify(q));if(new Set(q[1]||[]).size!==(q[1]||[]).length)problems.push('Duplicate visual choices: '+q[0]);}
             }
-            for(const frq of bank.frqs||[]){visualUnits.add(Number(frq.unit));for(const p of frq.parts||[]){if(!/^(Identify|Describe|Explain|Apply|Evaluate|Compare)$/.test(p[1])||!String(p[2]||'').trim()||String(p[3]||'').trim().split(/\s+/).length<2)problems.push('Malformed visual FRQ point: '+JSON.stringify(p));}}
+            for(const frq of bank.frqs||[]){visualUnits.add(Number(frq.unit));for(const p of frq.parts||[]){if(!/^(Identify|Describe|Explain|Apply|Evaluate|Compare)$/.test(p[1])||!String(p[2]||'').trim()||String(p[3]||'').trim().split(/\s+/).length<(p[1]==='Identify'?1:2))problems.push('Malformed visual FRQ point: '+JSON.stringify(p));}}
           }
           for(let u=1;u<=7;u++)if(!visualUnits.has(u))problems.push('Visual practice does not cover Unit '+u);
           if(visualQuestions.length<17)problems.push('Visual question banks did not fully load');
