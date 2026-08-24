@@ -37,8 +37,25 @@ jobs:
             if(!(Number(q.unit)>=1&&Number(q.unit)<=7))problems.push('Expanded question has invalid unit: '+prompt);
           }
           if(!expanded.length)problems.push('expanded/stimulus question banks did not load');
+          for(const q of quiz){
+            const unit=Number(String(q[0]).match(/\d+/)?.[0]),topic=String(q.topic||sandbox.APHGTopicSkillMastery?.topicFromQuestion(q)||'');
+            if(!topic.startsWith(unit+'.'))problems.push('Question has no valid same-unit CED topic: '+q[1]);
+          }
+          const visualBanks=[sandbox.__visualPractice12,sandbox.__visualPractice37].filter(Boolean);
+          const visualUnits=new Set(),visualQuestions=[];
+          for(const bank of visualBanks){
+            for(const set of bank.sets||[]){
+              visualUnits.add(Number(set.unit));
+              const questions=set.qs||[set.q];
+              for(const q of questions.filter(Boolean)){visualQuestions.push(q);if(!q[0]||!Array.isArray(q[1])||q[1].length!==4||!q[1].includes(q[2])||!q[3])problems.push('Malformed visual question: '+JSON.stringify(q));if(new Set(q[1]||[]).size!==(q[1]||[]).length)problems.push('Duplicate visual choices: '+q[0]);}
+            }
+            for(const frq of bank.frqs||[]){visualUnits.add(Number(frq.unit));for(const p of frq.parts||[]){if(!/^(Identify|Describe|Explain|Apply|Evaluate|Compare)$/.test(p[1])||!String(p[2]||'').trim()||String(p[3]||'').trim().split(/\s+/).length<2)problems.push('Malformed visual FRQ point: '+JSON.stringify(p));}}
+          }
+          for(let u=1;u<=7;u++)if(!visualUnits.has(u))problems.push('Visual practice does not cover Unit '+u);
+          if(visualQuestions.length<17)problems.push('Visual question banks did not fully load');
           const allSource=scripts.map(f=>fs.readFileSync(f,'utf8')).join('\n')+'\n'+html;
-          if(/keep(?:s|ing)? poor countries poor on purpose|designed the system to keep/i.test(allSource))problems.push('Development theory is framed as deliberate intent instead of structural unequal exchange');
+          if(/keep(?:s|ing)? poor countries poor on purpose|(?:global )?system is designed to keep|designed the system to keep/i.test(allSource))problems.push('Development theory is framed as deliberate intent instead of structural unequal exchange');
+          if(/Outsourcing means[^\n]{0,200}Moving work to another company or location/i.test(allSource))problems.push('Outsourcing is conflated with offshoring');
           const ur=fs.readFileSync('unit-review.js','utf8');
           if(/Choose the best answer\. \$\{p\}|Use AP Human Geography reasoning\. \$\{p\}|Apply what you know to this situation\. \$\{p\}/.test(ur))problems.push('Unit Review still creates cosmetic same-stem variants');
           if(!/retryFor\(q\)/.test(ur)||!/different stem\/scenario/.test(ur))problems.push('Unit Review does not enforce alternate-question retry');
@@ -47,6 +64,6 @@ jobs:
           const polish=fs.readFileSync('final-freshman-polish.js','utf8');
           if(!/filter\(q=>sig\(q\)!==missed\.sig\)/.test(polish))problems.push('Adaptive retry does not exclude exact missed stem');
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
-          console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units),'Expanded/stimulus questions:',expanded.length);
+          console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units),'Expanded/stimulus questions:',expanded.length,'Visual questions:',visualQuestions.length);
           console.log('Missed-question policy passed: exact stem excluded; Unit Review uses a different validated item from the same CED topic when available.');
           NODE
