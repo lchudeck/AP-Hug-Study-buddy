@@ -1130,73 +1130,44 @@ function flashcardsPage(){termView='flashcards';return termsPage();}
 // STUDY PLAN PAGE
 // ═══════════════════════════════════════════
 
-function getExamDistractors(cards,c,i,examNum){
-  const same=cards.filter(x=>x.unit===c.unit&&x.term!==c.term);
-  const nearby=cards.filter(x=>Math.abs(x.unit-c.unit)<=1&&x.term!==c.term);
-  const other=cards.filter(x=>x.unit!==c.unit&&x.term!==c.term);
-  const pool=[...same,...nearby,...other].filter((x,idx,arr)=>arr.findIndex(y=>y.term===x.term)===idx);
-  const picks=[];
-  let k=0;
-  while(picks.length<3 && k<pool.length*3){
-    const item=pool[(i*5+examNum*11+k*7)%pool.length];
-    if(item && !picks.some(p=>p.term===item.term)) picks.push(item);
-    k++;
-  }
-  return picks;
+const AP_SIMULATOR_EXTENSION=[
+  {unit:1,q:"A geographer compares the same income data by census tract and by state. Why might the mapped patterns differ?",choices:["Aggregation at different scales can reveal or conceal local variation","Latitude changes when boundaries change","Qualitative data cannot be mapped","State maps always show individual households"],answer:"Aggregation at different scales can reveal or conceal local variation",why:"Scale of analysis affects the patterns visible in spatial data; larger units can hide local differences."},
+  {unit:2,q:"A country has falling death rates, persistently high birth rates, and rapid natural increase. Which DTM stage best matches these conditions?",choices:["Stage 2","Stage 1","Stage 4","Stage 5"],answer:"Stage 2",why:"In DTM Stage 2, death rates fall while birth rates remain high, producing rapid natural increase."},
+  {unit:3,q:"A global restaurant chain changes its menu to match local religious dietary rules. Which process does this best illustrate?",choices:["Stimulus diffusion","Contagious diffusion","Relocation diffusion","Assimilation"],answer:"Stimulus diffusion",why:"Stimulus diffusion occurs when an underlying idea spreads but is modified to fit local culture."},
+  {unit:4,q:"A minority nation seeks greater control over education and taxation while remaining within its current state. Which process is most directly illustrated?",choices:["Devolution","Supranationalism","Colonialism","Gerrymandering"],answer:"Devolution",why:"Devolution transfers political authority from a central government to regional governments."},
+  {unit:5,q:"According to the Von Thünen model, why are dairy farming and market gardening located near the market?",choices:["Their products are perishable and costly to transport","They require the least expensive land","They depend on extensive grazing land","Their products have no transportation costs"],answer:"Their products are perishable and costly to transport",why:"Perishability and high transport costs raise the value of locations close to the market."},
+  {unit:6,q:"Which change is most characteristic of gentrification in an inner-city neighborhood?",choices:["Reinvestment accompanied by rising rents and possible displacement","Declining land values caused only by suburbanization","Annexation of rural land by a state","A shift from a primate-city pattern to rank-size"],answer:"Reinvestment accompanied by rising rents and possible displacement",why:"Gentrification brings investment and higher property values but can displace lower-income residents."},
+  {unit:7,q:"A firm designs a product in one country, manufactures components in several others, and assembles it near a major port. Which concept best describes this arrangement?",choices:["Global commodity chain","Central place hierarchy","Subsistence agriculture","Demographic transition"],answer:"Global commodity chain",why:"A global commodity chain links production stages across multiple places through transportation and trade networks."}
+];
+function normalizeExamItem(item){
+  if(Array.isArray(item)) return {unit:Number(String(item[0]).replace(/\D/g,"")),q:item[1],choices:[...item[2]],answer:item[3],why:item[4]};
+  const visual=item.visual||item.stimulus;
+  return {unit:Number(item.unit),q:item.prompt||item.q,choices:[...item.choices],answer:item.answer,why:item.explain||item.why,topic:item.topic,stimulus:visual?{html:`<div class="sim-stimulus"><b>Stimulus${item.stimulusTitle?": "+item.stimulusTitle:""}</b><div class="diagram-wrap">${visual}</div></div>`}:null};
 }
-function buildHardExamQuestion(cards,c,i,examNum){
-  const distractors=getExamDistractors(cards,c,i,examNum);
-  const d1=distractors[0]||cards[(i+3)%cards.length];
-  const d2=distractors[1]||cards[(i+7)%cards.length];
-  const d3=distractors[2]||cards[(i+11)%cards.length];
-  const variant=(i+examNum)%4;
-  let q, choices, answer, why;
-
-  if(variant===0){
-    q=`A student sees this scenario: "${c.ex}" Which AP Human Geography concept is the BEST fit?`;
-    choices=[c.term,d1.term,d2.term,d3.term];
-    answer=c.term;
-    why=`The scenario best fits ${c.term}: ${c.def}`;
-  }else if(variant===1){
-    q=`Which explanation would earn the strongest APHG point for this situation: "${c.ex}"`;
-    const correct=`${c.term}, because ${c.def.charAt(0).toLowerCase()+c.def.slice(1)}`;
-    choices=[
-      correct,
-      `${d1.term}, because ${d1.def.charAt(0).toLowerCase()+d1.def.slice(1)}`,
-      `${d2.term}, because ${d2.def.charAt(0).toLowerCase()+d2.def.slice(1)}`,
-      `${d3.term}, because ${d3.def.charAt(0).toLowerCase()+d3.def.slice(1)}`
-    ];
-    answer=correct;
-    why=`The best explanation correctly names ${c.term} and connects it to the scenario with cause-and-effect.`;
-  }else if(variant===2){
-    q=`An FRQ asks students to explain this idea: ${c.def} Which term should the student use?`;
-    choices=[c.term,d1.term,d2.term,d3.term];
-    answer=c.term;
-    why=`The key term is ${c.term}. A stronger answer would also include an example and the word "because."`;
-  }else{
-    q=`Which answer choice is the LEAST likely to be confused with the correct concept in this scenario: "${c.ex}"? Choose the concept that directly matches the scenario.`;
-    choices=[c.term,d1.term,d2.term,d3.term];
-    answer=c.term;
-    why=`Even though the distractors are related APHG vocabulary, ${c.term} most directly matches the scenario.`;
-  }
-
-  choices=seededShuffle([...new Set(choices)],`exam-${examNum}-${i}-${c.term}`);
-  while(choices.length<4){
-    const extra=cards[(i+choices.length*13+examNum)%cards.length].term;
-    if(!choices.includes(extra)) choices.push(extra);
-  }
-  return {unit:c.unit,q,choices:choices.slice(0,4),answer,why};
+function validatedStimulusBank(){
+  return [
+    ...(window.APHG_IMAGE_MCQ_BANK||[]),
+    ...(window.APHG_STIMULUS_SET_QUESTIONS||[]),
+    ...(window.APHG_STIMULUS_SET_QUESTIONS_EXTRA||[]),
+    ...(window.APHG_REAL_DATA_QUESTIONS||[])
+  ].map(normalizeExamItem).filter(q=>q.q&&q.choices.length===4&&q.choices.includes(q.answer)&&q.stimulus);
 }
 function buildPracticeExam(examNum){
-  const cards=flashcards;
-  const qs=[];
-  const offset=(examNum-1)*60;
-  for(let i=0;i<60;i++){
-    const c=cards[(offset+i*7+examNum*3)%cards.length];
-    qs.push(buildHardExamQuestion(cards,c,i,examNum));
+  const foundational=quiz.map(normalizeExamItem);
+  const stimulusBank=validatedStimulusBank();
+  const selectedStimuli=[];
+  for(let unit=2;unit<=7;unit++){
+    const unitItems=stimulusBank.filter(q=>q.unit===unit);
+    if(unitItems.length<3) throw new Error(`AP simulator needs at least three validated stimulus questions for Unit ${unit}.`);
+    const rotated=seededShuffle(unitItems,`ced-sim-${examNum}-unit-${unit}`);
+    selectedStimuli.push(...rotated.slice(0,3));
   }
+  const mcq=[...foundational,...AP_SIMULATOR_EXTENSION.map(normalizeExamItem),...selectedStimuli];
+  const unique=[];const seen=new Set();
+  seededShuffle(mcq,`ced-simulator-${examNum}`).forEach(q=>{const key=q.q.trim().toLowerCase();if(!seen.has(key)){seen.add(key);unique.push(q);}});
+  if(unique.length!==60) throw new Error(`AP simulator expected 60 unique validated questions; received ${unique.length}.`);
   const frqSet=[prompts[(examNum-1)%prompts.length],prompts[(examNum+1)%prompts.length],prompts[(examNum+3)%prompts.length]];
-  return {title:`Practice Exam ${examNum}`,mcq:qs,frq:frqSet};
+  return {title:`Practice Exam ${examNum}`,mcq:unique,frq:frqSet};
 }
 function selectExam(n){activeExam=n-1;examAnswers={};examSubmitted=false;examFrqAnswers={};examFrqFeedback={};render();}
 function setExamAnswer(i,choice){if(examSubmitted)return;examAnswers[i]=choice;render();}
@@ -1351,8 +1322,11 @@ function simSelectExam(n){simExam=n;simResetAll();}
 function simStart(section){if(simTimer)clearInterval(simTimer);simPhase=section;simRemaining=section==="mcq"?3600:4500;simTimer=setInterval(()=>{simRemaining--;if(simRemaining<=0){clearInterval(simTimer);simRemaining=0;render();}else{const el=document.getElementById("simCountdown");if(el)el.textContent=simTimerText();}},1000);render();}
 function simPause(){if(simTimer)clearInterval(simTimer);simTimer=null;render();}
 function simTimerText(){const m=Math.floor(simRemaining/60),s=String(simRemaining%60).padStart(2,"0");return `${m}:${s}`;}
-function simStimulusForMcq(i,q){const kind=i%10;if(kind===2)return{html:`<div class="sim-stimulus"><b>Stimulus: Choropleth map concept</b><p>A shaded map shows high values clustered in coastal urban regions and lower values in interior rural regions.</p></div>`};if(kind===5)return{html:`<div class="sim-stimulus"><b>Stimulus: Population table</b><p>Country A: CBR 35, CDR 9. Country B: CBR 10, CDR 12. Country C: CBR 16, CDR 7.</p></div>`};if(kind===8)return{html:`<div class="sim-stimulus"><b>Stimulus: Model cue</b><p>The diagram shows activities arranged by distance from a central market/city/core.</p></div>`};return null;}
-function buildSimulatorExam(n){const base=buildPracticeExam(n);const mcq=base.mcq.map((q,i)=>({...q,stimulus:simStimulusForMcq(i,q)}));const frq=[{unit:2,title:"Population and Migration",stimuli:[],scenario:"A country is moving from high birth and death rates toward lower death rates while birth rates remain high. Its cities are also receiving large numbers of rural migrants.",parts:[["A","Identify","Identify the demographic model that best explains the country’s population change.","The Demographic Transition Model explains the change."],["B","Describe","Describe one population pattern likely shown by this country’s population pyramid.","The population pyramid would likely have a wide base, showing many young people and high birth rates."],["C","Explain","Explain one challenge this country may face because of rapid urban growth.","Rapid urban growth can strain housing and infrastructure because many migrants arrive faster than governments can provide services."],["D","Explain","Explain one reason rural residents may migrate to cities.","Rural residents may migrate to cities because urban areas offer more jobs, schools, health care, and services."]]},{unit:5,title:"Agricultural Land Use Model",stimuli:["vonthunen"],scenario:"A model shows agricultural activities arranged in rings around a central market.",parts:[["A","Identify","Identify the model shown by the stimulus.","The model is the Von Thünen agricultural land-use model."],["B","Describe","Describe the agricultural pattern shown in the model.","More perishable or expensive-to-transport goods are located closer to the market, while less perishable goods are farther away."],["C","Explain","Explain why dairy or market gardening is close to the market.","Dairy and market gardening are close to the market because these products spoil quickly and cost more to transport over long distances."],["D","Explain","Explain one limitation of the model in the real world.","The model is limited because real landscapes have roads, rivers, mountains, government policies, and multiple markets that change land-use patterns."]]},{unit:6,title:"Urban Inequality and Scale of Analysis",stimuli:["globalChoro","localFood"],scenario:"Two GIS maps show the same issue at different scales: a broad regional pattern of urbanization and a neighborhood map of grocery access, transit, and income.",parts:[["A","Identify","Identify the geographic tool used to layer and analyze the maps.","GIS is the tool used to layer and analyze spatial data."],["B","Describe","Describe one pattern visible at the local scale.","At the local scale, some lower-income neighborhoods have fewer grocery stores or weaker transit access."],["C","Explain","Explain how changing the scale of analysis changes the interpretation.","Changing scale changes interpretation because national or global maps show broad regional patterns, while local maps reveal neighborhood-level inequality that larger scales hide."],["D","Explain","Explain one policy that could reduce the local inequality shown on the map.","A city could improve transit access, incentivize grocery stores, or require mixed-income development because these policies increase access to services for underserved neighborhoods."]]}];return{title:`AP Simulator ${n}`,mcq,frq};}
+function buildSimulatorExam(n){
+  const base=buildPracticeExam(n);
+  const frq=[{unit:2,title:"Population and Migration",stimuli:[],scenario:"A country is moving from high birth and death rates toward lower death rates while birth rates remain high. Its cities are also receiving large numbers of rural migrants.",parts:[["A","Identify","Identify the demographic model that best explains the country’s population change.","The Demographic Transition Model explains the change."],["B","Describe","Describe one population pattern likely shown by this country’s population pyramid.","The population pyramid would likely have a wide base, showing many young people and high birth rates."],["C","Explain","Explain one challenge this country may face because of rapid urban growth.","Rapid urban growth can strain housing and infrastructure because many migrants arrive faster than governments can provide services."],["D","Explain","Explain one reason rural residents may migrate to cities.","Rural residents may migrate to cities because urban areas offer more jobs, schools, health care, and services."]]},{unit:5,title:"Agricultural Land Use Model",stimuli:["vonthunen"],scenario:"A model shows agricultural activities arranged in rings around a central market.",parts:[["A","Identify","Identify the model shown by the stimulus.","The model is the Von Thünen agricultural land-use model."],["B","Describe","Describe the agricultural pattern shown in the model.","More perishable or expensive-to-transport goods are located closer to the market, while less perishable goods are farther away."],["C","Explain","Explain why dairy or market gardening is close to the market.","Dairy and market gardening are close to the market because these products spoil quickly and cost more to transport over long distances."],["D","Explain","Explain one limitation of the model in the real world.","The model is limited because real landscapes have roads, rivers, mountains, government policies, and multiple markets that change land-use patterns."]]},{unit:6,title:"Urban Inequality and Scale of Analysis",stimuli:["globalChoro","localFood"],scenario:"Two GIS maps show the same issue at different scales: a broad regional pattern of urbanization and a neighborhood map of grocery access, transit, and income.",parts:[["A","Identify","Identify the geographic tool used to layer and analyze the maps.","GIS is the tool used to layer and analyze spatial data."],["B","Describe","Describe one pattern visible at the local scale.","At the local scale, some lower-income neighborhoods have fewer grocery stores or weaker transit access."],["C","Explain","Explain how changing the scale of analysis changes the interpretation.","Changing scale changes interpretation because national or global maps show broad regional patterns, while local maps reveal neighborhood-level inequality that larger scales hide."],["D","Explain","Explain one policy that could reduce the local inequality shown on the map.","A city could improve transit access, incentivize grocery stores, or require mixed-income development because these policies increase access to services for underserved neighborhoods."]]}];
+  return{title:`AP Simulator ${n}`,mcq:base.mcq,frq};
+}
 function simSetMcq(i,choice){if(simSubmitted)return;simMcqAnswers[i]=choice;render();}
 function simSetFrq(i,val){simFrqAnswers[i]=val;}
 function simSubmit(){if(simTimer)clearInterval(simTimer);const exam=buildSimulatorExam(simExam);simFrqFeedback={};exam.frq.forEach((p,i)=>simFrqFeedback[i]=gradeOneFrq(p,simFrqAnswers[i]||""));simSubmitted=true;simPhase="results";render();}
