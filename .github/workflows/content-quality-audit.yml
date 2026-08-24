@@ -27,12 +27,26 @@ jobs:
             if(String(q[4]).trim().split(/\s+/).length<5)problems.push('Explanation too thin: '+q[1]);
           }
           for(let u=1;u<=7;u++)if(!units.get(u))problems.push('Unit '+u+' has no core quiz questions');
+          const expandedNames=['APHG_IMAGE_MCQ_BANK','APHG_STIMULUS_SET_QUESTIONS','APHG_STIMULUS_SET_QUESTIONS_EXTRA','APHG_REAL_DATA_QUESTIONS'];
+          const expanded=expandedNames.flatMap(name=>{try{return vm.runInContext(`Array.isArray(window.${name})?window.${name}:[]`,sandbox)}catch(e){return []}});
+          for(const q of expanded){
+            const prompt=q.prompt||q.q,choices=q.choices,answer=q.answer,explain=q.explain;
+            if(!prompt||!Array.isArray(choices)||choices.length!==4||!choices.includes(answer)||!explain)problems.push('Malformed expanded question: '+JSON.stringify(q));
+            if(Array.isArray(choices)&&new Set(choices).size!==choices.length)problems.push('Duplicate expanded choices: '+prompt);
+            if(String(explain||'').trim().split(/\s+/).length<5)problems.push('Expanded explanation too thin: '+prompt);
+            if(!(Number(q.unit)>=1&&Number(q.unit)<=7))problems.push('Expanded question has invalid unit: '+prompt);
+          }
+          if(!expanded.length)problems.push('expanded/stimulus question banks did not load');
+          const allSource=scripts.map(f=>fs.readFileSync(f,'utf8')).join('\n')+'\n'+html;
+          if(/keep(?:s|ing)? poor countries poor on purpose|designed the system to keep/i.test(allSource))problems.push('Development theory is framed as deliberate intent instead of structural unequal exchange');
           const ur=fs.readFileSync('unit-review.js','utf8');
           if(/Choose the best answer\. \$\{p\}|Use AP Human Geography reasoning\. \$\{p\}|Apply what you know to this situation\. \$\{p\}/.test(ur))problems.push('Unit Review still creates cosmetic same-stem variants');
           if(!/retryFor\(q\)/.test(ur)||!/different stem\/scenario/.test(ur))problems.push('Unit Review does not enforce alternate-question retry');
+          if(!/Math\.min\(Number\(count\)\|\|10,60\)/.test(ur)||!/s\.deck\.length\+s\.retryQueue\.length<60/.test(ur))problems.push('Unit Review does not enforce the 60-question session cap');
+          if(!/filter\(n=>n<=variants\(s\.unit\)\.length\)/.test(ur))problems.push('Unit Review offers a custom size larger than its validated bank');
           const polish=fs.readFileSync('final-freshman-polish.js','utf8');
           if(!/filter\(q=>sig\(q\)!==missed\.sig\)/.test(polish))problems.push('Adaptive retry does not exclude exact missed stem');
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
-          console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units));
+          console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units),'Expanded/stimulus questions:',expanded.length);
           console.log('Missed-question policy passed: exact stem excluded; Unit Review uses a different validated item from the same CED topic when available.');
           NODE
