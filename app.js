@@ -1153,7 +1153,7 @@ function validatedStimulusBank(){
   ].map(normalizeExamItem).filter(q=>q.q&&q.choices.length===4&&q.choices.includes(q.answer)&&q.stimulus);
 }
 function buildPracticeExam(examNum){
-  const foundational=quiz.map(normalizeExamItem);
+  const foundational=quiz.slice(0,35).map(normalizeExamItem);
   const stimulusBank=validatedStimulusBank();
   const selectedStimuli=[];
   for(let unit=2;unit<=7;unit++){
