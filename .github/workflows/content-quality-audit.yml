@@ -72,6 +72,10 @@ jobs:
             if(stimulusCount<18||stimulusCount>24)problems.push('Simulator '+examNum+' stimulus share is outside the CED-aligned 30–40% range');
             for(let u=1;u<=7;u++)if(!exam.mcq.some(q=>Number(q.unit)===u))problems.push('Simulator '+examNum+' omits Unit '+u);
             for(const q of exam.mcq)if(!q.q||!Array.isArray(q.choices)||q.choices.length!==4||new Set(q.choices).size!==4||!q.choices.includes(q.answer)||!q.why)problems.push('Malformed simulator question: '+JSON.stringify(q));
+            const full=vm.runInContext(`buildSimulatorExam(${examNum})`,sandbox);
+            if(full.frq.length!==3||full.frq.some(f=>!Array.isArray(f.parts)||f.parts.length!==7))problems.push('Simulator '+examNum+' must contain three seven-part FRQs');
+            const stimulusShape=full.frq.map(f=>(f.stimuli||[]).length).join(',');
+            if(stimulusShape!=='0,1,2')problems.push('Simulator '+examNum+' FRQs must use zero, one, and two stimuli');
           }
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
           console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units),'Expanded/stimulus questions:',expanded.length,'Visual questions:',visualQuestions.length);
