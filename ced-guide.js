@@ -108,12 +108,12 @@
   function toggleCed(id){const s=cedState();s[id]=!s[id];saveCedState(s);render();}
   function resetCed(){if(confirm('Clear your CED confidence checkmarks?')){localStorage.removeItem(STORE_KEY);render();}}
   function setCedUnit(v){cedUnit=v;render();}
-  function setCedQuery(v){const raw=String(v);cedQuery=/^[1-7]\.(?:[1-9]|1[0-2])$/.test(raw.trim())?raw.trim()+' ':raw;render();}
+  function setCedQuery(v){cedQuery=String(v);render();}
   function setCedNeeds(v){cedNeedsWork=v;render();}
   function setCedMode(v){cedMode=v;render();}
 
   window.toggleCed=toggleCed; window.resetCed=resetCed; window.setCedUnit=setCedUnit; window.setCedQuery=setCedQuery; window.setCedNeeds=setCedNeeds; window.setCedMode=setCedMode;
-  window.APHGCEDGuide={allTopics:allCedTopics,openTopic(id){const t=allCedTopics().find(x=>x.id===id);if(!t)return;cedMode='topics';cedUnit=String(t.unit);cedQuery=t.id+' ';cedNeedsWork=false;active='ced';render();}};
+  window.APHGCEDGuide={allTopics:allCedTopics,openTopic(id){const t=allCedTopics().find(x=>x.id===id);if(!t)return;cedMode='topics';cedUnit=String(t.unit);cedQuery=t.id;cedNeedsWork=false;active='ced';render();}};
 
   function allCedTopics(){return CED_UNITS.flatMap(u=>u.topics.map(t=>({unit:u.id,unitName:u.name,weight:u.weight,id:t[0],title:t[1],summary:t[2],must:t[3]})));}
   function cedPercent(){const s=cedState(),all=allCedTopics();const done=all.filter(t=>s[t.id]).length;return {done,total:all.length,pct:Math.round(done/all.length*100)};}
@@ -124,8 +124,8 @@
   function cedTabs(){return `<div class="ced-subnav"><button class="${cedMode==='topics'?'active':''}" onclick="setCedMode('topics')">68 CED Topics</button><button class="${cedMode==='skills'?'active':''}" onclick="setCedMode('skills')">5 AP Skills</button><button class="${cedMode==='exam'?'active':''}" onclick="setCedMode('exam')">Exam Game Plan</button></div>`;}
 
   function topicsView(){
-    const s=cedState(); const q=cedQuery.trim().toLowerCase();
-    const rows=allCedTopics().filter(t=>(cedUnit==='all'||String(t.unit)===String(cedUnit)) && (!q||(`${t.id} ${t.title} ${t.summary} ${t.must.join(' ')}`).toLowerCase().includes(q)) && (!cedNeedsWork||!s[t.id]));
+    const s=cedState(); const q=cedQuery.trim().toLowerCase(),exactTopic=/^[1-7]\.(?:[1-9]|1[0-2])$/.test(q);
+    const rows=allCedTopics().filter(t=>(cedUnit==='all'||String(t.unit)===String(cedUnit)) && (!q||(exactTopic?t.id===q:(`${t.id} ${t.title} ${t.summary} ${t.must.join(' ')}`).toLowerCase().includes(q))) && (!cedNeedsWork||!s[t.id]));
     const unitButtons=['<button class="'+(cedUnit==='all'?'active':'')+'" onclick="setCedUnit(\'all\')">All units</button>'].concat(CED_UNITS.map(u=>`<button class="${String(cedUnit)===String(u.id)?'active':''}" onclick="setCedUnit('${u.id}')">U${u.id}</button>`)).join('');
     return `<section class="card"><div class="ced-controls"><div class="ced-unit-filter">${unitButtons}</div><input class="ced-search" aria-label="Search CED topics" placeholder="Search topic or concept..." value="${esc(cedQuery)}" oninput="setCedQuery(this.value)"><label class="ced-check"><input type="checkbox" ${cedNeedsWork?'checked':''} onchange="setCedNeeds(this.checked)"> Show only needs work</label></div><p class="ced-small">Tip: mark a topic only when you can <b>define it, recognize it in a stimulus, and explain a geographic cause or effect</b>.</p></section>
     <div class="ced-topic-grid">${rows.map(t=>`<article class="card ced-topic ${s[t.id]?'done':''}"><div class="ced-topic-head"><div><span class="pill">Unit ${t.unit} · ${t.weight}</span><h3>${t.id} ${t.title}</h3></div><button class="ced-confidence" onclick="toggleCed('${t.id}')" aria-label="Toggle confidence for ${esc(t.id)}">${s[t.id]?'✅ Confident':'⬜ Mark confident'}</button></div><p>${t.summary}</p><div class="ced-must"><b>Be able to use:</b><ul>${t.must.map(x=>`<li>${x}</li>`).join('')}</ul></div></article>`).join('')||'<section class="card"><p>No topics match those filters.</p></section>'}</div><section class="card"><button class="btn-secondary" onclick="resetCed()">Reset CED checkmarks</button></section>`;
