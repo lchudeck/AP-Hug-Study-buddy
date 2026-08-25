@@ -113,6 +113,7 @@
   function setCedMode(v){cedMode=v;render();}
 
   window.toggleCed=toggleCed; window.resetCed=resetCed; window.setCedUnit=setCedUnit; window.setCedQuery=setCedQuery; window.setCedNeeds=setCedNeeds; window.setCedMode=setCedMode;
+  window.APHGCEDGuide={allTopics:allCedTopics,openTopic(id){const t=allCedTopics().find(x=>x.id===id);if(!t)return;cedMode='topics';cedUnit=String(t.unit);cedQuery=t.id;cedNeedsWork=false;active='ced';render();}};
 
   function allCedTopics(){return CED_UNITS.flatMap(u=>u.topics.map(t=>({unit:u.id,unitName:u.name,weight:u.weight,id:t[0],title:t[1],summary:t[2],must:t[3]})));}
   function cedPercent(){const s=cedState(),all=allCedTopics();const done=all.filter(t=>s[t.id]).length;return {done,total:all.length,pct:Math.round(done/all.length*100)};}
