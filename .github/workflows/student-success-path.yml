@@ -1,0 +1,40 @@
+name: Student Success Path validation
+
+on:
+  pull_request:
+  push:
+    branches: [main, audit/content-quality-all-units]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate syntax and freshman pathway safeguards
+        run: |
+          node --check student-success-path.js
+          node <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('index.html','utf8');
+          const success=fs.readFileSync('student-success-path.js','utf8');
+          const ced=fs.readFileSync('ced-guide.js','utf8');
+          const problems=[];
+          if(!html.includes('student-success-path.css')||!html.includes('student-success-path.js'))problems.push('Success path assets are not loaded');
+          if(html.lastIndexOf('student-success-path.js')<html.lastIndexOf('final-freshman-polish.js'))problems.push('Success path must load after the existing render wrappers');
+          const ids=new Set([...ced.matchAll(/['"]([1-7]\.(?:[1-9]|1[0-2]))['"]/g)].map(m=>m[1]));
+          if(ids.size!==68)problems.push(`Expected 68 CED topics, found ${ids.size}`);
+          if(!/const STORE='aphgStudentSuccessV1',MAX=60/.test(success))problems.push('The session ceiling is not fixed at 60');
+          if(!/Math\.min\(MAX,Math\.max\(1,count\)\)/.test(success))problems.push('Session count is not capped in the start function');
+          if(!/new Set\(\).*prompt\.trim\(\)\.toLowerCase/.test(success.replace(/\s+/g,' ')))problems.push('Exact-stem deduplication is missing');
+          if(!/\[10,0,'10 questions'/.test(success)||!/\[15,900,'15 questions'/.test(success)||!/\[30,1800,'30 questions'/.test(success)||!/\[60,3600,'60 questions'/.test(success))problems.push('The gradual practice ladder is incomplete');
+          if(!/I know this/.test(success)||!/I’m unsure/.test(success)||!/I’m guessing/.test(success))problems.push('Confidence calibration choices are incomplete');
+          if(!/quiz\.slice\(0,35\)/.test(success)||!/APHG_STIMULUS_SET_QUESTIONS/.test(success))problems.push('Cumulative practice is not restricted to reviewed banks');
+          if(/name|email|birthday|school id|location|tracking/i.test(success.match(/localStorage[\s\S]{0,220}/g)?.join(' ')||''))problems.push('Student success storage may include identity data');
+          if(!/Nothing here uses your name or leaves this device/.test(success))problems.push('The plan does not explain local-only privacy');
+          if(!/APHGCEDGuide=\{allTopics:allCedTopics/.test(ced))problems.push('Teach Me This is not connected to the CED guide');
+          if(problems.length){console.error(problems.join('\n'));process.exit(1)}
+          console.log('Student success path passed: 68 topics, local-only plan, confidence calibration, unique stems, and 60-question maximum.');
+          NODE
