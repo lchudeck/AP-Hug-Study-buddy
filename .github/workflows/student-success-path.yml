@@ -35,6 +35,9 @@ jobs:
           if(/name|email|birthday|school id|location|tracking/i.test(success.match(/localStorage[\s\S]{0,220}/g)?.join(' ')||''))problems.push('Student success storage may include identity data');
           if(!/Nothing here uses your name or leaves this device/.test(success))problems.push('The plan does not explain local-only privacy');
           if(!/APHGCEDGuide=\{allTopics:allCedTopics/.test(ced))problems.push('Teach Me This is not connected to the CED guide');
+          if(!/focus=weak\?\.unit===s\.unit\?weak\.topic:t\.id/.test(success))problems.push('Daily lesson can drift away from the current class unit');
+          if(!/v37Set\(u-3\)/.test(success)||!/vpSet\(u===1\?0:2\)/.test(success))problems.push('Daily visual practice does not preserve the selected unit');
+          if(!/APHGCEDGuide\.openTopic/.test(success)||!/exactTopic\?t\.id===q/.test(ced))problems.push('Teach Me This does not open one exact CED topic');
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
           console.log('Student success path passed: 68 topics, local-only plan, confidence calibration, unique stems, and 60-question maximum.');
           NODE
