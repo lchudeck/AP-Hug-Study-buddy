@@ -108,12 +108,12 @@
   function toggleCed(id){const s=cedState();s[id]=!s[id];saveCedState(s);render();}
   function resetCed(){if(confirm('Clear your CED confidence checkmarks?')){localStorage.removeItem(STORE_KEY);render();}}
   function setCedUnit(v){cedUnit=v;render();}
-  function setCedQuery(v){cedQuery=v;render();}
+  function setCedQuery(v){const raw=String(v);cedQuery=/^[1-7]\.(?:[1-9]|1[0-2])$/.test(raw.trim())?raw.trim()+' ':raw;render();}
   function setCedNeeds(v){cedNeedsWork=v;render();}
   function setCedMode(v){cedMode=v;render();}
 
   window.toggleCed=toggleCed; window.resetCed=resetCed; window.setCedUnit=setCedUnit; window.setCedQuery=setCedQuery; window.setCedNeeds=setCedNeeds; window.setCedMode=setCedMode;
-  window.APHGCEDGuide={allTopics:allCedTopics,openTopic(id){const t=allCedTopics().find(x=>x.id===id);if(!t)return;cedMode='topics';cedUnit=String(t.unit);cedQuery=t.id;cedNeedsWork=false;active='ced';render();}};
+  window.APHGCEDGuide={allTopics:allCedTopics,openTopic(id){const t=allCedTopics().find(x=>x.id===id);if(!t)return;cedMode='topics';cedUnit=String(t.unit);cedQuery=t.id+' ';cedNeedsWork=false;active='ced';render();}};
 
   function allCedTopics(){return CED_UNITS.flatMap(u=>u.topics.map(t=>({unit:u.id,unitName:u.name,weight:u.weight,id:t[0],title:t[1],summary:t[2],must:t[3]})));}
   function cedPercent(){const s=cedState(),all=allCedTopics();const done=all.filter(t=>s[t.id]).length;return {done,total:all.length,pct:Math.round(done/all.length*100)};}
