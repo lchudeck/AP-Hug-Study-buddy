@@ -36,7 +36,7 @@ const units=[
 {id:7,name:"Industrial Development",weight:"12–17%",color:"#9d174d",
  vocab:["GDP","GNI","HDI","Rostow","Wallerstein","Core","Periphery","Semi-periphery","Outsourcing","Deindustrialization"],
  danger:"Students mix up Rostow and Wallerstein.",
- save:"Rostow = countries grow through stages (hopeful). Wallerstein = rich countries keep poor countries poor (critical).",
+ save:"Rostow = countries grow through stages (hopeful). Wallerstein = unequal global economic relationships can keep peripheral countries dependent on core countries (critical).",
  plain:"This unit is about why some countries are rich and others are poor, and how factories and trade shape that."}
 ];
 
@@ -78,7 +78,7 @@ const unitReviews={
    frq:["Identify the urban process","Describe benefits AND costs","Explain a policy solution"],
    practice:"Explain one policy that could reduce displacement from gentrification."},
 7:{big:"Development and industry are shaped by globalization, trade, labor, technology, and unequal power between countries.",
-   know:["HDI = income + education + life expectancy (better than GDP alone)","Rostow's stages: every country can develop","Wallerstein: core countries keep periphery poor","Outsourcing shifts jobs to lower-wage countries","Deindustrialization: manufacturing jobs lost in wealthy countries"],
+   know:["HDI = income + education + life expectancy (better than GDP alone)","Rostow's stages: every country can develop","Wallerstein: unequal exchange can keep peripheral countries dependent on core countries","Outsourcing shifts jobs to lower-wage countries","Deindustrialization: manufacturing jobs lost in wealthy countries"],
    models:["Rostow's stages of growth","Wallerstein world-systems theory","Weber industrial location theory"],
    mistakes:["Mixing up Rostow (hopeful, stages) and Wallerstein (critical, unequal)","Using GDP alone as your only development measure","Forgetting BOTH winners and losers from globalization"],
    frq:["Compare different development measures","Explain outsourcing impacts on workers","Connect globalization to inequality"],
@@ -215,7 +215,7 @@ units.forEach(u=>{(extraByUnit[u.id]||[]).forEach(v=>{if(!u.vocab.includes(v))u.
 // STATE
 // ═══════════════════════════════════════════
 let active="home";
-let selectedUnit=6, selectedPrompt=5;
+let selectedUnit=1, selectedPrompt=0;
 let answer="", showKey=false;
 let qIndex=0, qFilter="All", selectedChoice="";
 let stats={correct:0,total:0}, missedUnits={}, lastMissed=null;
@@ -329,7 +329,7 @@ function startAdaptiveVocab(){
 
 function startAdaptiveFRQ(){
   const weak=getWeakestUnit();
-  const unit=weak?weak.unit:6;
+  const unit=weak?weak.unit:1;
   const idx=prompts.findIndex(p=>p.unit===unit);
   selectedPrompt=idx>=0?idx:0;
   answer=''; showKey=false; scaffoldAnswers={}; visibleRewrite={}; aiResult=null;
@@ -338,9 +338,9 @@ function startAdaptiveFRQ(){
 
 function startTargetFRQ(){
   const weak=getWeakestUnit();
-  const unit=weak?weak.unit:6;
+  const unit=weak?weak.unit:1;
   const idx=prompts.findIndex(p=>p.unit===unit);
-  selectedPrompt=idx>=0?idx:5;
+  selectedPrompt=idx>=0?idx:0;
   answer='';
   showKey=false;
   scaffoldAnswers={};
@@ -488,7 +488,7 @@ function readinessDashboardHtml(){
       <p style="font-size:14px;color:#475569">Students click these honestly before the exam. Each “yes” raises the readiness score.</p>
       <div class="readiness-checks">
         ${readinessCheckButton('frqLabels','I can label every FRQ part A, B, C, D.')}
-        ${readinessCheckButton('explainBecause','I can use because/therefore on every explain prompt.')}
+        ${readinessCheckButton('explainBecause','I can clearly connect cause and effect on every explain prompt.')}
         ${readinessCheckButton('vocabTerm','I can use at least one APHG vocabulary word in an answer.')}
         ${readinessCheckButton('mcqConfidence','I can explain why a wrong MCQ answer is wrong.')}
       </div>
@@ -689,7 +689,7 @@ function frqPage(){
         <li><b>Identify:</b> One word or phrase. Short is fine.</li>
         <li><b>Define:</b> Say what the term means in your own words.</li>
         <li><b>Describe:</b> Give one clear detail, example, or characteristic.</li>
-        <li><b>Explain:</b> <em>Must</em> use <b>because</b>, <b>therefore</b>, or <b>this leads to</b>.</li>
+        <li><b>Explain:</b> Clearly show <b>how or why</b> one process produces an effect. Connector words can help, but none is required.</li>
         <li>Add at least one APHG vocabulary term.</li>
       </ol>
     </div>
@@ -758,7 +758,7 @@ function rubricRule(verb){
   if(verb==="Identify") return "Name the correct term, example, or concept. One word or phrase can earn the point.";
   if(verb==="Define") return "Give an accurate meaning. Don't just repeat the word.";
   if(verb==="Describe") return "Give a clear detail, characteristic, or example that shows what it looks like in the real world.";
-  if(verb==="Explain") return "Show cause and effect. Must use 'because,' 'therefore,' or 'this leads to.' Just naming something won't earn the point.";
+  if(verb==="Explain") return "Show how or why the cause, process, or evidence produces the effect. No particular connector word is required.";
   return "Answer the task directly with accurate APHG content.";
 }
 
@@ -766,7 +766,7 @@ function pointTip(verb){
   if(verb==="Identify") return "Write the correct APHG term or a specific example.";
   if(verb==="Define") return "Say what it means in plain language, then stop.";
   if(verb==="Describe") return "Give one accurate characteristic or real-world example.";
-  if(verb==="Explain") return "Connect cause and effect with because/therefore/this leads to.";
+  if(verb==="Explain") return "Clearly connect the cause, process, or evidence to its effect.";
   return "Answer directly using the scenario and an APHG word.";
 }
 
@@ -782,7 +782,6 @@ function buildFromScaffold(){
   answer=p.parts.map(part=>{
     const l=part[0],v=part[1],val=(scaffoldAnswers[l]||"").trim();
     if(!val)return "";
-    if(v==="Explain"&&!/because|therefore|this leads to|as a result|due to/i.test(val)) return l+". "+val+" because ____.";
     return l+". "+val;
   }).filter(Boolean).join("\n");
   render();
@@ -803,7 +802,7 @@ function feedbackHtml(){
       <li>Did I answer every part (A through G)?</li>
       <li>Did I label each part?</li>
       <li>Did I match the task verb (identify vs. define vs. explain)?</li>
-      <li>Did I use because/therefore for explain parts?</li>
+      <li>Did I clearly connect how or why the cause produces the effect?</li>
       <li>Did I use at least one APHG vocab term?</li>
     </ol>
   </div>`;
@@ -848,6 +847,7 @@ function sentenceBankHtml(){
 }
 
 function normalizeText(text){return (text||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
+function hasCausalReasoning(text){return /because|therefore|this leads to|as a result|due to|so that|which causes|which leads|results? in|causes?|produces?|creates?|allows?|prevents?|raises?|lowers?|increases?|decreases?|reduces?|encourages?|limits?|contributes? to|drives?|affects?/i.test(text||'');}
 function partText(letter, full){
   const source=full||'';
   const re=new RegExp('(?:^|\\n)\\s*'+letter+'\\s*[\\).:-]\\s*([\\s\\S]*?)(?=(?:\\n\\s*[A-Z]\\s*[\\).:-])|$)','i');
@@ -868,7 +868,7 @@ function checkMistakes(fullAnswer, prompt){
   prompt.parts.forEach(part=>{
     const txt=partText(part[0], fullAnswer);
     if(!new RegExp('(^|\\n)\\s*'+part[0]+'\\s*[\\).:-]','i').test(fullAnswer)) warnings.push('Part '+part[0]+': label it clearly as '+part[0]+'.');
-    if(part[1]==='Explain' && !/because|therefore|this leads to|as a result|due to|so that|which causes|which leads/i.test(txt)) warnings.push('Part '+part[0]+': add because/therefore to show cause and effect.');
+    if(part[1]==='Explain' && !hasCausalReasoning(txt)) warnings.push('Part '+part[0]+': make the cause-and-effect relationship explicit.');
     if(txt.trim().split(/\s+/).filter(Boolean).length<4) warnings.push('Part '+part[0]+': write a little more so the grader can see your thinking.');
   });
   if(!/gentrification|dtm|demographic|diffusion|devolution|sovereignty|von thünen|hdi|rostow|wallerstein|outsourcing|urban|migration|population|market|core|periphery|region|site|situation|cbd|sprawl|state|nation/i.test(lower)) warnings.push('Add at least one APHG vocabulary word.');
@@ -880,7 +880,7 @@ function localGradeFRQ(fullAnswer, prompt){
     const txt=partText(part[0], fullAnswer);
     const wc=txt.trim().split(/\s+/).filter(Boolean).length;
     const kh=keywordHits(txt, part[3]);
-    const hasCause=/because|therefore|this leads to|as a result|due to|so that|which causes|which leads/i.test(txt);
+    const hasCause=hasCausalReasoning(txt);
     const hasEnough=part[1]==='Identify'?wc>=1:part[1]==='Define'?wc>=4:wc>=6;
     const promptKeyword=normalizeText(part[2]).split(' ').find(w=>w.length>5)||'zzzz';
     const contentOK=kh.hits.length>=1 || normalizeText(txt).includes(promptKeyword);
@@ -942,7 +942,7 @@ function drillHtml(){
     ${drillChecked?`
     <div class="${ok?'box-good':'box-warn'}" style="margin-top:10px">
       <b>${ok?'✅ Likely earns the point!':'❌ Not yet.'}</b>
-      ${!ok?`<p style="margin-top:6px">${d[0]==='Explain'?'Add a because/therefore statement showing cause and effect.':'Make sure your answer is complete with a clear term or detail.'}</p>`:''}
+      ${!ok?`<p style="margin-top:6px">${d[0]==='Explain'?'Make the cause-and-effect relationship explicit.':'Make sure your answer is complete with a clear term or detail.'}</p>`:''}
     </div>
     <div class="callout" style="margin-top:10px">
       <b>Sample answer:</b>
@@ -1152,22 +1152,56 @@ function validatedStimulusBank(){
     ...(window.APHG_REAL_DATA_QUESTIONS||[])
   ].map(normalizeExamItem).filter(q=>q.q&&q.choices.length===4&&q.choices.includes(q.answer)&&q.stimulus);
 }
+function balancedExamChoices(items,examNum){
+  return items.map((q,i)=>{
+    const target=(i+examNum-1)%4;
+    const distractors=seededShuffle(q.choices.filter(choice=>choice!==q.answer),`answer-order-${examNum}-${i}-${q.q}`);
+    const choices=[...distractors];choices.splice(target,0,q.answer);
+    return {...q,choices};
+  });
+}
+function simulatorConceptKey(q){
+  const text=`${q.q||''} ${q.answer||''}`.toLowerCase();
+  if(/dairy|market gardening|perishable/.test(text)&&/market|von thünen|transport/.test(text))return 'von-thunen-perishability';
+  if(/commodity chain|inputs.*factory|global production chain/.test(text))return 'commodity-chain';
+  if(/stimulus diffusion|restaurant.*local|menu.*local/.test(text))return 'stimulus-diffusion';
+  return String(q.answer||q.q||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,' ').slice(0,90);
+}
+function takeConceptDiverse(items,count,used){
+  const picked=[];
+  for(const q of items){const key=simulatorConceptKey(q);if(!used.has(key)){used.add(key);picked.push(q);if(picked.length===count)return picked;}}
+  for(const q of items){if(!picked.includes(q)){picked.push(q);if(picked.length===count)return picked;}}
+  return picked;
+}
 function buildPracticeExam(examNum){
-  const foundational=quiz.slice(0,35).map(normalizeExamItem);
+  const applicationMap=new Map();
+  [...quiz.slice(35),...AP_SIMULATOR_EXTENSION].map(normalizeExamItem).forEach(q=>{
+    const key=String(q.q||'').trim().toLowerCase();
+    const mechanical=/^Which term best matches this definition:|^A student says this example should be labeled/i.test(q.q||'');
+    if(q.q&&!mechanical&&q.choices.length===4&&q.choices.includes(q.answer)&&q.why&&!applicationMap.has(key))applicationMap.set(key,q);
+  });
+  const applicationBank=[...applicationMap.values()];
+  const selectedApplication=[],usedConcepts=new Set();
+  for(let unit=1;unit<=7;unit++){
+    const needed=unit===1?3:6;
+    const unitItems=seededShuffle(applicationBank.filter(q=>q.unit===unit),`ced-application-${examNum}-unit-${unit}`);
+    if(unitItems.length<needed)throw new Error(`AP simulator needs at least ${needed} reviewed application questions for Unit ${unit}.`);
+    selectedApplication.push(...takeConceptDiverse(unitItems,needed,usedConcepts));
+  }
   const stimulusBank=validatedStimulusBank();
   const selectedStimuli=[];
-  for(let unit=2;unit<=7;unit++){
+  for(let unit=1;unit<=7;unit++){
     const unitItems=stimulusBank.filter(q=>q.unit===unit);
     if(unitItems.length<3) throw new Error(`AP simulator needs at least three validated stimulus questions for Unit ${unit}.`);
     const rotated=seededShuffle(unitItems,`ced-sim-${examNum}-unit-${unit}`);
-    selectedStimuli.push(...rotated.slice(0,3));
+    selectedStimuli.push(...takeConceptDiverse(rotated,3,usedConcepts));
   }
-  const mcq=[...foundational,...AP_SIMULATOR_EXTENSION.map(normalizeExamItem),...selectedStimuli];
+  const mcq=[...selectedApplication,...selectedStimuli];
   const unique=[];const seen=new Set();
   seededShuffle(mcq,`ced-simulator-${examNum}`).forEach(q=>{const key=q.q.trim().toLowerCase();if(!seen.has(key)){seen.add(key);unique.push(q);}});
   if(unique.length!==60) throw new Error(`AP simulator expected 60 unique validated questions; received ${unique.length}.`);
   const frqSet=[prompts[(examNum-1)%prompts.length],prompts[(examNum+1)%prompts.length],prompts[(examNum+3)%prompts.length]];
-  return {title:`Practice Exam ${examNum}`,mcq:unique,frq:frqSet};
+  return {title:`Practice Exam ${examNum}`,mcq:balancedExamChoices(unique,examNum),frq:frqSet};
 }
 function selectExam(n){activeExam=n-1;examAnswers={};examSubmitted=false;examFrqAnswers={};examFrqFeedback={};render();}
 function setExamAnswer(i,choice){if(examSubmitted)return;examAnswers[i]=choice;render();}
@@ -1236,7 +1270,7 @@ function modelsMapsPage(){
  const sp=scalePractice[selectedScale]||scalePractice[0];
  return `<main><section class="card"><h2>🗺️ Models & Maps Preview</h2><p>This preview uses teacher-created SVG diagrams plus GIS-style map practice. No textbook images are embedded.</p><div class="model-map-toolbar"><button class="filter-btn ${modelMapView==="models"?"active":""}" onclick="modelMapView='models';render()">Models</button><button class="filter-btn ${modelMapView==="maps"?"active":""}" onclick="modelMapView='maps';render()">GIS + Scale Maps</button></div><div class="source-note"><b>Map source note:</b> These are simplified classroom GIS diagrams inspired by public-domain/open geographic data conventions such as Natural Earth and U.S. Census TIGER/Line. They are not copied textbook maps.</div></section>${modelMapView==="models"?modelsPanel(m):mapsPanel(sp)}</main>`;
 }
-function modelsPanel(m){const ex=modelExamples[m.name]||{};return `<section class="card"><h2>📊 APHG Model Bank</h2><div class="model-card-grid"><div class="model-list">${modelBank.map((x,i)=>`<button class="${i===selectedModel?"active":""}" onclick="selectedModel=${i};modelAnswer='';modelFeedback=null;render()"><b>Unit ${x.unit}</b><br>${x.name}<br><small>CED Topic ${x.ced}</small></button>`).join("")}</div><div><span class="pill" style="background:#e0e7ff;color:#3730a3">Unit ${m.unit} • Topic ${m.ced}</span><h2>${m.name}</h2><div class="diagram-wrap">${diagramSvg(m.svg)}</div><div class="model-notes"><div class="box-info"><b>What this model shows</b><p>${m.why}</p></div><div class="box-yellow"><b>What students should look for</b><p>${m.look}</p></div></div><div class="model-example-grid"><div class="box-good"><b>Real-world example</b><p>${ex.example||'Use a specific country, city, or region that fits the model.'}</p></div><div class="box-info"><b>Why it fits</b><p>${ex.why||'Connect the model pattern to evidence from the place.'}</p></div><div class="box-warn"><b>Limitation</b><p>${ex.limit||'No model perfectly explains every real place.'}</p></div><div class="box-yellow"><b>AP move</b><p>Name the model, describe the pattern, apply a place, then explain a limitation.</p></div></div><div class="map-question"><b>Image-based FRQ practice:</b><p>${m.frq}</p></div><textarea class="answer-textarea" style="min-height:110px" placeholder="Write a short FRQ answer. Use because/therefore for explain prompts." oninput="modelAnswer=this.value">${htmlEscape(modelAnswer)}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn-primary" onclick="gradeModelAnswer()">Check my answer</button><button class="btn-secondary" onclick="modelAnswer='';modelFeedback=null;render()">Reset</button><button class="btn-secondary" onclick="masteryView='mixed';active='mastery';render()">Practice mixed FRQ</button></div>${modelFeedback?`<div class="${modelFeedback.ok?"box-good":"box-warn"}" style="margin-top:12px"><b>${modelFeedback.ok?"Likely earns the point":"Needs a rewrite"}</b><p>${modelFeedback.note}</p><p><b>Model answer:</b> ${m.sample}</p></div>`:""}</div></div></section>`}
+function modelsPanel(m){const ex=modelExamples[m.name]||{};return `<section class="card"><h2>📊 APHG Model Bank</h2><div class="model-card-grid"><div class="model-list">${modelBank.map((x,i)=>`<button class="${i===selectedModel?"active":""}" onclick="selectedModel=${i};modelAnswer='';modelFeedback=null;render()"><b>Unit ${x.unit}</b><br>${x.name}<br><small>CED Topic ${x.ced}</small></button>`).join("")}</div><div><span class="pill" style="background:#e0e7ff;color:#3730a3">Unit ${m.unit} • Topic ${m.ced}</span><h2>${m.name}</h2><div class="diagram-wrap">${diagramSvg(m.svg)}</div><div class="model-notes"><div class="box-info"><b>What this model shows</b><p>${m.why}</p></div><div class="box-yellow"><b>What students should look for</b><p>${m.look}</p></div></div><div class="model-example-grid"><div class="box-good"><b>Real-world example</b><p>${ex.example||'Use a specific country, city, or region that fits the model.'}</p></div><div class="box-info"><b>Why it fits</b><p>${ex.why||'Connect the model pattern to evidence from the place.'}</p></div><div class="box-warn"><b>Limitation</b><p>${ex.limit||'No model perfectly explains every real place.'}</p></div><div class="box-yellow"><b>AP move</b><p>Name the model, describe the pattern, apply a place, then explain a limitation.</p></div></div><div class="map-question"><b>Image-based FRQ practice:</b><p>${m.frq}</p></div><textarea class="answer-textarea" style="min-height:110px" placeholder="Write a short FRQ answer. Clearly connect how or why for explain prompts." oninput="modelAnswer=this.value">${htmlEscape(modelAnswer)}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn-primary" onclick="gradeModelAnswer()">Check my answer</button><button class="btn-secondary" onclick="modelAnswer='';modelFeedback=null;render()">Reset</button><button class="btn-secondary" onclick="masteryView='mixed';active='mastery';render()">Practice mixed FRQ</button></div>${modelFeedback?`<div class="${modelFeedback.ok?"box-good":"box-warn"}" style="margin-top:12px"><b>${modelFeedback.ok?"Likely earns the point":"Needs a rewrite"}</b><p>${modelFeedback.note}</p><p><b>Model answer:</b> ${m.sample}</p></div>`:""}</div></div></section>`}
 function realMapHtml(sp){
   if(sp.img==='blackMarble') return `<img class="real-map-img" src="${REAL_MAP_IMAGES.blackMarble}" alt="NASA Black Marble 2016 global night lights map">`;
   if(sp.img==='censusPopulation') return `<img class="real-map-img" src="${REAL_MAP_IMAGES.censusPopulation}" alt="U.S. Census Bureau 2020 population distribution dot map">`;
@@ -1244,7 +1278,7 @@ function realMapHtml(sp){
   return `<div class="diagram-wrap">${scaleSvg(sp.svg)}</div>`;
 }
 function mapsPanel(sp){return `<section class="card"><h2>🌍 Real GIS + Scale of Analysis Practice</h2><p>These map stimuli now use actual government/public map sources embedded directly in the app, so they should load even if school devices block external image calls.</p><div class="filter-row">${scalePractice.map((x,i)=>`<button class="filter-btn ${selectedScale===i?"active":""}" onclick="selectedScale=${i};scaleAnswer='';scaleFeedback=null;render()">${x.scale}</button>`).join("")}</div><div class="scale-map-grid"><div class="map-practice-card"><h3>${sp.title}</h3><div class="real-map-wrap">${realMapHtml(sp)}</div><p class="source-note">${sp.source} ${sp.sourceUrl?`<br><a href="${sp.sourceUrl}" target="_blank" rel="noopener">Open source page</a>`:""}</p><div class="map-layer-note"><b>Layers to notice:</b> ${sp.layers.join(" + ")}</div></div><div class="map-practice-card"><h3>AP-style prompt</h3><div class="map-question"><b>${sp.question}</b></div><div class="box-yellow" style="margin:10px 0"><b>Answer recipe</b><p>1. Name the scale. 2. Describe a visible pattern from the map. 3. Explain what this scale hides or reveals compared with another scale.</p></div><textarea class="answer-textarea" style="min-height:150px" placeholder="At the ___ scale, I can see ____. This scale hides/reveals ____ because ____." oninput="scaleAnswer=this.value">${htmlEscape(scaleAnswer)}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn-primary" onclick="gradeScaleAnswer()">Check my answer</button><button class="btn-secondary" onclick="scaleAnswer='';scaleFeedback=null;render()">Reset</button></div>${scaleFeedback?`<div class="${scaleFeedback.ok?"box-good":"box-warn"}" style="margin-top:12px"><b>${scaleFeedback.ok?"Strong AP scale answer":"Needs a more AP-style rewrite"}</b><p>${scaleFeedback.note}</p><p><b>Model answer:</b> ${sp.answer}</p><p><b>Rewrite move:</b> ${scaleFeedback.rewrite}</p></div>`:""}</div></div><section class="card" style="margin-top:18px"><h2>Teacher note</h2><p>This section is built to teach the APHG skill students miss: maps are not just pictures. They are data layers, and the pattern changes depending on scale.</p><div class="callout"><b>Best sentence frame</b><p>Changing the scale of analysis changes the interpretation because broad-scale maps show ____, while local/national-scale maps reveal ____.</p></div></section></section>`}
-function gradeModelAnswer(){const txt=(modelAnswer||"").toLowerCase();const ok=txt.length>60&&(txt.includes("because")||txt.includes("therefore")||txt.includes("this leads"))&&txt.match(/model|pattern|stage|market|city|core|periphery|population|cost|distance|urban|birth|death|housing|factory/);modelFeedback={ok:!!ok,note:ok?"You used model language and cause/effect. This is the kind of answer that can earn an FRQ point.":"Add a specific model term and explain cause/effect with because/therefore. Avoid just naming the model."};render();}
+function gradeModelAnswer(){const txt=(modelAnswer||"").toLowerCase();const ok=txt.length>60&&hasCausalReasoning(txt)&&txt.match(/model|pattern|stage|market|city|core|periphery|population|cost|distance|urban|birth|death|housing|factory/);modelFeedback={ok:!!ok,note:ok?"You used model language and made the causal relationship clear. This is the kind of answer that can earn an FRQ point.":"Add a specific model term and clearly connect the cause or process to its effect. Avoid just naming the model."};render();}
 function gradeScaleAnswer(){const txt=(scaleAnswer||"").toLowerCase();const hasScale=txt.includes("scale")||txt.includes("global")||txt.includes("local")||txt.includes("regional")||txt.includes("national");const hasPattern=txt.includes("pattern")||txt.includes("cluster")||txt.includes("distribution")||txt.includes("choropleth")||txt.includes("dot")||txt.includes("flow")||txt.includes("access");const hasCompare=txt.includes("hide")||txt.includes("reveal")||txt.includes("visible")||txt.includes("invisible")||txt.includes("compared")||txt.includes("average");const ok=txt.length>70&&hasScale&&hasPattern&&hasCompare;scaleFeedback={ok:!!ok,note:ok?"You named the scale, identified a map pattern, and explained what the scale reveals or hides. That is the APHG skill.":"Add three parts: the scale, a specific pattern from the map, and what that scale hides/reveals compared with another scale.",rewrite:"Use: At the ___ scale, the map shows ____. However, this scale hides/reveals ____ because ____."};render();}
 
 function planPage(){
@@ -1333,8 +1367,10 @@ function simSubmit(){if(simTimer)clearInterval(simTimer);const exam=buildSimulat
 function simResultsHtml(exam){const mcqCorrect=exam.mcq.filter((q,i)=>simMcqAnswers[i]===q.answer).length;const frqEarned=Object.values(simFrqFeedback).reduce((sum,f)=>sum+(f?f.score:0),0);const frqPossible=Object.values(simFrqFeedback).reduce((sum,f)=>sum+(f?f.total:0),0)||21;const est=estimateApScore(mcqCorrect,frqEarned,frqPossible);const missedByUnit={};exam.mcq.forEach((q,i)=>{if(simMcqAnswers[i]!==q.answer)missedByUnit[q.unit]=(missedByUnit[q.unit]||0)+1;});const weakRows=Object.entries(missedByUnit).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([u,n])=>`<div class="readiness-action"><b>Unit ${u}: ${n} missed</b><p>Study flashcards, then answer 5 MCQs and one FRQ part from this unit.</p></div>`).join("")||`<div class="box-good">No major MCQ weak spot found.</div>`;return `<section class="card"><h2>🎓 AP Simulator Score Report</h2><div class="sim-report-grid"><div class="sim-report-card"><b>${mcqCorrect}/60</b><span>MCQ raw</span></div><div class="sim-report-card"><b>${frqEarned}/${frqPossible}</b><span>FRQ estimate</span></div><div class="sim-report-card"><b>${est.composite}/120</b><span>composite</span></div><div class="sim-report-card"><b>${est.ap}</b><span>AP score estimate</span></div></div><div class="box-yellow"><b>Important:</b> This is a practice estimate, not an official College Board score. Real cut scores change each year.</div><h3>What to study next</h3>${weakRows}</section>`;}
 function simIntroPage(){return `<main><section class="sim-hero"><h2>🎓 Full AP Human Geography Simulator</h2><p>This mode is built to feel closer to the real AP structure: timed sections, stimulus-based MCQs, three FRQs, and a score report.</p><div class="sim-status"><span>Section I: 60 MCQs / 60 minutes</span><span>Section II: 3 FRQs / 75 minutes</span><span>MCQ = 50%</span><span>FRQ = 50%</span></div></section><section class="card"><h2>Choose a simulator version</h2><div class="filter-row">${[1,2,3].map(n=>`<button class="filter-btn ${simExam===n?'active':''}" onclick="simSelectExam(${n})">Simulator ${n}</button>`).join("")}</div><div class="box-info"><b>Student directions</b><p>Start with MCQ. When finished, move to FRQ. The score report appears after final submission and shows missed concepts, why answers were wrong, and rewrite suggestions.</p></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn-primary" onclick="simStart('mcq')">Start Section I: MCQ</button><button class="btn-secondary" onclick="simStart('frq')">Skip to FRQ practice</button></div></section></main>`;}
 function simMcqPage(){const exam=buildSimulatorExam(simExam);const answered=Object.keys(simMcqAnswers).length;return `<main><div class="sim-timer"><span><b id="simCountdown">${simTimerText()}</b> Section I: Multiple Choice</span><div><button class="btn-sm btn-secondary" onclick="simPause()">Pause</button> <button class="btn-sm btn-primary" onclick="simStart('frq')">Go to FRQ</button></div></div><section class="card"><h2>${exam.title}: Section I</h2><p>Answer 60 questions. Some include map/data/model stimulus cues, like the digital AP exam.</p><div class="sim-nav-grid">${exam.mcq.map((q,i)=>`<button class="sim-bubble ${simMcqAnswers[i]?'done':''}" onclick="document.getElementById('simq${i}').scrollIntoView({behavior:'smooth'})">${i+1}</button>`).join("")}</div><p><b>${answered}/60 answered</b></p></section><section class="card">${exam.mcq.map((q,i)=>`<div class="exam-question" id="simq${i}"><b>${i+1}. ${q.q}</b>${q.stimulus?q.stimulus.html:''}<div style="margin-top:8px">${q.choices.map((c,ci)=>`<button class="exam-choice ${simMcqAnswers[i]===c?'selected':''}" onclick="simSetMcq(${i},'${String(c).replace(/'/g,"\\'")}')"><b>${['A','B','C','D'][ci]}.</b> ${c}</button>`).join("")}</div></div>`).join("")}</section><section class="card"><button class="btn-primary" onclick="simStart('frq')">Finish MCQ and start FRQ section</button></section></main>`;}
-function simFrqStimuliHtml(p){if(!p.stimuli||!p.stimuli.length)return '';return `<div class="grid2">${p.stimuli.map(st=>`<div class="sim-stimulus"><b>Stimulus</b><div class="diagram-wrap">${diagramSvg(st)||scaleSvg(st)}</div></div>`).join("")}</div>`;}
-function simFrqPage(){const exam=buildSimulatorExam(simExam);return `<main><div class="sim-timer"><span><b id="simCountdown">${simTimerText()}</b> Section II: Free Response</span><div><button class="btn-sm btn-secondary" onclick="simPause()">Pause</button> <button class="btn-sm btn-primary" onclick="simSubmit()">Submit full simulator</button></div></div><section class="card"><h2>${exam.title}: Section II</h2><p>Write short labeled answers. This is not a five-paragraph essay. Label A through G and use <b>because</b> for explain prompts.</p><div class="box-yellow"><b>FRQ structure:</b> Q1 text only. Q2 has one stimulus. Q3 has two stimuli and scale-of-analysis practice.</div></section>${exam.frq.map((p,i)=>`<section class="card"><h2>FRQ ${i+1}: ${p.title}</h2><span class="pill" style="background:#e0e7ff;color:#3730a3">Unit ${p.unit}</span><div class="scenario-box"><b>Scenario</b><p>${p.scenario}</p></div>${simFrqStimuliHtml(p)}${p.parts.map(part=>`<div class="sim-frq-part"><b>${part[0]}. ${part[1]}</b><p>${part[2]}</p><p class="frame-hint">Point move: ${part[1]==='Explain'?'Use because/therefore and show cause-effect.':part[1]==='Describe'?'Give one clear characteristic or pattern.':'Name the correct term or concept.'}</p></div>`).join("")}<textarea class="answer-textarea" placeholder="Label your answers A, B, C, D, E, F, G..." oninput="simSetFrq(${i},this.value)">${htmlEscape(simFrqAnswers[i]||"")}</textarea></section>`).join("")}<section class="card"><button class="btn-primary" onclick="simSubmit()">Submit and get AP-style score report</button><button class="btn-secondary" onclick="simResetAll()">Reset simulator</button></section></main>`;}
+function simStimulusLabel(kind){return ({vonthunen:'Von Thünen agricultural land-use model with rings around a central market',globalChoro:'Regional urbanization pattern map',localFood:'Neighborhood grocery access, transit, and income map'}[kind]||'AP Human Geography visual stimulus');}
+function simStimulusVisual(kind){return /^(globalChoro|nationalDots|localFood|scaleCompare)$/.test(kind)?scaleSvg(kind):diagramSvg(kind);}
+function simFrqStimuliHtml(p){if(!p.stimuli||!p.stimuli.length)return '';return `<div class="grid2">${p.stimuli.map(st=>`<div class="sim-stimulus" role="img" aria-label="${htmlEscape(simStimulusLabel(st))}"><b aria-hidden="true">Stimulus</b><div class="diagram-wrap" aria-hidden="true">${simStimulusVisual(st)}</div></div>`).join("")}</div>`;}
+function simFrqPage(){const exam=buildSimulatorExam(simExam);return `<main><div class="sim-timer"><span><b id="simCountdown">${simTimerText()}</b> Section II: Free Response</span><div><button class="btn-sm btn-secondary" onclick="simPause()">Pause</button> <button class="btn-sm btn-primary" onclick="simSubmit()">Submit full simulator</button></div></div><section class="card"><h2>${exam.title}: Section II</h2><p>Write short labeled answers. This is not a five-paragraph essay. Label A through G. For every Explain part, clearly connect how or why the evidence produces the result; no particular connector word is required.</p><div class="box-yellow"><b>FRQ structure:</b> Q1 text only. Q2 has one stimulus. Q3 has two stimuli and scale-of-analysis practice.</div></section>${exam.frq.map((p,i)=>`<section class="card"><h2>FRQ ${i+1}: ${p.title}</h2><span class="pill" style="background:#e0e7ff;color:#3730a3">Unit ${p.unit}</span><div class="scenario-box"><b>Scenario</b><p>${p.scenario}</p></div>${simFrqStimuliHtml(p)}${p.parts.map(part=>`<div class="sim-frq-part"><b>${part[0]}. ${part[1]}</b><p>${part[2]}</p><p class="frame-hint">Point move: ${part[1]==='Explain'?'Clearly connect the cause, process, or evidence to its effect.':part[1]==='Describe'?'Give one clear characteristic or pattern.':'Name the correct term or concept.'}</p></div>`).join("")}<textarea class="answer-textarea" placeholder="Label your answers A, B, C, D, E, F, G..." oninput="simSetFrq(${i},this.value)">${htmlEscape(simFrqAnswers[i]||"")}</textarea></section>`).join("")}<section class="card"><button class="btn-primary" onclick="simSubmit()">Submit and get AP-style score report</button><button class="btn-secondary" onclick="simResetAll()">Reset simulator</button></section></main>`;}
 function simResultsPage(){const exam=buildSimulatorExam(simExam);return `<main>${simResultsHtml(exam)}<section class="card"><h2>Multiple Choice Review</h2>${exam.mcq.map((q,i)=>`<div class="exam-question"><b>${i+1}. ${q.q}</b>${q.stimulus?q.stimulus.html:''}<div class="${simMcqAnswers[i]===q.answer?'explain-good':'explain-bad'} explain-box"><b>${simMcqAnswers[i]===q.answer?'Correct':'Correct answer: '+q.answer}</b><br>${q.why}<br><b>Your answer:</b> ${simMcqAnswers[i]||'blank'}</div></div>`).join("")}</section><section class="card"><h2>FRQ Review + Rewrite Help</h2>${exam.frq.map((p,i)=>`<div class="exam-frq"><h3>FRQ ${i+1}: ${p.title}</h3>${simFrqFeedback[i]?`<div class="box-info"><b>Estimated score: ${simFrqFeedback[i].score}/${simFrqFeedback[i].total}</b>${simFrqFeedback[i].parts.map(r=>`<div class="part-result ${r.earned?'part-earned':'part-missing'}"><b>${r.earned?'✅':'⬜'} Part ${r.part}</b><br>${r.note}<div class="part-fix"><b>Rewrite/model:</b> ${r.fix}</div></div>`).join("")}</div>`:''}</div>`).join("")}</section><section class="card"><button class="btn-primary" onclick="simResetAll()">Try another simulator</button></section></main>`;}
 function apSimulatorPage(){if(simPhase==="mcq")return simMcqPage();if(simPhase==="frq")return simFrqPage();if(simPhase==="results")return simResultsPage();return simIntroPage();}
 
@@ -1474,9 +1510,9 @@ const mixedStimulusFrqs=[
  ]}
 ];
 function mixedVisual(frq){ if(frq.visual==="rapid") return pyramidSvg("rapid"); if(frq.visual==="vonthunen") return diagramSvg("vonthunen"); return actualMapMedia(actualMapPractice[0]); }
-function mixedFrqPage(){const f=mixedStimulusFrqs[mixedFrqIndex%mixedStimulusFrqs.length];return `<main><section class="card"><div class="mastery-mini-nav"><button class="btn-secondary btn-sm" onclick="masteryView='dashboard';render()">← Mastery Dashboard</button><button class="btn-secondary btn-sm" onclick="mixedFrqIndex=(mixedFrqIndex+1)%mixedStimulusFrqs.length;mixedAnswers={};mixedFeedback=null;render()">Next mixed FRQ</button></div><h2>🗺️ Mixed Stimulus FRQ</h2><p>These combine models, maps, and AP command verbs.</p><div class="pyramid-practice-layout"><div class="pyramid-visual">${mixedVisual(f)}</div><div><span class="pill" style="background:#e0e7ff;color:#3730a3">Unit ${f.unit}</span><h3>${f.title}</h3>${f.parts.map(part=>`<div class="rubric-row"><b>${part.label}. ${part.task}:</b> ${part.q}<div class="frame-hint">${part.task==='Explain'?'Use because/therefore.':'Answer directly and use APHG vocabulary.'}</div><textarea class="answer-textarea" style="min-height:72px" placeholder="Answer part ${part.label}..." oninput="mixedAnswers['${part.label}']=this.value">${htmlEscape(mixedAnswers[part.label]||'')}</textarea>${mixedFeedback?renderMixedPartFeedback(part,mixedAnswers[part.label]||''):''}</div>`).join('')}<button class="btn-primary" onclick="gradeMixedFrq()">Check this FRQ</button><button class="btn-secondary" onclick="mixedAnswers={};mixedFeedback=null;render()">Reset</button></div></div></section></main>`;}
+function mixedFrqPage(){const f=mixedStimulusFrqs[mixedFrqIndex%mixedStimulusFrqs.length];return `<main><section class="card"><div class="mastery-mini-nav"><button class="btn-secondary btn-sm" onclick="masteryView='dashboard';render()">← Mastery Dashboard</button><button class="btn-secondary btn-sm" onclick="mixedFrqIndex=(mixedFrqIndex+1)%mixedStimulusFrqs.length;mixedAnswers={};mixedFeedback=null;render()">Next mixed FRQ</button></div><h2>🗺️ Mixed Stimulus FRQ</h2><p>These combine models, maps, and AP command verbs.</p><div class="pyramid-practice-layout"><div class="pyramid-visual">${mixedVisual(f)}</div><div><span class="pill" style="background:#e0e7ff;color:#3730a3">Unit ${f.unit}</span><h3>${f.title}</h3>${f.parts.map(part=>`<div class="rubric-row"><b>${part.label}. ${part.task}:</b> ${part.q}<div class="frame-hint">${part.task==='Explain'?'Clearly connect the cause or process to its effect.':'Answer directly and use APHG vocabulary.'}</div><textarea class="answer-textarea" style="min-height:72px" placeholder="Answer part ${part.label}..." oninput="mixedAnswers['${part.label}']=this.value">${htmlEscape(mixedAnswers[part.label]||'')}</textarea>${mixedFeedback?renderMixedPartFeedback(part,mixedAnswers[part.label]||''):''}</div>`).join('')}<button class="btn-primary" onclick="gradeMixedFrq()">Check this FRQ</button><button class="btn-secondary" onclick="mixedAnswers={};mixedFeedback=null;render()">Reset</button></div></div></section></main>`;}
 function gradeMixedFrq(){mixedFeedback=true;render();}
-function renderMixedPartFeedback(part,ans){const t=(ans||'').toLowerCase();const hits=part.must.filter(k=>t.includes(k)).length;const ok=hits>=1 && (part.task!=='Explain'||/(because|therefore|this leads|as a result)/.test(t));return `<div class="${ok?'box-good':'box-warn'}" style="margin-top:8px"><b>${ok?'✅ Earned the point':'⬜ Not yet'}</b><p>${ok?'Your answer includes the required idea.':'To earn the point, include the key concept and show cause/effect when asked to explain.'}</p><p><b>Show me how to rewrite:</b> ${part.model}</p></div>`;}
+function renderMixedPartFeedback(part,ans){const t=(ans||'').toLowerCase();const hits=part.must.filter(k=>k!=='because'&&t.includes(k)).length;const ok=hits>=1 && (part.task!=='Explain'||hasCausalReasoning(t));return `<div class="${ok?'box-good':'box-warn'}" style="margin-top:8px"><b>${ok?'✅ Earned the point':'⬜ Not yet'}</b><p>${ok?'Your answer includes the required idea.':'To earn the point, include the key concept and clearly connect cause and effect when asked to explain.'}</p><p><b>Show me how to rewrite:</b> ${part.model}</p></div>`;}
 
 
 // ═══════════════════════════════════════════
@@ -1544,7 +1580,7 @@ function modelLabelPrompt(m){
 
 function modelsPanel(m){
  const ex=modelExamples[m.name]||{}; const lp=modelLabelPrompt(m);
- return `<section class="card"><h2>📊 APHG Model Bank</h2><p>Use models as AP evidence: identify the model, describe the pattern, apply a real place, and explain a limitation.</p><div class="model-card-grid"><div class="model-list">${modelBank.map((x,i)=>`<button class="${i===selectedModel?'active':''}" onclick="selectedModel=${i};modelAnswer='';modelFeedback=null;render()"><b>Unit ${x.unit}</b><br>${x.name}<br><small>CED Topic ${x.ced}</small></button>`).join('')}</div><div><span class="pill" style="background:#e0e7ff;color:#3730a3">Unit ${m.unit} • Topic ${m.ced}</span><h2>${m.name}</h2><div class="diagram-wrap">${diagramSvg(m.svg)}</div><div class="model-checklist"><div><b>1. Identify</b><br>Name the model.</div><div><b>2. Describe</b><br>Say the visible pattern.</div><div><b>3. Explain</b><br>Use because/therefore.</div></div><div class="model-notes"><div class="box-info"><b>What this model shows</b><p>${m.why}</p></div><div class="box-yellow"><b>What students should look for</b><p>${m.look}</p></div></div><div class="model-example-grid"><div class="box-good"><b>Real-world example</b><p>${ex.example||'Use a specific country, city, or region that fits the model.'}</p></div><div class="box-info"><b>Why it fits</b><p>${ex.why||'Connect the model pattern to evidence from the place.'}</p></div><div class="box-warn"><b>Limitation</b><p>${ex.limit||'No model perfectly explains every real place.'}</p></div><div class="box-yellow"><b>AP move</b><p>Name the model, describe the pattern, apply a place, then explain a limitation.</p></div></div><div class="label-practice"><b>${lp.q}</b><p class="polish-note">Students should answer this before attempting the FRQ.</p><details><summary>Show answer</summary><p>${lp.a}</p></details></div><div class="map-question"><b>Image-based FRQ practice:</b><p>${m.frq}</p></div><textarea class="answer-textarea" style="min-height:110px" placeholder="Write 1–2 short labeled sentences. Use because/therefore for explain prompts." oninput="modelAnswer=this.value">${htmlEscape(modelAnswer)}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn-primary" onclick="gradeModelAnswer()">Check my answer</button><button class="btn-secondary" onclick="modelAnswer='';modelFeedback=null;render()">Reset</button><button class="btn-secondary" onclick="masteryView='mixed';active='mastery';render()">Practice mixed FRQ</button></div>${modelFeedback?`<div class="${modelFeedback.ok?'box-good':'box-warn'}" style="margin-top:12px"><b>${modelFeedback.ok?'Likely earns the point':'Needs a rewrite'}</b><p>${modelFeedback.note}</p><p><b>Model answer:</b> ${m.sample}</p></div>`:''}</div></div></section>`;
+ return `<section class="card"><h2>📊 APHG Model Bank</h2><p>Use models as AP evidence: identify the model, describe the pattern, apply a real place, and explain a limitation.</p><div class="model-card-grid"><div class="model-list">${modelBank.map((x,i)=>`<button class="${i===selectedModel?'active':''}" onclick="selectedModel=${i};modelAnswer='';modelFeedback=null;render()"><b>Unit ${x.unit}</b><br>${x.name}<br><small>CED Topic ${x.ced}</small></button>`).join('')}</div><div><span class="pill" style="background:#e0e7ff;color:#3730a3">Unit ${m.unit} • Topic ${m.ced}</span><h2>${m.name}</h2><div class="diagram-wrap">${diagramSvg(m.svg)}</div><div class="model-checklist"><div><b>1. Identify</b><br>Name the model.</div><div><b>2. Describe</b><br>Say the visible pattern.</div><div><b>3. Explain</b><br>Connect how or why.</div></div><div class="model-notes"><div class="box-info"><b>What this model shows</b><p>${m.why}</p></div><div class="box-yellow"><b>What students should look for</b><p>${m.look}</p></div></div><div class="model-example-grid"><div class="box-good"><b>Real-world example</b><p>${ex.example||'Use a specific country, city, or region that fits the model.'}</p></div><div class="box-info"><b>Why it fits</b><p>${ex.why||'Connect the model pattern to evidence from the place.'}</p></div><div class="box-warn"><b>Limitation</b><p>${ex.limit||'No model perfectly explains every real place.'}</p></div><div class="box-yellow"><b>AP move</b><p>Name the model, describe the pattern, apply a place, then explain a limitation.</p></div></div><div class="label-practice"><b>${lp.q}</b><p class="polish-note">Students should answer this before attempting the FRQ.</p><details><summary>Show answer</summary><p>${lp.a}</p></details></div><div class="map-question"><b>Image-based FRQ practice:</b><p>${m.frq}</p></div><textarea class="answer-textarea" style="min-height:110px" placeholder="Write 1–2 short labeled sentences. For explain prompts, clearly connect how or why." oninput="modelAnswer=this.value">${htmlEscape(modelAnswer)}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn-primary" onclick="gradeModelAnswer()">Check my answer</button><button class="btn-secondary" onclick="modelAnswer='';modelFeedback=null;render()">Reset</button><button class="btn-secondary" onclick="masteryView='mixed';active='mastery';render()">Practice mixed FRQ</button></div>${modelFeedback?`<div class="${modelFeedback.ok?'box-good':'box-warn'}" style="margin-top:12px"><b>${modelFeedback.ok?'Likely earns the point':'Needs a rewrite'}</b><p>${modelFeedback.note}</p><p><b>Model answer:</b> ${m.sample}</p></div>`:''}</div></div></section>`;
 }
 
 
@@ -1577,7 +1613,7 @@ const interactiveScaleViews={
 
 function interactiveScalePractice(){
   const v=interactiveScaleViews[interactiveScaleLevel]||interactiveScaleViews.global;
-  return `<section class="interactive-scale-panel"><h2>🔎 Interactive Scale Toggle</h2><p>Click the same topic at different scales. The point is that <b>scale changes the story the data tells</b>.</p><div class="scale-toggle-row">${Object.keys(interactiveScaleViews).map(k=>`<button class="filter-btn ${interactiveScaleLevel===k?'active':''}" onclick="interactiveScaleLevel='${k}';scaleAnswer='';scaleFeedback=null;render()">${interactiveScaleViews[k].label}</button>`).join('')}</div><div class="scale-view-card"><div>${v.map}</div><div class="scale-insight"><h3>${v.title}</h3><p><b>Best use:</b> ${v.bestUse}</p><p><b>This scale reveals:</b> ${v.reveals}</p><p><b>This scale hides:</b> ${v.hides}</p><div class="box-yellow"><b>To earn full credit</b><p>You must explain <b>why</b> the scale changes the pattern. Use <b>because</b> and mention what the scale <b>reveals</b> or <b>hides</b>.</p></div><div class="callout"><b>AP sentence frame</b><p>At the <b>${v.label.toLowerCase()}</b> scale, the map reveals ____. It hides ____ because ____.</p></div></div></div><div class="scale-question-grid"><div><b>A. Identify</b><br>What scale are you viewing?</div><div><b>B. Describe</b><br>What pattern is visible?</div><div><b>C. Explain</b><br>What would a different scale reveal or hide?</div></div><div class="rubric-row" style="margin-top:12px"><b>Before moving on:</b> What new detail can you see at this scale that another scale would hide?</div><textarea class="answer-textarea" style="min-height:90px" placeholder="At this scale, I can see... A different scale would hide/reveal... because..."></textarea></section>`;
+  return `<section class="interactive-scale-panel"><h2>🔎 Interactive Scale Toggle</h2><p>Click the same topic at different scales. The point is that <b>scale changes the story the data tells</b>.</p><div class="scale-toggle-row">${Object.keys(interactiveScaleViews).map(k=>`<button class="filter-btn ${interactiveScaleLevel===k?'active':''}" onclick="interactiveScaleLevel='${k}';scaleAnswer='';scaleFeedback=null;render()">${interactiveScaleViews[k].label}</button>`).join('')}</div><div class="scale-view-card"><div>${v.map}</div><div class="scale-insight"><h3>${v.title}</h3><p><b>Best use:</b> ${v.bestUse}</p><p><b>This scale reveals:</b> ${v.reveals}</p><p><b>This scale hides:</b> ${v.hides}</p><div class="box-yellow"><b>To earn full credit</b><p>Explain <b>why</b> the scale changes the pattern and mention what the scale <b>reveals</b> or <b>hides</b>. No specific connector word is required.</p></div><div class="callout"><b>AP sentence frame</b><p>At the <b>${v.label.toLowerCase()}</b> scale, the map reveals ____. It hides ____, which changes the interpretation by ____.</p></div></div></div><div class="scale-question-grid"><div><b>A. Identify</b><br>What scale are you viewing?</div><div><b>B. Describe</b><br>What pattern is visible?</div><div><b>C. Explain</b><br>What would a different scale reveal or hide?</div></div><div class="rubric-row" style="margin-top:12px"><b>Before moving on:</b> What new detail can you see at this scale that another scale would hide?</div><textarea class="answer-textarea" style="min-height:90px" placeholder="At this scale, I can see... A different scale would hide or reveal..., changing the interpretation by..."></textarea></section>`;
 }
 
 function mapsPanel(sp){
