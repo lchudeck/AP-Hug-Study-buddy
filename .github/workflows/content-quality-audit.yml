@@ -63,20 +63,36 @@ jobs:
           if(!/filter\(n=>n<=variants\(s\.unit\)\.length\)/.test(ur))problems.push('Unit Review offers a custom size larger than its validated bank');
           const polish=fs.readFileSync('final-freshman-polish.js','utf8');
           if(!/filter\(q=>sig\(q\)!==missed\.sig\)/.test(polish))problems.push('Adaptive retry does not exclude exact missed stem');
+          const mastery=fs.readFileSync('practice-mastery.js','utf8');
+          if(!/missedRemediationDeck\(\)/.test(mastery)||!/stemSignature\(q\.prompt\)!==missedStem/.test(mastery))problems.push('Practice & Mastery does not replace a miss with a different same-topic stem');
+          if(!/id!==q\.id&&id!==q\.remediatesId/.test(mastery))problems.push('A correct remediation does not clear the original missed-question record');
           if(/LEAST likely to be confused|Which explanation would earn the strongest APHG point|An FRQ asks students to explain this idea/.test(allSource))problems.push('Full simulator still contains mechanically generated question stems');
+          const simulatorConceptKey=vm.runInContext('simulatorConceptKey',sandbox);
           for(const examNum of [1,2,3]){
             let exam;try{exam=vm.runInContext(`buildPracticeExam(${examNum})`,sandbox)}catch(e){problems.push('Simulator '+examNum+' failed to build: '+e.message);continue}
             if(exam.mcq.length!==60)problems.push('Simulator '+examNum+' does not contain exactly 60 MCQs');
             if(new Set(exam.mcq.map(q=>String(q.q).trim().toLowerCase())).size!==60)problems.push('Simulator '+examNum+' repeats an exact stem');
             const stimulusCount=exam.mcq.filter(q=>q.stimulus).length;
             if(stimulusCount<18||stimulusCount>24)problems.push('Simulator '+examNum+' stimulus share is outside the CED-aligned 30–40% range');
-            for(let u=1;u<=7;u++)if(!exam.mcq.some(q=>Number(q.unit)===u))problems.push('Simulator '+examNum+' omits Unit '+u);
+            for(let u=1;u<=7;u++){
+              const count=exam.mcq.filter(q=>Number(q.unit)===u).length,expected=u===1?6:9;
+              if(count!==expected)problems.push(`Simulator ${examNum} Unit ${u} has ${count} questions; expected ${expected}`);
+            }
+            const answerPositions=[0,0,0,0];exam.mcq.forEach(q=>answerPositions[q.choices.indexOf(q.answer)]++);
+            if(answerPositions.some(n=>n<14||n>16))problems.push('Simulator '+examNum+' has a gameable answer-position pattern: '+answerPositions.join(','));
+            const conceptKeys=exam.mcq.map(simulatorConceptKey);
+            if(new Set(conceptKeys).size!==conceptKeys.length)problems.push('Simulator '+examNum+' over-repeats a reviewed concept');
             for(const q of exam.mcq)if(!q.q||!Array.isArray(q.choices)||q.choices.length!==4||new Set(q.choices).size!==4||!q.choices.includes(q.answer)||!q.why)problems.push('Malformed simulator question: '+JSON.stringify(q));
             const full=vm.runInContext(`buildSimulatorExam(${examNum})`,sandbox);
             if(full.frq.length!==3||full.frq.some(f=>!Array.isArray(f.parts)||f.parts.length!==7))problems.push('Simulator '+examNum+' must contain three seven-part FRQs');
             const stimulusShape=full.frq.map(f=>(f.stimuli||[]).length).join(',');
             if(stimulusShape!=='0,1,2')problems.push('Simulator '+examNum+' FRQs must use zero, one, and two stimuli');
           }
+          const compact=sandbox.__apCompactSimPool||[];
+          if(compact.length!==19)problems.push('Compact AP simulator must contain 19 reviewed questions');
+          const compactPositions=[0,0,0,0];compact.forEach(x=>compactPositions[x.q[1].indexOf(x.q[2])]++);
+          if(compactPositions.some(n=>n<4||n>5))problems.push('Compact AP simulator has a gameable answer-position pattern: '+compactPositions.join(','));
+          if(!/role="img" aria-label="\$\{htmlEscape\(simStimulusLabel\(st\)\)\}"/.test(fs.readFileSync('app.js','utf8')))problems.push('Full simulator FRQ stimuli do not have accessible labels');
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
           console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units),'Expanded/stimulus questions:',expanded.length,'Visual questions:',visualQuestions.length);
           console.log('Missed-question policy passed: exact stem excluded; Unit Review uses a different validated item from the same CED topic when available.');
