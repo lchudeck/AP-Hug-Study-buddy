@@ -54,7 +54,7 @@ jobs:
           for(let u=1;u<=7;u++)if(!visualUnits.has(u))problems.push('Visual practice does not cover Unit '+u);
           if(visualQuestions.length<17)problems.push('Visual question banks did not fully load');
           const allSource=scripts.map(f=>fs.readFileSync(f,'utf8')).join('\n')+'\n'+html;
-          if(/keep(?:s|ing)? poor countries poor on purpose|(?:global )?system is designed to keep|designed the system to keep/i.test(allSource))problems.push('Development theory is framed as deliberate intent instead of structural unequal exchange');
+          if(/(?:rich|core) countries keep (?:poor countries|peripher(?:y|al countries?)) poor|keep(?:s|ing)? poor countries poor on purpose|(?:global )?system is designed to keep|designed the system to keep/i.test(allSource))problems.push('Development theory is framed as deliberate intent instead of structural unequal exchange');
           if(/Outsourcing means[^\n]{0,200}Moving work to another company or location/i.test(allSource))problems.push('Outsourcing is conflated with offshoring');
           const ur=fs.readFileSync('unit-review.js','utf8');
           if(/Choose the best answer\. \$\{p\}|Use AP Human Geography reasoning\. \$\{p\}|Apply what you know to this situation\. \$\{p\}/.test(ur))problems.push('Unit Review still creates cosmetic same-stem variants');
