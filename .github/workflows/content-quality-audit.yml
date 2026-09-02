@@ -95,6 +95,8 @@ jobs:
           if(compactPositions.some(n=>n<4||n>5))problems.push('Compact AP simulator has a gameable answer-position pattern: '+compactPositions.join(','));
           for(const visualFile of ['visual-practice.js','visual-practice-3-7.js'])if(!/findIndex\([fs]=>[fs]\.unit===/.test(fs.readFileSync(visualFile,'utf8')))problems.push(visualFile+' does not preserve the selected unit between visual MCQ and FRQ');
           if(!/role="img" aria-label="\$\{htmlEscape\(simStimulusLabel\(st\)\)\}"/.test(fs.readFileSync('app.js','utf8')))problems.push('Full simulator FRQ stimuli do not have accessible labels');
+          const visualCheck=vm.runInContext(`simStimulusVisual('globalChoro')+' '+simStimulusVisual('localFood')`,sandbox);
+          if(!/Global GIS Choropleth: Urbanization/.test(visualCheck)||!/Local GIS: Food Access \+ Transit/.test(visualCheck)||/Weber Least-Cost Theory/.test(visualCheck))problems.push('Full simulator scale FRQ renders the wrong map stimuli');
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
           console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units),'Expanded/stimulus questions:',expanded.length,'Visual questions:',visualQuestions.length);
           console.log('Missed-question policy passed: exact stem excluded; Unit Review uses a different validated item from the same CED topic when available.');
