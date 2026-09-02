@@ -72,6 +72,7 @@ jobs:
             let exam;try{exam=vm.runInContext(`buildPracticeExam(${examNum})`,sandbox)}catch(e){problems.push('Simulator '+examNum+' failed to build: '+e.message);continue}
             if(exam.mcq.length!==60)problems.push('Simulator '+examNum+' does not contain exactly 60 MCQs');
             if(new Set(exam.mcq.map(q=>String(q.q).trim().toLowerCase())).size!==60)problems.push('Simulator '+examNum+' repeats an exact stem');
+            if(exam.mcq.some(q=>/^Which term best matches this definition:|^A student says this example should be labeled/i.test(q.q)))problems.push('Simulator '+examNum+' includes a mechanical definition/correction template');
             const stimulusCount=exam.mcq.filter(q=>q.stimulus).length;
             if(stimulusCount<18||stimulusCount>24)problems.push('Simulator '+examNum+' stimulus share is outside the CED-aligned 30–40% range');
             for(let u=1;u<=7;u++){

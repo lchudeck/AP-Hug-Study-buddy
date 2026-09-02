@@ -1177,7 +1177,8 @@ function buildPracticeExam(examNum){
   const applicationMap=new Map();
   [...quiz.slice(35),...AP_SIMULATOR_EXTENSION].map(normalizeExamItem).forEach(q=>{
     const key=String(q.q||'').trim().toLowerCase();
-    if(q.q&&q.choices.length===4&&q.choices.includes(q.answer)&&q.why&&!applicationMap.has(key))applicationMap.set(key,q);
+    const mechanical=/^Which term best matches this definition:|^A student says this example should be labeled/i.test(q.q||'');
+    if(q.q&&!mechanical&&q.choices.length===4&&q.choices.includes(q.answer)&&q.why&&!applicationMap.has(key))applicationMap.set(key,q);
   });
   const applicationBank=[...applicationMap.values()];
   const selectedApplication=[],usedConcepts=new Set();
