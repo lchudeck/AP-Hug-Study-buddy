@@ -36,7 +36,7 @@ const units=[
 {id:7,name:"Industrial Development",weight:"12–17%",color:"#9d174d",
  vocab:["GDP","GNI","HDI","Rostow","Wallerstein","Core","Periphery","Semi-periphery","Outsourcing","Deindustrialization"],
  danger:"Students mix up Rostow and Wallerstein.",
- save:"Rostow = countries grow through stages (hopeful). Wallerstein = rich countries keep poor countries poor (critical).",
+ save:"Rostow = countries grow through stages (hopeful). Wallerstein = unequal global economic relationships can keep peripheral countries dependent on core countries (critical).",
  plain:"This unit is about why some countries are rich and others are poor, and how factories and trade shape that."}
 ];
 
@@ -78,7 +78,7 @@ const unitReviews={
    frq:["Identify the urban process","Describe benefits AND costs","Explain a policy solution"],
    practice:"Explain one policy that could reduce displacement from gentrification."},
 7:{big:"Development and industry are shaped by globalization, trade, labor, technology, and unequal power between countries.",
-   know:["HDI = income + education + life expectancy (better than GDP alone)","Rostow's stages: every country can develop","Wallerstein: core countries keep periphery poor","Outsourcing shifts jobs to lower-wage countries","Deindustrialization: manufacturing jobs lost in wealthy countries"],
+   know:["HDI = income + education + life expectancy (better than GDP alone)","Rostow's stages: every country can develop","Wallerstein: unequal exchange can keep peripheral countries dependent on core countries","Outsourcing shifts jobs to lower-wage countries","Deindustrialization: manufacturing jobs lost in wealthy countries"],
    models:["Rostow's stages of growth","Wallerstein world-systems theory","Weber industrial location theory"],
    mistakes:["Mixing up Rostow (hopeful, stages) and Wallerstein (critical, unequal)","Using GDP alone as your only development measure","Forgetting BOTH winners and losers from globalization"],
    frq:["Compare different development measures","Explain outsourcing impacts on workers","Connect globalization to inequality"],
