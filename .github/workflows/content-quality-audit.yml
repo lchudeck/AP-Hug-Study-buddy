@@ -1,0 +1,83 @@
+name: Content Quality Audit
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit APHG question structure and missed-question retries
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const html=fs.readFileSync('index.html','utf8');
+          const scripts=[...html.matchAll(/<script src="([^"]+\.js)"/g)].map(m=>m[1]).filter(f=>fs.existsSync(f));
+          const sandbox={window:{},localStorage:{getItem:()=>null,setItem:()=>{}},document:{getElementById:()=>({innerHTML:'',querySelectorAll:()=>[]}),querySelectorAll:()=>[],body:{textContent:''}},console,setInterval:()=>0,clearInterval:()=>{},setTimeout:()=>0,MutationObserver:function(){this.observe=()=>{}},location:{}};
+          sandbox.window=sandbox;vm.createContext(sandbox);
+          for(const f of scripts){try{vm.runInContext(fs.readFileSync(f,'utf8'),sandbox,{filename:f});}catch(e){}}
+          const quiz=vm.runInContext('typeof quiz!=="undefined"?quiz:[]',sandbox);
+          const problems=[];
+          if(!quiz.length)problems.push('quiz bank did not load');
+          const units=new Map();
+          for(const q of quiz){
+            const u=Number(String(q[0]).match(/\d+/)?.[0]);units.set(u,(units.get(u)||0)+1);
+            if(!q[1]||!Array.isArray(q[2])||q[2].length!==4||!q[2].includes(q[3])||!q[4])problems.push('Malformed question: '+JSON.stringify(q));
+            if(new Set(q[2]).size!==q[2].length)problems.push('Duplicate choices: '+q[1]);
+            if(String(q[4]).trim().split(/\s+/).length<5)problems.push('Explanation too thin: '+q[1]);
+          }
+          for(let u=1;u<=7;u++)if(!units.get(u))problems.push('Unit '+u+' has no core quiz questions');
+          const expandedNames=['APHG_IMAGE_MCQ_BANK','APHG_STIMULUS_SET_QUESTIONS','APHG_STIMULUS_SET_QUESTIONS_EXTRA','APHG_REAL_DATA_QUESTIONS'];
+          const expanded=expandedNames.flatMap(name=>{try{return vm.runInContext(`Array.isArray(window.${name})?window.${name}:[]`,sandbox)}catch(e){return []}});
+          for(const q of expanded){
+            const prompt=q.prompt||q.q,choices=q.choices,answer=q.answer,explain=q.explain;
+            if(!prompt||!Array.isArray(choices)||choices.length!==4||!choices.includes(answer)||!explain)problems.push('Malformed expanded question: '+JSON.stringify(q));
+            if(Array.isArray(choices)&&new Set(choices).size!==choices.length)problems.push('Duplicate expanded choices: '+prompt);
+            if(String(explain||'').trim().split(/\s+/).length<5)problems.push('Expanded explanation too thin: '+prompt);
+            if(!(Number(q.unit)>=1&&Number(q.unit)<=7))problems.push('Expanded question has invalid unit: '+prompt);
+          }
+          if(!expanded.length)problems.push('expanded/stimulus question banks did not load');
+          for(const q of quiz){
+            const unit=Number(String(q[0]).match(/\d+/)?.[0]),topic=String(q.topic||sandbox.APHGTopicSkillMastery?.topicFromQuestion(q)||'');
+            if(!topic.startsWith(unit+'.'))problems.push('Question has no valid same-unit CED topic: '+q[1]);
+          }
+          const visualBanks=[sandbox.__visualPractice12,sandbox.__visualPractice37].filter(Boolean);
+          const visualUnits=new Set(),visualQuestions=[];
+          for(const bank of visualBanks){
+            for(const set of bank.sets||[]){
+              visualUnits.add(Number(set.unit));
+              const questions=set.qs||[set.q];
+              for(const q of questions.filter(Boolean)){visualQuestions.push(q);if(!q[0]||!Array.isArray(q[1])||q[1].length!==4||!q[1].includes(q[2])||!q[3])problems.push('Malformed visual question: '+JSON.stringify(q));if(new Set(q[1]||[]).size!==(q[1]||[]).length)problems.push('Duplicate visual choices: '+q[0]);}
+            }
+            for(const frq of bank.frqs||[]){visualUnits.add(Number(frq.unit));for(const p of frq.parts||[]){if(!/^(Identify|Describe|Explain|Apply|Evaluate|Compare)$/.test(p[1])||!String(p[2]||'').trim()||String(p[3]||'').trim().split(/\s+/).length<(p[1]==='Identify'?1:2))problems.push('Malformed visual FRQ point: '+JSON.stringify(p));}}
+          }
+          for(let u=1;u<=7;u++)if(!visualUnits.has(u))problems.push('Visual practice does not cover Unit '+u);
+          if(visualQuestions.length<17)problems.push('Visual question banks did not fully load');
+          const allSource=scripts.map(f=>fs.readFileSync(f,'utf8')).join('\n')+'\n'+html;
+          if(/keep(?:s|ing)? poor countries poor on purpose|(?:global )?system is designed to keep|designed the system to keep/i.test(allSource))problems.push('Development theory is framed as deliberate intent instead of structural unequal exchange');
+          if(/Outsourcing means[^\n]{0,200}Moving work to another company or location/i.test(allSource))problems.push('Outsourcing is conflated with offshoring');
+          const ur=fs.readFileSync('unit-review.js','utf8');
+          if(/Choose the best answer\. \$\{p\}|Use AP Human Geography reasoning\. \$\{p\}|Apply what you know to this situation\. \$\{p\}/.test(ur))problems.push('Unit Review still creates cosmetic same-stem variants');
+          if(!/retryFor\(q\)/.test(ur)||!/different stem\/scenario/.test(ur))problems.push('Unit Review does not enforce alternate-question retry');
+          if(!/Math\.min\(Number\(count\)\|\|10,60\)/.test(ur)||!/s\.deck\.length\+s\.retryQueue\.length<60/.test(ur))problems.push('Unit Review does not enforce the 60-question session cap');
+          if(!/filter\(n=>n<=variants\(s\.unit\)\.length\)/.test(ur))problems.push('Unit Review offers a custom size larger than its validated bank');
+          const polish=fs.readFileSync('final-freshman-polish.js','utf8');
+          if(!/filter\(q=>sig\(q\)!==missed\.sig\)/.test(polish))problems.push('Adaptive retry does not exclude exact missed stem');
+          if(/LEAST likely to be confused|Which explanation would earn the strongest APHG point|An FRQ asks students to explain this idea/.test(allSource))problems.push('Full simulator still contains mechanically generated question stems');
+          for(const examNum of [1,2,3]){
+            let exam;try{exam=vm.runInContext(`buildPracticeExam(${examNum})`,sandbox)}catch(e){problems.push('Simulator '+examNum+' failed to build: '+e.message);continue}
+            if(exam.mcq.length!==60)problems.push('Simulator '+examNum+' does not contain exactly 60 MCQs');
+            if(new Set(exam.mcq.map(q=>String(q.q).trim().toLowerCase())).size!==60)problems.push('Simulator '+examNum+' repeats an exact stem');
+            const stimulusCount=exam.mcq.filter(q=>q.stimulus).length;
+            if(stimulusCount<18||stimulusCount>24)problems.push('Simulator '+examNum+' stimulus share is outside the CED-aligned 30–40% range');
+            for(let u=1;u<=7;u++)if(!exam.mcq.some(q=>Number(q.unit)===u))problems.push('Simulator '+examNum+' omits Unit '+u);
+            for(const q of exam.mcq)if(!q.q||!Array.isArray(q.choices)||q.choices.length!==4||new Set(q.choices).size!==4||!q.choices.includes(q.answer)||!q.why)problems.push('Malformed simulator question: '+JSON.stringify(q));
+            const full=vm.runInContext(`buildSimulatorExam(${examNum})`,sandbox);
+            if(full.frq.length!==3||full.frq.some(f=>!Array.isArray(f.parts)||f.parts.length!==7))problems.push('Simulator '+examNum+' must contain three seven-part FRQs');
+            const stimulusShape=full.frq.map(f=>(f.stimuli||[]).length).join(',');
+            if(stimulusShape!=='0,1,2')problems.push('Simulator '+examNum+' FRQs must use zero, one, and two stimuli');
+          }
+          if(problems.length){console.error(problems.join('\n'));process.exit(1)}
+          console.log('Content structure passed. Core quiz counts:',Object.fromEntries(units),'Expanded/stimulus questions:',expanded.length,'Visual questions:',visualQuestions.length);
+          console.log('Missed-question policy passed: exact stem excluded; Unit Review uses a different validated item from the same CED topic when available.');
+          NODE

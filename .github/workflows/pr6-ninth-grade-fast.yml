@@ -75,8 +75,37 @@ jobs:
 
             reset(/FRQ Coach/i);await sleep(4);const check=btn(/Check this point/i);if(check){const tas=[...d.querySelectorAll('textarea')];const q=tas[tas.length-1];q.value='asdfgh qwrty zzz';q.dispatchEvent(new w.Event('input',{bubbles:true}));check.click();await sleep(10);text=d.body.textContent;if(!text.includes('0/1 — Point not earned'))problems.push('Nonsense 1-point drill awarded credit');if(!/(How to improve|valid|needs|Try)/i.test(text))problems.push('1-point drill lacks corrective feedback');}
 
-            reset(/Unit Review/i);await sleep(4);if(typeof w.__unitReviewBuild!=='function')problems.push('Unit Review builder missing');else for(let u=1;u<=7;u++){w.localStorage.clear();const a=w.__unitReviewBuild(u,35,'standard'),b=w.__unitReviewBuild(u,35,'standard');if(a.length!==35||b.length!==35)problems.push(`Unit ${u} not 35 questions`);const topics=new Set(a.map(q=>q.topic));for(const t of w.__unitReviewTopics[u]||[])if(!topics.has(t))problems.push(`Unit ${u} missing topic ${t}`);const ids=new Set(a.map(q=>q.id));const overlap=b.filter(q=>ids.has(q.id)).length;if(overlap>5)problems.push(`Unit ${u} repeats ${overlap}/35 exact variants`);}
+            reset(/Unit Review/i);await sleep(4);if(typeof w.__unitReviewBuild!=='function')problems.push('Unit Review builder missing');else for(let u=1;u<=7;u++){w.localStorage.clear();const a=w.__unitReviewBuild(u,35,'standard'),b=w.__unitReviewBuild(u,35,'standard'),pool=w.__unitReviewVariants(u);if(a.length!==35||b.length!==35)problems.push(`Unit ${u} not 35 questions`);if(new Set(a.map(q=>q.id)).size!==a.length||new Set(b.map(q=>q.id)).size!==b.length)problems.push(`Unit ${u} duplicates a question inside one set`);for(const deck of [a,b]){const topics=new Set(deck.map(q=>q.topic));for(const t of w.__unitReviewTopics[u]||[])if(!topics.has(t))problems.push(`Unit ${u} missing topic ${t}`);}const ids=new Set(a.map(q=>q.id)),unseen=pool.filter(q=>!ids.has(q.id)),forced=(w.__unitReviewTopics[u]||[]).filter(t=>!unseen.some(q=>q.topic===t)).length,allowed=Math.max(0,35-unseen.length,forced),overlap=b.filter(q=>ids.has(q.id)).length;if(overlap>allowed)problems.push(`Unit ${u} repeats ${overlap}/35; maximum-variety limit is ${allowed}`);}
             btn(/Standard practice test/i)?.click();await sleep(3);if(!d.body.textContent.includes('1/35'))problems.push('Unit Review does not start at 1/35');d.querySelector('.quiz-option')?.click();await sleep(2);if(!btn(/Next question/i))problems.push('Unit Review lacks Next question after answer');
+
+            // Deliberately miss items and finish the session. A concept may return,
+            // but the exact stem must never appear twice and the session must stop at 60.
+            w.urHome();await sleep(2);btn(/Quick diagnostic/i)?.click();await sleep(2);
+            const sessionStems=[],missedStems=[];
+            for(let guard=0;guard<61;guard++){
+              const options=[...d.querySelectorAll('.quiz-option:not([disabled])')];if(!options.length)break;
+              const stem=(d.querySelector('#app h2')?.textContent||'').replace(/\s+/g,' ').trim();
+              if(sessionStems.includes(stem))problems.push('Exact question stem repeated in one session: '+stem);
+              sessionStems.push(stem);options[0].click();await sleep(1);
+              if(d.querySelector('.box-warn'))missedStems.push(stem);
+              const nextQuestion=btn(/Next question|See results/i);if(!nextQuestion){problems.push('Unit Review session stalled after '+sessionStems.length+' questions');break;}
+              nextQuestion.click();await sleep(1);
+            }
+            if(!missedStems.length)problems.push('Retry audit did not produce a missed question');
+            if(sessionStems.length>60||d.querySelector('.quiz-option:not([disabled])'))problems.push('Unit Review exceeded the 60-question session cap');
+            if(new Set(sessionStems).size!==sessionStems.length)problems.push('Unit Review repeated exact wording in one session');
+
+            reset(/Maps & Visual Practice/i);await sleep(2);
+            if(!btn(/Practice Units 1–2 visuals/i)||!btn(/Practice Units 3–7 visuals/i))problems.push('Maps hub does not expose both visual-practice banks');
+            else{
+              btn(/Practice Units 1–2 visuals/i).click();await sleep(2);
+              const earlyOptions=[...d.querySelectorAll('#app select option')].map(o=>o.textContent);
+              if(!earlyOptions.some(x=>/Unit 1/.test(x))||!earlyOptions.some(x=>/Unit 2/.test(x))||!btn(/Visual FRQ/i))problems.push('Units 1–2 visual MCQ/FRQ practice is not reachable');
+              reset(/Maps & Visual Practice/i);await sleep(2);btn(/Practice Units 3–7 visuals/i)?.click();await sleep(2);
+              const laterOptions=[...d.querySelectorAll('#app select option')].map(o=>o.textContent);
+              for(let u=3;u<=7;u++)if(!laterOptions.some(x=>new RegExp('Unit '+u).test(x)))problems.push('Visual practice missing Unit '+u);
+              if(!btn(/Visual FRQ/i))problems.push('Units 3–7 visual FRQ practice is not reachable');
+            }
 
             const report=d.querySelector('#aphg-report-btn');if(!report)problems.push('Report button missing');else{report.click();await sleep(2);const modal=d.querySelector('#aphg-report-modal');if(!modal)problems.push('Report modal missing');else{const m=modal.textContent;if(/Create email report|email app should open/i.test(m))problems.push('Old email-app reporting still visible');if(!/Send Report/i.test(m))problems.push('Send Report missing');if(!/email \(optional\)/i.test(m))problems.push('Optional return email unclear');}}
 
