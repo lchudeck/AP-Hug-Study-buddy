@@ -30,11 +30,18 @@
   const old=adaptiveFlashcardsHtml;
   adaptiveFlashcardsHtml=function(){
     let html=old();
-    // The original controls reference `cards.length`, but `cards` is local to the render function
-    // and therefore unavailable when the inline click handler runs later.
     html=html.replace(/onclick="flashIndex=\(flashIndex-1\+cards\.length\)%cards\.length;flashFlipped=false;flashFrqAnswer='';flashFrqFeedback=null;render\(\)"/g,'onclick="flashPrev()"');
     html=html.replace(/onclick="flashIndex=\(flashIndex\+1\)%cards\.length;flashFlipped=false;flashFrqAnswer='';flashFrqFeedback=null;render\(\)"/g,'onclick="flashNext()"');
     html=html.replace(/onclick="flashFlipped=!flashFlipped;render\(\)"/g,'onclick="flashFlip()"');
     return html;
   };
+
+  // Load the student-readiness upgrade after the core navigation and flashcards exist.
+  if(!document.querySelector('script[data-readiness-upgrade]')){
+    const s=document.createElement('script');
+    s.src='student-readiness-upgrades.js';
+    s.dataset.readinessUpgrade='true';
+    s.defer=true;
+    document.body.appendChild(s);
+  }
 })();
