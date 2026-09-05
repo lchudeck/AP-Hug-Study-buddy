@@ -1,0 +1,40 @@
+name: Personalized Unit 1 Coach validation
+on:
+  pull_request:
+    paths:
+      - 'personalized-unit1-coach.js'
+      - 'flashcard-nav-fix.js'
+      - 'adaptive-coach-v2.js'
+      - '.github/workflows/personalized-unit1-coach.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check personalized-unit1-coach.js
+          node --check flashcard-nav-fix.js
+      - name: Verify Unit 1 rescue coverage and safety
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const coach=fs.readFileSync('personalized-unit1-coach.js','utf8');
+          const loader=fs.readFileSync('flashcard-nav-fix.js','utf8');
+          const required=['1.1','1.2','1.3','1.4','1.5','1.6','1.7'];
+          for(const t of required){
+            if(!coach.includes(`'${t}'`)) throw new Error('Missing Unit 1 topic '+t);
+          }
+          for(const phrase of ['I didn’t know a word or term','I knew the words, but not the idea','The answer choices confused me','I had trouble reading the map or data',"I don't know yet",'Teach Me:','Prove it with a new question','What should I study next?']){
+            if(!coach.includes(phrase)) throw new Error('Missing student flow: '+phrase);
+          }
+          if(!coach.includes('Map scale relates map distance to Earth distance; scale of analysis is the geographic level of the data')) throw new Error('Map scale / scale of analysis distinction missing');
+          if(!coach.includes("choice!==correct")) throw new Error('Wrong-answer rescue trigger missing');
+          if(!coach.includes('recordCheck(state.topic,ok)')) throw new Error('Mastery update missing');
+          if(!loader.includes('personalized-unit1-coach.js')) throw new Error('Coach is not loaded by the app');
+          if(!loader.includes("s.addEventListener('load',loadPersonalCoach")) throw new Error('Coach is not sequenced after readiness layer');
+          console.log('Personalized Unit 1 coach structure passed.');
+          NODE
