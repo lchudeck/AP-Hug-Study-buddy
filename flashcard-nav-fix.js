@@ -36,12 +36,30 @@
     return html;
   };
 
-  // Load the student-readiness upgrade after the core navigation and flashcards exist.
-  if(!document.querySelector('script[data-readiness-upgrade]')){
+  function loadPersonalCoach(){
+    if(document.querySelector('script[data-personal-coach]')) return;
+    const p=document.createElement('script');
+    p.src='personalized-unit1-coach.js';
+    p.dataset.personalCoach='true';
+    p.defer=true;
+    document.body.appendChild(p);
+  }
+
+  // Load the student-readiness upgrade after the core navigation and flashcards exist,
+  // then layer the personalized Unit 1 coach on top of the audited/adaptive systems.
+  const existingReadiness=document.querySelector('script[data-readiness-upgrade]');
+  if(!existingReadiness){
     const s=document.createElement('script');
     s.src='student-readiness-upgrades.js';
     s.dataset.readinessUpgrade='true';
     s.defer=true;
+    s.addEventListener('load',loadPersonalCoach,{once:true});
     document.body.appendChild(s);
+  }else if(existingReadiness.dataset.loaded==='true'){
+    loadPersonalCoach();
+  }else{
+    existingReadiness.addEventListener('load',()=>{existingReadiness.dataset.loaded='true';loadPersonalCoach();},{once:true});
+    // Dynamic scripts may already be complete before this listener is attached.
+    setTimeout(loadPersonalCoach,0);
   }
 })();
