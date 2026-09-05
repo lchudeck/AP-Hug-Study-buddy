@@ -13,9 +13,9 @@
   const cedBase=(typeof quiz!=='undefined'?quiz:[]).map((q,i)=>({id:`pm-ced-${i+1}`,unit:Number(String(q[0]||'').match(/\d+/)?.[0]||0),topic:String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion(q)||''),prompt:q[1],choices:q[2],answer:q[3],explain:q[4],skill:q.skill,difficulty:q.difficulty,misconception:q.misconception})).filter(q=>q.unit&&q.topic&&q.prompt&&q.choices?.length===4&&q.answer);
   const unique=new Map();[...core,...(window.APHG_IMAGE_MCQ_BANK||[]),...cedBase].forEach(q=>{if(!unique.has(q.prompt))unique.set(q.prompt,q);});
   const nonSetBase=[...unique.values()];
-  const apFrames=[p=>p,p=>`Choose the best answer. ${p}`,p=>`Use AP Human Geography reasoning. ${p}`];
-  function variantize(q){return apFrames.map((f,i)=>({...q,id:`${q.id}-v${i+1}`,prompt:f(q.prompt),variant:i+1}));}
-  const variants=nonSetBase.flatMap(variantize);
+  // Each served question now has a genuinely distinct stem. Prefixing the same stem with
+  // generic AP wording created cosmetic duplicates and could reward memorization.
+  const variants=nonSetBase.map(q=>({...q,id:`${q.id}-base`,variant:1}));
   const bank=variants.concat(setQuestions);
   const allSets=[...(window.APHG_STIMULUS_SETS||[]),...(window.APHG_STIMULUS_SETS_EXTRA||[]),...(window.APHG_REAL_DATA_SETS||[])];
   const storeKey='aphgPracticeMasteryV4'; const seenKey='aphgPracticeRecentSeenV2'; let state={mode:'dashboard',unit:1,deck:[],index:0,selected:null,session:[]};
