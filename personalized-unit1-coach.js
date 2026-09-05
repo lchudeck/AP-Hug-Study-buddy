@@ -12,66 +12,67 @@
   };
   const lessons={
     '1.1':{
-      title:'Read the map before you answer it',
-      teach:'Start with the title, legend, units, and what is actually being mapped. Reference maps help locate places. Thematic maps show a pattern or variable, such as income, population, or disease rates.',
-      example:'If counties are shaded from light to dark by median income, the map is a choropleth map because areas are shaded according to a value.',
+      title:'Read what the map is actually showing',
+      teach:'Start with the title, legend, units, and the pattern being mapped. Reference maps help locate places and features. Thematic maps show a particular variable or pattern. Also remember that every map is selective, and map projections can distort shape, area, distance, or direction.',
+      example:'If counties are shaded from light to dark by median income, the map is thematic. If one projection makes high-latitude places look unusually large, that is projection distortion.',
       checks:[
-        {q:'A map uses one dot to represent 1,000 people. What kind of thematic map is it?',choices:['Dot-density map','Reference map','Isoline map','Cartogram'],a:'Dot-density map',why:'Dot-density maps use dots to represent a specified quantity and reveal spatial concentration.'},
-        {q:'A map is designed mainly to show highways, rivers, cities, and boundaries. What is its primary purpose?',choices:['Locate features','Show a rate by area','Resize places by value','Connect equal values'],a:'Locate features',why:'A reference map emphasizes locations and geographic features rather than one statistical pattern.'}
+        {q:'A map uses one dot to represent 1,000 people. What type of thematic map is being used?',choices:['Dot-density map','Reference map','Isoline map','Cartogram'],a:'Dot-density map',why:'Dot-density maps use dots to represent a specified quantity and help reveal spatial concentration.'},
+        {q:'A map is designed mainly to show highways, rivers, cities, and political boundaries. What is its primary purpose?',choices:['Locate geographic features','Show one rate by area','Resize places according to a value','Connect places with equal measured values'],a:'Locate geographic features',why:'A reference map emphasizes the location of geographic features rather than one statistical variable.'},
+        {q:'Why can two world map projections make the same country look different in size or shape?',choices:['All map projections distort some spatial relationships','Countries physically change size at different map scales','Thematic maps cannot show area accurately','Reference maps always preserve shape'],a:'All map projections distort some spatial relationships',why:'Flattening Earth onto a map requires distortion of shape, area, distance, direction, or some combination of them.'}
       ]
     },
     '1.2':{
-      title:'Know where geographic data come from',
-      teach:'Geographers collect quantitative and qualitative data. Remote sensing gathers information from a distance, often by satellites or aircraft. Field observations, surveys, interviews, censuses, and imagery each reveal different evidence and each has limitations.',
-      example:'Satellite imagery of vegetation is remotely sensed data. Interviews with farmers are qualitative data. Using both can reveal patterns and lived experience.',
+      title:'Know how geographers collect geographic data',
+      teach:'Geographers gather data in the field and through geospatial technologies. Methods include field observations, interviews, written accounts, landscape and photo interpretation, GIS, satellite navigation systems, remote sensing, and online mapping. Different methods provide different kinds of evidence and each has limitations.',
+      example:'Satellite imagery of vegetation is remotely sensed data. An interview with a farmer is field-based qualitative evidence. A satellite navigation system can record the exact location where the interview or observation occurred.',
       checks:[
-        {q:'A geographer analyzes satellite images to measure urban growth over 20 years. Which data method is most directly being used?',choices:['Remote sensing','Participant observation only','Census enumeration only','Mental mapping'],a:'Remote sensing',why:'Satellite imagery is collected from a distance, which is remote sensing.'},
-        {q:'Why might a geographer combine census data with resident interviews?',choices:['To compare numerical patterns with lived experience','To guarantee both sources are unbiased','To remove the need to consider scale','To make all evidence quantitative'],a:'To compare numerical patterns with lived experience',why:'Quantitative and qualitative evidence can complement one another and reveal different parts of a geographic question.'}
+        {q:'A geographer analyzes satellite images to measure urban growth over 20 years. Which data-collection method is most directly being used?',choices:['Remote sensing','Participant observation only','Census enumeration only','Mental mapping'],a:'Remote sensing',why:'Satellite imagery is collected from a distance, which makes it a form of remote sensing.'},
+        {q:'Why might a geographer combine census data with resident interviews?',choices:['To compare numerical patterns with people’s lived experiences','To guarantee that both sources are unbiased','To eliminate the need to consider geographic scale','To make every source quantitative'],a:'To compare numerical patterns with people’s lived experiences',why:'Quantitative and qualitative evidence can complement one another and reveal different parts of a geographic question.'}
       ]
     },
     '1.3':{
-      title:'GIS layers evidence to answer geographic questions',
-      teach:'A Geographic Information System stores, layers, analyzes, and maps spatial data. GIS is not the same thing as remote sensing: remote sensing collects data from a distance; GIS can combine that imagery with roads, income, land use, hazards, or other layers.',
-      example:'To study food access, a geographer could layer grocery locations, transit routes, population, and income in GIS to identify underserved neighborhoods.',
+      title:'Geographic data become powerful when people use them to make decisions',
+      teach:'Topic 1.3 is about what happens when geographic information is used for decision-making. Individuals, businesses, organizations, and governments use data such as census information, satellite imagery, and mapped spatial patterns at local through global scales. A strong AP answer connects the information to a decision and then explains a geographic effect of that decision.',
+      example:'A city maps flood risk and population density, then places emergency shelters near high-risk neighborhoods. The data guide a location decision that can change residents’ access to emergency services.',
       checks:[
-        {q:'Which tool is best for layering flood zones, roads, and population data to identify neighborhoods at greatest risk?',choices:['GIS','A single reference map only','A population pyramid','The Demographic Transition Model'],a:'GIS',why:'GIS is designed to combine and analyze multiple spatial data layers.'},
-        {q:'Which statement correctly distinguishes GIS from remote sensing?',choices:['GIS analyzes layered spatial data; remote sensing collects data from a distance','GIS only collects satellite images; remote sensing only makes maps','They are identical tools','Remote sensing cannot produce geographic data'],a:'GIS analyzes layered spatial data; remote sensing collects data from a distance',why:'Remote sensing is a data-collection method; GIS is a system for storing, layering, and analyzing geographic data.'}
+        {q:'A grocery company maps population, income, transit access, and existing stores before choosing a new location. Which statement best explains the role of the geographic data?',choices:['The data help the company make a location decision that can affect access to stores','The data prove the new store will be profitable','The data eliminate differences between neighborhoods','The data are useful only for making a reference map'],a:'The data help the company make a location decision that can affect access to stores',why:'Topic 1.3 focuses on decisions made with geographic information and the geographic effects those decisions can create.'},
+        {q:'A city uses maps of flood risk and population density to decide where to place evacuation centers. What is the best geographic explanation of this use of data?',choices:['Spatial data are guiding a government decision about where services should be located','Remote sensing alone determines which residents must evacuate','The decision changes the scale of analysis from local to global','The maps make field observations unnecessary'],a:'Spatial data are guiding a government decision about where services should be located',why:'Geographic information can guide governmental decisions about the location of resources and services.'}
       ]
     },
     '1.4':{
-      title:'Think in spatial relationships',
-      teach:'Spatial concepts explain how places are arranged and connected. Site is the physical character of a place. Situation is its location relative to other places. Distance decay means interaction usually decreases as distance increases. Time-space compression means technology or transportation can reduce the effective friction of distance.',
-      example:'A port city has a coastal site. Its situation may include access to shipping routes and nearby markets. Faster transportation can make distant markets effectively closer.',
+      title:'Think about how places are located, connected, and patterned',
+      teach:'Spatial concepts describe relationships among places. Absolute location gives an exact position; relative location describes where a place is compared with other places. Flows show movement between places. Distance decay means interaction often decreases as distance increases. Time-space compression means faster transportation and communication can reduce the effective friction of distance. Geographers also analyze space, place, and spatial patterns.',
+      example:'A distribution center located near several highways has strong relative-location advantages because goods can flow efficiently to multiple markets. Faster shipping can make those distant markets effectively closer in time.',
       checks:[
-        {q:'A city grows because it sits at the intersection of major rail and highway routes linking several markets. Which concept is most directly described?',choices:['Situation','Site','Possibilism','Formal region'],a:'Situation',why:'Situation describes a place relative to other places and the connections between them.'},
-        {q:'People shop at a nearby grocery store more frequently than one 80 miles away. Which concept best fits?',choices:['Distance decay','Sequent occupance','Scale of analysis','Environmental determinism'],a:'Distance decay',why:'Interaction generally decreases with increasing distance, although technology can weaken the effect.'}
+        {q:'A business chooses a warehouse because several highways connect the location to major markets. Which spatial concept is most directly being used?',choices:['Relative location','Absolute location','Environmental determinism','Formal region'],a:'Relative location',why:'Relative location describes where a place is in relation to other places and connections.'},
+        {q:'People visit a nearby grocery store more frequently than a similar store 80 miles away. Which spatial concept best fits this pattern?',choices:['Distance decay','Sequent occupance','Scale of analysis','Environmental determinism'],a:'Distance decay',why:'Interaction often decreases as distance increases, although transportation and communication technologies can weaken that effect.'}
       ]
     },
     '1.5':{
-      title:'Environment creates constraints, not a single destiny',
-      teach:'Possibilism emphasizes that the environment creates opportunities and constraints, while people use culture and technology to make choices. Environmental determinism claims the physical environment determines human behavior; AP Human Geography treats that deterministic view as historically important but overly simplistic.',
-      example:'Farmers using irrigation and drought-resistant crops in a dry region demonstrate possibilism because technology expands what people can do within environmental limits.',
+      title:'People and environments affect one another',
+      teach:'Human–environmental interaction includes how people use land and natural resources and how they try to use resources sustainably. Possibilism emphasizes that environments create opportunities and constraints while people use culture and technology to make choices. Environmental determinism is the older view that the physical environment determines human behavior and societal outcomes.',
+      example:'Farmers using irrigation and drought-resistant crops in a dry region demonstrate possibilism because technology expands their choices within environmental limits. A conservation policy that limits water use can be an attempt to make resource use more sustainable.',
       checks:[
-        {q:'A desert city imports water, uses air conditioning, and builds solar infrastructure. Which perspective best explains this adaptation?',choices:['Possibilism','Environmental determinism','Distance decay','Central place theory'],a:'Possibilism',why:'People are adapting to environmental constraints through technology and choices.'},
-        {q:'Which statement best reflects possibilism?',choices:['The environment limits choices, but people can adapt through culture and technology','Climate alone determines a society’s development','Human choices are unrelated to the environment','Every environment produces the same cultural response'],a:'The environment limits choices, but people can adapt through culture and technology',why:'Possibilism recognizes constraints while emphasizing human agency and adaptation.'}
+        {q:'A desert city imports water, uses air conditioning, and builds solar infrastructure. Which perspective best explains how people are responding to environmental constraints?',choices:['Possibilism','Environmental determinism','Distance decay','Central place theory'],a:'Possibilism',why:'Possibilism emphasizes human choices and technology within environmental opportunities and constraints.'},
+        {q:'Which action best illustrates the idea of sustainability?',choices:['Managing water use so current needs are met without reducing future availability','Using a resource as quickly as possible before another place can use it','Assuming climate alone determines how a society develops','Ignoring long-term environmental effects when choosing land uses'],a:'Managing water use so current needs are met without reducing future availability',why:'Sustainability focuses on meeting present needs while preserving the ability to meet future needs.'}
       ]
     },
     '1.6':{
       title:'Scale of analysis changes the pattern you can see',
-      teach:'Do not confuse map scale with scale of analysis. Map scale concerns the relationship between distance on a map and distance on Earth. Scale of analysis is the geographic level at which data are studied, such as local, regional, national, or global. Aggregating data at a broad scale can hide local differences.',
-      example:'A country may have a high national internet-access rate, while neighborhood-scale data reveal clusters with very low access. Changing the scale of analysis changes what variation is visible.',
+      teach:'Do not confuse map scale with scale of analysis. Map scale is the relationship between distance on a map and distance on Earth. Scale of analysis is the geographic level at which data are studied: local, national, regional, or global. Patterns and processes can look different at different scales, and broad averages can hide local variation.',
+      example:'A country may have a high national internet-access rate, while neighborhood-level data reveal clusters with very low access. Changing the scale of analysis changes which variations are visible.',
       checks:[
-        {q:'National unemployment is low, but several neighborhoods in one city have very high unemployment. What best explains why the patterns differ?',choices:['Scale of analysis','Map projection','Environmental determinism','Relocation diffusion'],a:'Scale of analysis',why:'National aggregation can conceal local variation that appears at the neighborhood scale.'},
-        {q:'Which statement correctly distinguishes map scale from scale of analysis?',choices:['Map scale relates map distance to Earth distance; scale of analysis is the geographic level of the data','They are two names for the same concept','Map scale means local versus national data; scale of analysis means large-scale versus small-scale maps','Scale of analysis applies only to physical geography'],a:'Map scale relates map distance to Earth distance; scale of analysis is the geographic level of the data',why:'The two ideas are related to scale but answer different questions: map representation versus level of analysis.'}
+        {q:'National unemployment is low, but several neighborhoods in one city have very high unemployment. What best explains why the patterns appear different?',choices:['Scale of analysis','Map projection','Environmental determinism','Relocation diffusion'],a:'Scale of analysis',why:'National-level data can conceal local variation that becomes visible at the neighborhood scale.'},
+        {q:'Which statement correctly distinguishes map scale from scale of analysis?',choices:['Map scale relates map distance to Earth distance; scale of analysis is the geographic level of the data','They are two names for exactly the same geographic concept','Map scale means local versus national data; scale of analysis means large-scale versus small-scale maps','Scale of analysis applies only to physical geography'],a:'Map scale relates map distance to Earth distance; scale of analysis is the geographic level of the data',why:'Map scale concerns representation on a map; scale of analysis concerns the level at which geographic patterns and data are examined.'}
       ]
     },
     '1.7':{
       title:'Regions are defined in different ways',
-      teach:'A formal region has a shared measurable trait. A functional region is organized around a node and the flows connected to it. A perceptual region exists through people’s shared ideas or sense of place and may have fuzzy boundaries.',
-      example:'A transit system centered on downtown forms a functional region. A state is often treated as a formal political region. “The South” can be a perceptual region because its boundaries depend partly on people’s perceptions.',
+      teach:'A formal region has one or more shared measurable characteristics. A functional region is organized around a node and the flows connected to it. A perceptual, or vernacular, region is based on people’s shared ideas about a place. Regional boundaries can be transitional, overlapping, or contested, and geographers can apply regional analysis at local, national, and global scales.',
+      example:'A commuter network centered on downtown forms a functional region. A state can be treated as a formal political region. “The South” can be a perceptual region because people may disagree about its exact boundaries.',
       checks:[
-        {q:'A metropolitan commuter-rail network is centered on a downtown terminal and surrounding stations. Which type of region is it?',choices:['Functional region','Formal region','Perceptual region','Culture hearth'],a:'Functional region',why:'A functional region is organized around a node and the flows connected to it.'},
-        {q:'People disagree about exactly where “the Midwest” begins and ends, but commonly recognize it as a region. Which type is this?',choices:['Perceptual region','Functional region','Formal region','Isoline region'],a:'Perceptual region',why:'Perceptual regions are based on shared ideas and can have imprecise boundaries.'}
+        {q:'A metropolitan commuter-rail network is centered on a downtown terminal and surrounding stations. Which type of region is it?',choices:['Functional region','Formal region','Perceptual region','Cultural hearth'],a:'Functional region',why:'A functional region is organized around a node and the flows or connections linked to it.'},
+        {q:'People commonly refer to “the Midwest” as a region but disagree about exactly where it begins and ends. Which type of region is this?',choices:['Perceptual region','Functional region','Formal region','Political district'],a:'Perceptual region',why:'Perceptual, or vernacular, regions are based on shared ideas and often have imprecise or contested boundaries.'}
       ]
     }
   };
@@ -86,12 +87,12 @@
     if(q?.topic&&/^1\.[1-7]$/.test(String(q.topic)))return String(q.topic);
     try{const t=window.APHGTopicSkillMastery?.topicFromQuestion?.(q);if(/^1\.[1-7]$/.test(String(t)))return String(t)}catch(e){}
     const t=textOf(q);
-    if(/scale of analysis|local scale|regional scale|national scale|aggregation/i.test(t))return '1.6';
-    if(/formal region|functional region|perceptual region/i.test(t))return '1.7';
-    if(/possibil|determin/i.test(t))return '1.5';
-    if(/site|situation|distance decay|time-space compression|spatial interaction/i.test(t))return '1.4';
-    if(/\bgis\b|geographic information system|layer/i.test(t))return '1.3';
-    if(/remote sensing|survey|interview|census|qualitative|quantitative|satellite imagery/i.test(t))return '1.2';
+    if(/scale of analysis|local scale|regional scale|national scale|global scale|aggregation/i.test(t))return '1.6';
+    if(/formal region|functional region|perceptual region|vernacular region/i.test(t))return '1.7';
+    if(/possibil|determin|sustainab|natural resource|land use/i.test(t))return '1.5';
+    if(/decision|choose.*location|where to (place|locate)|effect.*geographic|access to (services|stores)|allocate resources|planning decision/i.test(t))return '1.3';
+    if(/absolute location|relative location|site|situation|distance decay|time-space compression|spatial interaction|\bflows?\b/i.test(t))return '1.4';
+    if(/\bgis\b|geographic information system|remote sensing|satellite navigation|online mapping|survey|interview|census|qualitative|quantitative|satellite imagery|field observation|landscape analysis|photographic interpretation/i.test(t))return '1.2';
     return '1.1';
   }
   function choicesOf(q){return q?.choices||q?.[2]||[]}
@@ -106,8 +107,8 @@
     s.history.push({at:Date.now(),topic,reason,q:keyFor(q)});s.history=s.history.slice(-80);save(s);
   }
   function recordCheck(topic,correct){
-    const s=load(),t=s.topics[topic]||{misses:0,rescues:0,checks:0,correct:0,last:0};t.checks++;if(correct){t.correct++;t.rescues++;}t.last=Date.now();s.topics[topic]=t;save(s);
-    // Feed successful re-check evidence into the existing adaptive mastery store without claiming official AP scoring.
+    const s=load(),t=s.topics[topic]||{misses:0,rescues:0,checks:0,correct:0,last:0};t.checks++;if(correct){t.correct++;t.rescues=Math.min(t.misses,t.rescues+1);}t.last=Date.now();s.topics[topic]=t;save(s);
+    // Feed re-check evidence into the existing adaptive mastery store without claiming official AP scoring.
     try{
       const a=JSON.parse(localStorage.getItem(ADAPTIVE)||'{"topics":{},"misconceptions":{},"frq":{}}');
       const x=a.topics[topic]||{attempts:0,correct:0,days:[],last:0,next:0,streak:0};x.attempts++;if(correct)x.correct++;x.streak=correct?(x.streak||0)+1:0;x.last=Date.now();
@@ -121,7 +122,6 @@
   }
   function nextStepText(){
     const w=weakestTopic();if(!w)return 'Complete a few Unit 1 questions. Study Buddy will use your misses to choose a target.';
-    const lesson=lessons[w.topic];
     if(w.checks===0)return `Start with Topic ${w.topic}: ${topicNames[w.topic]}. Use Teach Me, then complete a new check question.`;
     if(w.rate<0.8)return `Keep working Topic ${w.topic}: ${topicNames[w.topic]}. Do one short lesson, two new checks, then return to mixed Unit 1 practice.`;
     return `Retest Topic ${w.topic}: ${topicNames[w.topic]} in mixed Unit 1 practice. If you get it right again later, move to your next weakest topic.`;
