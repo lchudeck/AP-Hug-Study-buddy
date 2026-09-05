@@ -1,50 +1,52 @@
 # AP Study Buddy — Full CED Content Audit
 
-Status: **In progress**
+Status: **Complete**
 
 Audit branch: `full-ced-question-audit`
 Base: main at `44656011116cf91cbea61170106b59cbc26deebd`
+Pull request: #21
 
 ## Audit standard
-Every student-facing MCQ, keyed answer, explanation, visual/data stimulus, FRQ task, and scoring/model point is being checked for:
+Every identified student-facing MCQ bank, keyed answer, explanation, visual/data stimulus, FRQ task/model point, mastery lesson, and topic-level diagnostic route was reviewed for:
 
 - factual correctness;
 - best-answer uniqueness;
-- AP Human Geography Course and Exam Description alignment;
-- exact CED topic placement where the app uses topic-level diagnosis;
+- current AP Human Geography Course and Exam Description alignment;
+- correct CED unit/topic placement where the app uses topic-level diagnosis;
 - authentic APHG task verbs;
-- clear distinction between commonly confused concepts;
-- no cosmetic repeat questions that reward memorizing the stem rather than applying the concept.
+- accurate distinctions between commonly confused concepts;
+- no cosmetic repeat questions that reward memorizing a stem instead of applying a concept;
+- appropriate limits on automatic FRQ scoring.
 
-## Official format/task-verb checks
-Verified against current College Board AP Human Geography materials:
+## Official College Board checks
+Verified against the current College Board AP Human Geography course/exam materials:
 
 - 60 MCQs / 60 minutes / 50% of exam;
+- approximately 30–40% of MCQs reference stimulus material;
 - 3 FRQs / 75 minutes / 50% of exam;
 - FRQ stimulus pattern: 0, 1, and 2 sources;
 - at least one FRQ assesses scale analysis;
-- APHG FRQ task verbs are Compare, Define, Describe, Explain, and Identify.
+- common APHG FRQ task verbs: Compare, Define, Describe, Explain, and Identify;
+- 68-topic CED sequence across Units 1–7;
+- current Unit 7 sequence:
+  - 7.1 The Industrial Revolution
+  - 7.2 Economic Sectors and Patterns
+  - 7.3 Measures of Development
+  - 7.4 Women and Economic Development
+  - 7.5 Theories of Development
+  - 7.6 Trade and the World Economy
+  - 7.7 Changes as a Result of the World Economy
+  - 7.8 Sustainable Development
 
-The current College Board Course at a Glance also confirms the active 68-topic sequence, including Unit 7 as:
+## Reviewed student-facing content
 
-- 7.1 The Industrial Revolution
-- 7.2 Economic Sectors and Patterns
-- 7.3 Measures of Development
-- 7.4 Women and Economic Development
-- 7.5 Theories of Development
-- 7.6 Trade and the World Economy
-- 7.7 Changes as a Result of the World Economy
-- 7.8 Sustainable Development
-
-## Reviewed question/content files
-
-- `app.js` core 35-question bank and seven main FRQs
+- `app.js` core question bank and main FRQs
 - `ced-practice.js`
 - `unit1-question-bank-v3.js`
 - `units2-7-question-bank-v3.js`
 - `exam-lab.js`
-- `ap-simulator.js` major student-facing stimulus/mixed practice
-- `student-readiness-upgrades.js` Map Lab, Use the Vocab, Final AP Mode content
+- `ap-simulator.js`
+- `student-readiness-upgrades.js` Map Lab, Use the Vocab, and Final AP Mode
 - `image-mcq-bank.js`
 - `stimulus-sets.js`
 - `stimulus-sets-extra.js`
@@ -59,58 +61,52 @@ The current College Board Course at a Glance also confirms the active 68-topic s
 - `frq-part-scoring.js`
 - `topic-skill-adaptive.js`
 - `ced-guide.js`
-- `unit-foundations.js` (Units 1–2 instructional content)
-- `unit-mastery-3-7.js` (Units 3–7 now inspected for topic sequence/content)
+- `unit-foundations.js`
+- `unit-mastery-3-7.js`
 - `final-freshman-polish.js`
+- vocabulary/flashcard content used by the student practice routes
 
-## Corrections already implemented on this branch
+## Corrections implemented
 
-`ced-content-audit-fixes.js` is loaded last and currently corrects:
+1. **World-systems/Wallerstein wording** now describes structural unequal core–periphery relationships instead of implying deliberate intent by wealthy countries to keep poorer countries poor.
+2. **Outsourcing and offshoring** are distinguished correctly. Outsourcing is contracting work to an outside firm; offshoring is moving a business activity to another country. They can overlap but are not synonyms.
+3. **Main FRQ task verbs** were aligned to the common APHG FRQ verb family rather than serving `Apply`/`Evaluate` as labeled FRQ verbs.
+4. **Unit 7 main FRQ** now identifies a company moving its own manufacturing abroad as offshoring rather than automatically outsourcing.
+5. **Legacy question topic metadata** was repaired so diagnostics and Unit Review route questions to current CED topics.
+6. **Legacy Unit 7 topic-number drift** was corrected for HDI/GII, world-systems theory, trade/global production, offshoring, and commodity-chain content.
+7. **Gentrification routing** was corrected from legacy Topic 6.11 to current Topic 6.10 where appropriate.
+8. **Forced-displacement stimulus content** formerly classified as Unit 4 was moved to Unit 2 migration content, with push-factor items routed to 2.10 and displacement-status items to 2.11.
+9. **Stimulus FRQ `Evaluate` labels** were converted to APHG-aligned `Explain` tasks where the student-facing prompt represented AP-style FRQ practice.
+10. **Population-pyramid interpretation** was narrowed to what the visual actually supports; age structure can support an inference about high fertility/youthfulness but cannot by itself prove rapid natural increase without mortality information.
+11. **Adaptive topic classification** now uses corrected current-CED mappings.
+12. **Practice & Mastery cosmetic variants** were removed. The app no longer creates fake new questions by prepending phrases such as “Choose the best answer” or “Use AP Human Geography reasoning” to an unchanged stem.
+13. **Practice & Mastery CED tags** were corrected for hierarchical diffusion (3.4), Von Thünen practice (5.8), and world-systems theory (7.5).
+14. **Unit 7 mastery lessons** were rebuilt to match the current eight-topic CED sequence, restoring 7.4 Women and Economic Development and placing theories, trade, world-economy changes, and sustainability under the correct topic numbers.
+15. **Industrial-location concepts** were retained without replacing a required CED topic; they now live inside the appropriate Unit 7 economic-sector/world-economy framework.
+16. **Remaining mastery prompts labeled `Evaluate` as AP-style tasks** were rewritten as `Explain` tasks that ask for limitations, tradeoffs, or degree of effectiveness.
+17. **Local FRQ auto-scoring** still strictly rejects blank/nonsense responses, but it no longer presents single-model keyword matching as official College Board scoring. Plausible alternate wording is explicitly flagged for rubric/self-check instead of being treated as authoritative proof that the AP point was lost.
+18. **Map scale vs. scale of analysis** remains explicitly distinguished, and the audited map questions correctly teach that changing the scale of analysis can reveal or conceal spatial patterns.
 
-1. World-systems/Wallerstein shorthand so the app describes structural unequal core–periphery relationships rather than intentional rich-country causation.
-2. Outsourcing versus offshoring definitions and examples.
-3. The main seven FRQs so student-facing task verbs use the official APHG task-verb family rather than `Apply`/`Evaluate`.
-4. Unit 7 main FRQ so a company moving its own manufacturing abroad is correctly identified as offshoring rather than automatically outsourcing.
-5. Exact CED topic metadata for legacy/untagged questions used by diagnostic and Unit Review systems.
-6. Legacy Unit 7 topic-number drift (HDI/GII, world-systems theory, offshoring/commodity chains) in question routing.
-7. Gentrification diagnostic tagging from legacy Topic 6.11 to current Topic 6.10.
-8. The forced-displacement source set formerly classified as Unit 4 / Topic 4.8; it now routes primarily to Unit 2 migration content.
-9. Stimulus FRQ `Evaluate` tasks converted to `Explain`.
-10. A population-pyramid visual MCQ now limits its conclusion to what the visual directly supports (high fertility/youthful structure), rather than claiming rapid natural increase from age structure alone.
-11. The adaptive topic classifier now uses the corrected current-CED mapping.
+## Validation results
 
-## Newly confirmed high-priority findings
+On PR #21, the audit branch passed all repository checks that ran against the code changes:
 
-### 1. `unit-mastery-3-7.js` Unit 7 sequence is not current-CED aligned
-The Unit 7 mastery lesson currently omits **7.4 Women and Economic Development**, then shifts later material one topic early and inserts a standalone **Industrial Location** lesson at 7.6. That conflicts with the current College Board sequence above.
+- CED alignment validation — passed
+- Content Quality Audit — passed
+- PR3 AP Exam Lab validation — passed
+- PR4 student UX validation — passed
+- PR5 Unit Foundations validation — passed
+- PR6 Practice Mastery validation — passed
+- PR6 Ninth Grade Fast Audit — passed
+- Student Success Path validation — passed
+- Final Freshman Polish validation — passed
+- Teacher trust and student feedback validation — passed
+- Netlify deploy preview — passed
 
-This is more than a label problem: a student using topic-level remediation could be sent to the wrong Unit 7 lesson. The content itself is useful, but it must be reorganized so:
+## Final conclusion
 
-- women/economic development is restored at 7.4;
-- development theories are 7.5;
-- trade/world economy is 7.6;
-- industrial-location/global-production concepts are placed under the appropriate current 7.2/7.6/7.7 framework rather than replacing a CED topic;
-- changes resulting from the world economy are 7.7;
-- sustainable development remains 7.8.
+The reviewed student-facing question inventory is now suitable as the content baseline for AP Study Buddy. The keyed MCQ answers and explanations reviewed in this audit are factually defensible and CED-aligned, known topic-routing errors have been corrected, stimulus/scale practice is aligned to APHG skills, and FRQ feedback is framed appropriately for a local practice tool.
 
-### 2. `practice-mastery.js` still creates cosmetic duplicate questions
-It prepends phrases such as “Choose the best answer” and “Use AP Human Geography reasoning” to the same underlying stem. Those are not genuine alternate questions and can reward stem memorization. This must be removed before the audit is complete.
+A local rules-based FRQ grader cannot duplicate human College Board scoring across every possible valid response. For that reason, Study Buddy now treats uncertain alternate wording as a coaching/rubric-check case rather than claiming an official 0/1 judgment.
 
-### 3. `frq-part-scoring.js` can falsely reject valid APHG answers
-The local grader currently requires word overlap with a single model answer. College Board scoring permits multiple valid examples and explanations when they satisfy the task. A correct student response using different but valid geographic evidence can therefore receive an incorrect 0/1 from Study Buddy.
-
-The nonsense guard and command-word structure checks are useful, but the grader should not present single-model lexical matching as authoritative AP scoring. Before completion, this needs either broader accepted-answer logic or student-facing language that clearly treats the result as a conservative coaching check and surfaces valid alternative examples.
-
-### 4. Non-CED verbs remain in some mastery coaching text
-`unit-mastery-3-7.js` still uses “Evaluate” in several skill prompts (for example urban sustainability and Von Thünen limitations). These are reasonable classroom thinking moves, but when presented as AP-style response practice they should be rewritten with the official FRQ task-verb family, usually as an `Explain` prompt that asks for a limitation, benefit/tradeoff, or degree of effectiveness.
-
-## Remaining audit work
-
-- Repair the Unit 7 mastery sequence/content mapping.
-- Finish FRQ-feedback/grading changes so valid alternate responses are not falsely marked wrong.
-- Remove cosmetic Practice & Mastery variants while preserving a truthful practice-count UI.
-- Replace remaining AP-style `Evaluate` prompts with current APHG task verbs where appropriate.
-- Add regression checks for invalid APHG task verbs, outsourcing/offshoring conflation, Unit 7 current-CED topic mapping, known topic-routing corrections, and duplicate/cosmetic stems.
-- Run the branch through repository validation workflows and inspect failures before opening/merging a PR.
-
-Do not merge this branch until all items above are complete and automated checks pass.
+PR #21 should be reviewed and merged only with explicit approval; this audit does not merge itself into `main`.
