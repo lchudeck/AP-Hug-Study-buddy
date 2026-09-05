@@ -26,7 +26,7 @@
       teach:'Geographers gather data in the field and through geospatial technologies. Methods include field observations, interviews, written accounts, landscape and photo interpretation, GIS, satellite navigation systems, remote sensing, and online mapping. Different methods provide different kinds of evidence and each has limitations.',
       example:'Satellite imagery of vegetation is remotely sensed data. An interview with a farmer is field-based qualitative evidence. A satellite navigation system can record the exact location where the interview or observation occurred.',
       checks:[
-        {q:'Satellite images are used to measure how a city has expanded over 20 years. Which method produced these geographic data?',choices:['Remote sensing','Participant observation only','Census enumeration only','Mental mapping'],a:'Remote sensing',why:'Satellite imagery is collected from a distance, which makes it a form of remote sensing.'},
+        {q:'Satellite images are used to measure how a city has expanded over 20 years. Which method produced these geographic data?',choices:['Remote sensing','Field observation','Personal interview','Satellite navigation system'],a:'Remote sensing',why:'Satellite imagery is collected from a distance, which makes it a form of remote sensing.'},
         {q:'Why might a geographer combine census data with resident interviews?',choices:['To compare numerical patterns with people’s lived experiences','To guarantee that both sources are unbiased','To eliminate the need to consider geographic scale','To make every source quantitative'],a:'To compare numerical patterns with people’s lived experiences',why:'Quantitative and qualitative evidence can complement one another and reveal different parts of a geographic question.'}
       ]
     },
@@ -41,11 +41,11 @@
     },
     '1.4':{
       title:'Think about how places are located, connected, and patterned',
-      teach:'Spatial concepts describe relationships among places. Absolute location gives an exact position; relative location describes where a place is compared with other places. Flows show movement between places. Distance decay means interaction often decreases as distance increases. Time-space compression means faster transportation and communication can reduce the effective friction of distance. Geographers also analyze space, place, and spatial patterns.',
+      teach:'Spatial concepts describe relationships among places. Absolute location gives an exact position; relative location describes where a place is compared with other places. Flows show movement between places. Distance decay means interaction often decreases as distance increases. Time-space compression means faster transportation and communication can reduce the importance of distance. Geographers also analyze space, place, and spatial patterns.',
       example:'A distribution center located near several highways has strong relative-location advantages because goods can flow efficiently to multiple markets. Faster shipping can make those distant markets effectively closer in time.',
       checks:[
         {q:'A business chooses a warehouse because several highways connect the location to major markets. Which spatial concept is most directly being used?',choices:['Relative location','Absolute location','Environmental determinism','Formal region'],a:'Relative location',why:'Relative location describes where a place is in relation to other places and connections.'},
-        {q:'People visit a nearby grocery store more frequently than a similar store 80 miles away. Which spatial concept best fits this pattern?',choices:['Distance decay','Sequent occupance','Scale of analysis','Environmental determinism'],a:'Distance decay',why:'Interaction often decreases as distance increases, although transportation and communication technologies can weaken that effect.'}
+        {q:'People visit a nearby grocery store more frequently than a similar store 80 miles away. Which spatial concept best fits this pattern?',choices:['Distance decay','Time-space compression','Relative location','Scale of analysis'],a:'Distance decay',why:'Interaction often decreases as distance increases, although transportation and communication technologies can weaken that effect.'}
       ]
     },
     '1.5':{
@@ -53,7 +53,7 @@
       teach:'Human–environmental interaction includes how people use land and natural resources and how they try to use resources sustainably. Possibilism emphasizes that environments create opportunities and constraints while people use culture and technology to make choices. Environmental determinism is the older view that the physical environment determines human behavior and societal outcomes.',
       example:'Farmers using irrigation and drought-resistant crops in a dry region demonstrate possibilism because technology expands their choices within environmental limits. A conservation policy that limits water use can be an attempt to make resource use more sustainable.',
       checks:[
-        {q:'A desert city imports water, uses air conditioning, and builds solar infrastructure. Which perspective best explains how people are responding to environmental constraints?',choices:['Possibilism','Environmental determinism','Distance decay','Central place theory'],a:'Possibilism',why:'Possibilism emphasizes human choices and technology within environmental opportunities and constraints.'},
+        {q:'A desert city imports water, uses air conditioning, and builds solar infrastructure. Which perspective best explains how people are responding to environmental constraints?',choices:['Possibilism','Environmental determinism','Distance decay','Formal region'],a:'Possibilism',why:'Possibilism emphasizes human choices and technology within environmental opportunities and constraints.'},
         {q:'Which action best illustrates the idea of sustainability?',choices:['Managing water use so current needs are met without reducing future availability','Using a resource as quickly as possible before another place can use it','Assuming climate alone determines how a society develops','Ignoring long-term environmental effects when choosing land uses'],a:'Managing water use so current needs are met without reducing future availability',why:'Sustainability focuses on meeting present needs while preserving the ability to meet future needs.'}
       ]
     },
@@ -87,7 +87,7 @@
 
   function load(){try{return JSON.parse(localStorage.getItem(STORE)||'{"topics":{},"diagnoses":{},"history":[]}')}catch(e){return {topics:{},diagnoses:{},history:[]}}}
   function save(s){localStorage.setItem(STORE,JSON.stringify(s));}
-  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function currentQuestion(){try{const qs=getQuizSet();return qs[qIndex%qs.length]}catch(e){return null}}
   function unitOf(q){return Number(q?.unit||String(q?.[0]||'').match(/\d+/)?.[0]||0)}
   function textOf(q){return `${q?.prompt||q?.q||q?.[1]||''} ${(q?.choices||q?.[2]||[]).join(' ')} ${q?.answer||q?.[3]||''}`;}
