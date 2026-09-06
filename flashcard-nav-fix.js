@@ -36,12 +36,21 @@
     return html;
   };
 
+  function loadAccessibility(){
+    if(!document.querySelector('link[data-a11y-inclusive]')){
+      const l=document.createElement('link');l.rel='stylesheet';l.href='accessibility-inclusive.css';l.dataset.a11yInclusive='true';document.head.appendChild(l);
+    }
+    if(document.querySelector('script[data-a11y-inclusive]')) return;
+    const a=document.createElement('script');a.src='accessibility-inclusive-v2.js';a.dataset.a11yInclusive='true';a.defer=true;document.body.appendChild(a);
+  }
+
   function loadUnits27CedFixes(){
-    if(document.querySelector('script[data-personal-coach-27-fixes]')) return;
+    if(document.querySelector('script[data-personal-coach-27-fixes]')){loadAccessibility();return;}
     const f=document.createElement('script');
     f.src='personalized-units2-7-ced-fixes.js';
     f.dataset.personalCoach27Fixes='true';
     f.defer=true;
+    f.addEventListener('load',loadAccessibility,{once:true});
     document.body.appendChild(f);
   }
 
@@ -76,7 +85,7 @@
   }
 
   // Load the student-readiness upgrade after the core navigation and flashcards exist,
-  // then layer the personalized coaches on top of the audited/adaptive systems.
+  // then layer the personalized coaches and inclusive accessibility enhancements on top.
   const existingReadiness=document.querySelector('script[data-readiness-upgrade]');
   if(!existingReadiness){
     const s=document.createElement('script');
