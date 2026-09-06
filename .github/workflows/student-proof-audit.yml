@@ -63,10 +63,9 @@ jobs:
           (async()=>{
             const {JSDOM}=require('jsdom');
             const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-            async function fresh(){
-              const dom=await JSDOM.fromURL('http://127.0.0.1:8765/index.html',{resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});w.requestAnimationFrame=cb=>setTimeout(cb,0);w.fetch=async()=>({ok:true,status:200,text:async()=>''});}});
-              await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));await sleep(120);return dom;
-            }
+            const dom=await JSDOM.fromURL('http://127.0.0.1:8765/index.html',{resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});w.requestAnimationFrame=cb=>setTimeout(cb,0);w.fetch=async()=>({ok:true,status:200,text:async()=>''});}});
+            await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));await sleep(140);
+            const d=dom.window.document,w=dom.window;
             const missions=[
               ['My test is coming up',/Unit Review|unit test|Choose.*unit/i],
               ['I don’t understand this yet',/Teach Me This/i],
@@ -77,19 +76,21 @@ jobs:
               ['Am I ready for the AP exam?',/AP Exam|Simulator|Practice Test|exam/i],
               ['Tell me what to do next',/Today.s APHG plan/i]
             ];
-            for(const [label,expected] of missions){
-              const dom=await fresh(),d=dom.window.document;
-              const all=[...d.querySelectorAll('button')];
-              const button=all.find(b=>b.textContent.includes(label));
-              if(!button)throw new Error('Mission button missing: '+label);
-              button.click();await sleep(120);
-              if(!expected.test(d.body.textContent))throw new Error('Mission did not reach expected help: '+label);
-              dom.window.close();
+            function assertHome(){
+              if(d.querySelectorAll('.student-proof-card').length!==7)throw new Error('Homepage must expose exactly seven primary student missions');
+              if(!d.querySelector('.student-proof-unsure'))throw new Error('Not-sure fallback missing');
             }
-            const dom=await fresh(),d=dom.window.document;
-            if(d.querySelectorAll('.student-proof-card').length!==7)throw new Error('Homepage must expose exactly seven primary student missions');
-            if(!d.querySelector('.student-proof-unsure'))throw new Error('Not-sure fallback missing');
+            assertHome();
+            for(const [label,expected] of missions){
+              if(typeof w.studentProofRoute!=='function')throw new Error('studentProofRoute missing');
+              w.studentProofRoute('home');await sleep(40);assertHome();
+              const button=[...d.querySelectorAll('button')].find(b=>b.textContent.includes(label));
+              if(!button)throw new Error('Mission button missing: '+label);
+              button.click();await sleep(80);
+              if(!expected.test(d.body.textContent))throw new Error('Mission did not reach expected help: '+label);
+            }
+            w.studentProofRoute('home');await sleep(40);assertHome();
             console.log('Student Proof browser audit passed all seven missions plus fallback.');
-            dom.window.close();
+            dom.window.close();process.exit(0);
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
