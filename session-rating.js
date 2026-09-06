@@ -52,3 +52,13 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
 })();
+
+// Load aggregate, privacy-conscious site analytics. No typed student responses are sent.
+(function(){
+  if(document.querySelector('script[data-study-buddy-analytics]')) return;
+  const script=document.createElement('script');
+  script.src='analytics.js';
+  script.async=true;
+  script.dataset.studyBuddyAnalytics='true';
+  document.head.appendChild(script);
+})();
