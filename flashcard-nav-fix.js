@@ -36,12 +36,27 @@
     return html;
   };
 
+  function loadUnits27CedFixes(){
+    if(document.querySelector('script[data-personal-coach-27-fixes]')) return;
+    const f=document.createElement('script');
+    f.src='personalized-units2-7-ced-fixes.js';
+    f.dataset.personalCoach27Fixes='true';
+    f.defer=true;
+    document.body.appendChild(f);
+  }
+
   function loadUnits27Coach(){
-    if(document.querySelector('script[data-personal-coach-27]')) return;
+    const existing=document.querySelector('script[data-personal-coach-27]');
+    if(existing){
+      if(window.__personalizedUnits27CoachInstalled) loadUnits27CedFixes();
+      else existing.addEventListener('load',loadUnits27CedFixes,{once:true});
+      return;
+    }
     const u=document.createElement('script');
     u.src='personalized-units2-7-coach.js';
     u.dataset.personalCoach27='true';
     u.defer=true;
+    u.addEventListener('load',loadUnits27CedFixes,{once:true});
     document.body.appendChild(u);
   }
 
