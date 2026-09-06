@@ -1,0 +1,58 @@
+name: Accessibility Inclusive Audit
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  accessibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate accessibility layer
+        run: |
+          node --check accessibility-inclusive-v3.js
+          node --check flashcard-nav-fix.js
+          node <<'NODE'
+          const fs=require('fs');
+          const css=fs.readFileSync('accessibility-inclusive.css','utf8');
+          const js=fs.readFileSync('accessibility-inclusive-v3.js','utf8');
+          const loader=fs.readFileSync('flashcard-nav-fix.js','utf8');
+          const problems=[];
+          const need=(text,re,msg)=>{if(!re.test(text))problems.push(msg)};
+          need(css,/:focus-visible/,'Missing visible keyboard focus styling');
+          need(css,/min-height:44px/,'Missing 44px minimum target size');
+          need(css,/prefers-reduced-motion:reduce/,'Missing reduced-motion support');
+          need(css,/forced-colors:active/,'Missing forced-colors support');
+          need(js,/Skip to Study Buddy content/,'Missing skip link');
+          need(js,/aria-live','polite/,'Missing polite live region');
+          need(js,/aria-modal','true/,'Missing modal semantics');
+          need(js,/e\.key==='Escape'/,'Dialogs cannot close with Escape');
+          need(js,/e\.key!=='Tab'/,'Dialog focus trap is missing');
+          need(js,/if\(!prior\)prior=document\.activeElement/,'Dialog opener focus is not preserved across rerenders');
+          need(js,/attributeFilter:\['class'\]/,'Dynamic correct/incorrect class changes are not observed');
+          need(js,/Press Enter or Space to flip/,'Flashcards lack keyboard instructions');
+          need(js,/Correct:/,'Correct answers lack non-color cue');
+          need(js,/Incorrect:/,'Incorrect answers lack non-color cue');
+          need(js,/labelField/,'Form controls lack fallback accessible labeling');
+          need(loader,/accessibility-inclusive\.css/,'Accessibility CSS is not loaded');
+          need(loader,/accessibility-inclusive-v3\.js/,'Accessibility JS is not loaded');
+          need(loader,/loadUnits27CedFixes[\s\S]*loadAccessibility/,'Accessibility layer must load after personalized coach correction layer');
+          if(problems.length){console.error(problems.join('\n'));process.exit(1)}
+          console.log('Accessibility audit passed: focus, target size, motion, forced colors, skip link, live regions, dialog keyboard/focus handling, flashcards, form labels, dynamic feedback, and non-color cues.');
+          NODE
+      - name: Preserve AP Study Buddy safety guardrails
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const ur=fs.readFileSync('unit-review.js','utf8');
+          const polish=fs.readFileSync('final-freshman-polish.js','utf8');
+          const coach1=fs.readFileSync('personalized-unit1-coach.js','utf8');
+          const coach27=fs.readFileSync('personalized-units2-7-coach.js','utf8');
+          const problems=[];
+          if(!/Math\.min\(Number\(count\)\|\|10,60\)/.test(ur))problems.push('60-question cap changed');
+          if(!/filter\(q=>sig\(q\)!==missed\.sig\)/.test(polish))problems.push('Exact-stem nonrepeat guard changed');
+          for(const [name,src] of [['Unit 1',coach1],['Units 2-7',coach27]]){
+            for(const phrase of ['Teach Me:','Prove it with a new question','What should I study next?'])if(!src.includes(phrase))problems.push(name+' rescue flow missing '+phrase);
+          }
+          if(problems.length){console.error(problems.join('\n'));process.exit(1)}
+          console.log('Existing AP rigor and rescue guardrails preserved.');
+          NODE
