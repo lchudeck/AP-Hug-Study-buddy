@@ -33,7 +33,9 @@ jobs:
             const reset=re=>{nav(re)?.click();};
 
             let text=d.body.textContent;
-            for(const phrase of ['What do you want to do today?','Study for my next unit test','Practice what I’m struggling with','Prepare for the AP Exam'])if(!text.includes(phrase))problems.push('Home missing: '+phrase);
+            for(const phrase of ['What do you need help with?','My test is coming up','I don’t understand this yet','I keep missing questions','I know the vocab, but I can’t use it','Maps & data confuse me','I don’t know how to write an FRQ','Am I ready for the AP exam?'])if(!text.includes(phrase))problems.push('Home missing: '+phrase);
+            if(d.querySelectorAll('.student-proof-card').length!==7)problems.push('Home does not expose exactly seven student-proof missions');
+            if(!text.includes('Tell me what to do next'))problems.push('Home missing not-sure fallback');
             if(/Pass-Ready Dashboard/i.test(text))problems.push('Pass-Ready still visible on home');
 
             let clickCount=0;const labels=[...d.querySelectorAll('#nav button')].map(b=>b.textContent.trim());

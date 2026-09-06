@@ -1,0 +1,96 @@
+name: Student Proof Audit
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  student-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: node --check student-proof-v1.js
+      - name: Require seven student-language missions
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "My test is coming up" student-proof-v1.js
+          grep -Fq "I don’t understand this yet" student-proof-v1.js
+          grep -Fq "I keep missing questions" student-proof-v1.js
+          grep -Fq "I know the vocab, but I can’t use it" student-proof-v1.js
+          grep -Fq "Maps & data confuse me" student-proof-v1.js
+          grep -Fq "I don’t know how to write an FRQ" student-proof-v1.js
+          grep -Fq "Am I ready for the AP exam?" student-proof-v1.js
+      - name: Require unsure and next-step guidance
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "Tell me what to do next" student-proof-v1.js
+          grep -Fq "What should I do next?" student-proof-v1.js
+          grep -Fq "I’m still not sure" student-proof-v1.js
+      - name: Require existing validated routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "go('unitReview')" home-clarity.js
+          grep -Fq "go('practiceMastery')" home-clarity.js
+          grep -Fq "go('apSim')" home-clarity.js
+          grep -Fq "route('teach')" student-success-path.js
+          grep -Fq "route('verbs')" student-success-path.js
+      - name: Preserve exam and nonrepeat guardrails
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq "MAX.?=.?60|60-question|60 questions" student-success-path.js ap-simulator.js practice-mastery.js
+          grep -Eqi "nonrepeat|non-repeat|seen|duplicate" practice-mastery.js student-success-path.js unit1-question-bank-v3.js units2-7-question-bank-v3.js
+      - name: Require mobile and accessibility support
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "max-width:720px" student-proof-v1.css
+          grep -Fq "focus-visible" student-proof-v1.css
+          grep -Fq "prefers-reduced-motion" student-proof-v1.css
+          grep -Fq "student-proof-v1.css" index.html
+          grep -Fq "student-proof-v1.js" index.html
+      - name: Exercise all student missions in browser-like runtime
+        run: |
+          npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
+          python3 -m http.server 8765 >/tmp/aphg-http.log 2>&1 &
+          SERVER=$!; trap 'kill $SERVER' EXIT
+          node <<'NODE'
+          (async()=>{
+            const {JSDOM}=require('jsdom');
+            const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+            const dom=await JSDOM.fromURL('http://127.0.0.1:8765/index.html',{resources:'usable',runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){w.alert=()=>{};w.confirm=()=>false;w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});w.requestAnimationFrame=cb=>setTimeout(cb,0);w.fetch=async()=>({ok:true,status:200,text:async()=>''});}});
+            await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));await sleep(140);
+            const d=dom.window.document,w=dom.window;
+            const missions=[
+              ['My test is coming up',/Unit Review|unit test|Choose.*unit/i],
+              ['I don’t understand this yet',/Teach Me This/i],
+              ['I keep missing questions',/Practice|Mastery|weak/i],
+              ['I know the vocab, but I can’t use it',/Vocabulary|Key Terms|Flashcard/i],
+              ['Maps & data confuse me',/Visual|Map|Model/i],
+              ['I don’t know how to write an FRQ',/FRQ command-word coach/i],
+              ['Am I ready for the AP exam?',/AP Exam|Simulator|Practice Test|exam/i],
+              ['Tell me what to do next',/Today.s APHG plan/i]
+            ];
+            function assertHome(){
+              if(d.querySelectorAll('.student-proof-card').length!==7)throw new Error('Homepage must expose exactly seven primary student missions');
+              if(!d.querySelector('.student-proof-unsure'))throw new Error('Not-sure fallback missing');
+            }
+            assertHome();
+            for(const [label,expected] of missions){
+              if(typeof w.studentProofRoute!=='function')throw new Error('studentProofRoute missing');
+              w.studentProofRoute('home');await sleep(40);assertHome();
+              const button=[...d.querySelectorAll('button')].find(b=>b.textContent.includes(label));
+              if(!button)throw new Error('Mission button missing: '+label);
+              button.click();await sleep(80);
+              if(!expected.test(d.body.textContent))throw new Error('Mission did not reach expected help: '+label);
+            }
+            w.studentProofRoute('home');await sleep(40);assertHome();
+            console.log('Student Proof browser audit passed all seven missions plus fallback.');
+            dom.window.close();process.exit(0);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
