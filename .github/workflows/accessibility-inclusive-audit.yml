@@ -9,12 +9,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate accessibility layer
         run: |
-          node --check accessibility-inclusive-v2.js
+          node --check accessibility-inclusive-v3.js
           node --check flashcard-nav-fix.js
           node <<'NODE'
           const fs=require('fs');
           const css=fs.readFileSync('accessibility-inclusive.css','utf8');
-          const js=fs.readFileSync('accessibility-inclusive-v2.js','utf8');
+          const js=fs.readFileSync('accessibility-inclusive-v3.js','utf8');
           const loader=fs.readFileSync('flashcard-nav-fix.js','utf8');
           const problems=[];
           const need=(text,re,msg)=>{if(!re.test(text))problems.push(msg)};
@@ -27,14 +27,17 @@ jobs:
           need(js,/aria-modal','true/,'Missing modal semantics');
           need(js,/e\.key==='Escape'/,'Dialogs cannot close with Escape');
           need(js,/e\.key!=='Tab'/,'Dialog focus trap is missing');
+          need(js,/if\(!prior\)prior=document\.activeElement/,'Dialog opener focus is not preserved across rerenders');
+          need(js,/attributeFilter:\['class'\]/,'Dynamic correct/incorrect class changes are not observed');
           need(js,/Press Enter or Space to flip/,'Flashcards lack keyboard instructions');
           need(js,/Correct:/,'Correct answers lack non-color cue');
           need(js,/Incorrect:/,'Incorrect answers lack non-color cue');
+          need(js,/labelField/,'Form controls lack fallback accessible labeling');
           need(loader,/accessibility-inclusive\.css/,'Accessibility CSS is not loaded');
-          need(loader,/accessibility-inclusive-v2\.js/,'Accessibility JS is not loaded');
+          need(loader,/accessibility-inclusive-v3\.js/,'Accessibility JS is not loaded');
           need(loader,/loadUnits27CedFixes[\s\S]*loadAccessibility/,'Accessibility layer must load after personalized coach correction layer');
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
-          console.log('Accessibility static audit passed: focus, targets, reduced motion, forced colors, skip link, live regions, dialog keyboard support, flashcard keyboard support, and non-color cues.');
+          console.log('Accessibility audit passed: focus, target size, motion, forced colors, skip link, live regions, dialog keyboard/focus handling, flashcards, form labels, dynamic feedback, and non-color cues.');
           NODE
       - name: Preserve AP Study Buddy safety guardrails
         run: |
