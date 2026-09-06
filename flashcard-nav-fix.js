@@ -41,7 +41,7 @@
       const l=document.createElement('link');l.rel='stylesheet';l.href='accessibility-inclusive.css';l.dataset.a11yInclusive='true';document.head.appendChild(l);
     }
     if(document.querySelector('script[data-a11y-inclusive]')) return;
-    const a=document.createElement('script');a.src='accessibility-inclusive-v2.js';a.dataset.a11yInclusive='true';a.defer=true;document.body.appendChild(a);
+    const a=document.createElement('script');a.src='accessibility-inclusive-v3.js';a.dataset.a11yInclusive='true';a.defer=true;document.body.appendChild(a);
   }
 
   function loadUnits27CedFixes(){
