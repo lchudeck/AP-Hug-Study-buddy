@@ -36,17 +36,32 @@
     return html;
   };
 
+  function loadUnits27Coach(){
+    if(document.querySelector('script[data-personal-coach-27]')) return;
+    const u=document.createElement('script');
+    u.src='personalized-units2-7-coach.js';
+    u.dataset.personalCoach27='true';
+    u.defer=true;
+    document.body.appendChild(u);
+  }
+
   function loadPersonalCoach(){
-    if(document.querySelector('script[data-personal-coach]')) return;
+    const existing=document.querySelector('script[data-personal-coach]');
+    if(existing){
+      if(window.__personalizedUnit1CoachInstalled) loadUnits27Coach();
+      else existing.addEventListener('load',loadUnits27Coach,{once:true});
+      return;
+    }
     const p=document.createElement('script');
     p.src='personalized-unit1-coach.js';
     p.dataset.personalCoach='true';
     p.defer=true;
+    p.addEventListener('load',loadUnits27Coach,{once:true});
     document.body.appendChild(p);
   }
 
   // Load the student-readiness upgrade after the core navigation and flashcards exist,
-  // then layer the personalized Unit 1 coach on top of the audited/adaptive systems.
+  // then layer the personalized coaches on top of the audited/adaptive systems.
   const existingReadiness=document.querySelector('script[data-readiness-upgrade]');
   if(!existingReadiness){
     const s=document.createElement('script');
