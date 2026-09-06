@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'personalized-units2-7-coach.js'
+      - 'personalized-units2-7-ced-fixes.js'
       - 'personalized-unit1-coach.js'
       - 'flashcard-nav-fix.js'
       - '.github/workflows/personalized-units2-7-coach.yml'
@@ -17,18 +18,26 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check personalized-units2-7-coach.js
+          node --check personalized-units2-7-ced-fixes.js
           node --check personalized-unit1-coach.js
           node --check flashcard-nav-fix.js
-      - name: Audit all CED topics and rescue questions
+      - name: Audit all CED topics, rescue questions, and five student paths
         run: |
           node <<'NODE'
           const fs=require('fs'),vm=require('vm');
+          const elements={};
           global.window={};
-          global.localStorage={getItem(){return null},setItem(){}};
-          global.document={body:{appendChild(){}},getElementById(){return null},createElement(){return {style:{},dataset:{},addEventListener(){}}},querySelectorAll(){return []}};
+          global.localStorage={data:{},getItem(k){return this.data[k]??null},setItem(k,v){this.data[k]=String(v)},clear(){this.data={}}};
+          global.document={
+            body:{appendChild(x){if(x.id)elements[x.id]=x}},
+            getElementById(id){return elements[id]||null},
+            createElement(){return {style:{},dataset:{},innerHTML:'',addEventListener(){}}},
+            querySelector(){return null},querySelectorAll(){return []}
+          };
           global.MutationObserver=class{constructor(){} observe(){}};
           global.setTimeout=()=>0;
           vm.runInThisContext(fs.readFileSync('personalized-units2-7-coach.js','utf8'));
+          vm.runInThisContext(fs.readFileSync('personalized-units2-7-ced-fixes.js','utf8'));
           const api=window.APHGPersonalCoach27;
           if(!api)throw new Error('Units 2-7 coach did not install');
           const lessons=api._lessonsForValidation,names=api._topicNamesForValidation;
@@ -47,7 +56,7 @@ jobs:
           const stems=new Map();
           for(const [topic,l] of Object.entries(lessons)){
             if(!l.title||!l.teach||l.teach.length<90||!l.example||l.example.length<45)throw new Error('Thin Teach Me content: '+topic);
-            if(!Array.isArray(l.checks)||l.checks.length<2)throw new Error('Need two new checks: '+topic);
+            if(!Array.isArray(l.checks)||l.checks.length!==2)throw new Error('Need exactly two new checks: '+topic);
             for(const c of l.checks){
               if(!c.q||c.q.length<25)throw new Error('Question too short: '+topic);
               if(!Array.isArray(c.choices)||c.choices.length!==4||new Set(c.choices).size!==4)throw new Error('Choices invalid: '+topic+' '+c.q);
@@ -57,11 +66,40 @@ jobs:
               const n=c.q.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(stems.has(n))throw new Error('Duplicate re-check stem: '+topic+' and '+stems.get(n));stems.set(n,topic);
             }
           }
+          // Semantic placement guardrails found during the human CED review.
+          if(/primate city/i.test(lessons['6.2'].teach+' '+lessons['6.2'].checks.map(x=>x.q).join(' ')))throw new Error('Primate-city content drifted into 6.2; hierarchy belongs in 6.4');
+          if(!/megacities|metacities/i.test(lessons['6.2'].teach))throw new Error('6.2 missing megacity/metacity outcome');
+          if(!/commodity chain|economies of scale/i.test(lessons['5.7'].teach))throw new Error('5.7 missing current CED economic-organization content');
+          if(/perishable|perishability/i.test(lessons['5.7'].teach))throw new Error('5.7 drifted into 5.8 Von Thünen content');
+          if(!/offshoring/i.test(lessons['7.7'].teach)||!/outsourcing/i.test(lessons['7.7'].teach))throw new Error('7.7 outsourcing/offshoring distinction missing');
+          if(!/structural relationships/i.test(lessons['7.5'].teach))throw new Error('7.5 world-systems framing regressed');
+
           const loader=fs.readFileSync('flashcard-nav-fix.js','utf8');
           if(!loader.includes('personalized-units2-7-coach.js'))throw new Error('Units 2-7 coach is not loaded');
+          if(!loader.includes('personalized-units2-7-ced-fixes.js'))throw new Error('CED correction layer is not loaded');
           if(!loader.includes("p.addEventListener('load',loadUnits27Coach"))throw new Error('Units 2-7 coach is not sequenced after Unit 1 coach');
+          if(!loader.includes("u.addEventListener('load',loadUnits27CedFixes"))throw new Error('CED fixes are not sequenced after Units 2-7 coach');
           const src=fs.readFileSync('personalized-units2-7-coach.js','utf8');
           for(const phrase of ['I didn’t know a word or term','The answer choices confused me','I had trouble reading the map or data',"I don't know yet",'Teach Me:','Prove it with a new question','What should I study next?'])if(!src.includes(phrase))throw new Error('Missing student flow: '+phrase);
           if(!src.includes('unit>=2&&unit<=7'))throw new Error('Wrong-answer rescue is not scoped to Units 2-7');
-          console.log(`Units 2-7 personalized coach passed: ${Object.keys(lessons).length} topics, ${stems.size} unique re-check questions.`);
+
+          // Five deliberately different students/stages of the school year.
+          const profiles=[
+            {name:'struggling early-year student',topic:'2.5',reason:'idk',needle:'Teach Me: The Demographic Transition Model'},
+            {name:'vocabulary-focused fall student',topic:'3.4',reason:'vocab',needle:'Word help:'},
+            {name:'map/data-focused midyear student',topic:'5.7',reason:'map-data',needle:'Map/data help:'},
+            {name:'average unit-test prep student',topic:'6.10',reason:'concept',needle:'Big-idea help:'},
+            {name:'AP-exam-ready spring student',topic:'7.5',reason:'choices',needle:'Choice help:'}
+          ];
+          for(const p of profiles){
+            localStorage.clear();delete elements['aphg-personal-coach-27'];
+            const q={unit:Number(p.topic.split('.')[0]),topic:p.topic,prompt:'Profile test question',choices:['A','B','C','D'],answer:'A'};
+            if(p.reason==='idk')api.openFor(q,true);else{api.openFor(q,false);api.reason(p.reason);}
+            const root=elements['aphg-personal-coach-27'];if(!root||!root.innerHTML.includes(p.needle))throw new Error(`${p.name} did not reach expected targeted Teach Me strategy`);
+            if(!root.innerHTML.includes('Try a new question'))throw new Error(`${p.name} has no re-check path`);
+            api.goCheck();if(!root.innerHTML.includes('Prove it with a new question'))throw new Error(`${p.name} did not reach re-check`);
+            const check=lessons[p.topic].checks[0];api.check(check.a);if(!root.innerHTML.includes('Return to practice')||!root.innerHTML.includes('What should I study next?'))throw new Error(`${p.name} did not reach mastery/next-step return path`);
+            api.close();
+          }
+          console.log(`Units 2-7 personalized coach passed: ${Object.keys(lessons).length} topics, ${stems.size} unique re-check questions, ${profiles.length} student profiles.`);
           NODE
