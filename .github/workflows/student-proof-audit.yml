@@ -1,0 +1,56 @@
+name: Student Proof Audit
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  student-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: node --check student-proof-v1.js
+      - name: Require seven student-language missions
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "My test is coming up" student-proof-v1.js
+          grep -Fq "I don’t understand this yet" student-proof-v1.js
+          grep -Fq "I keep missing questions" student-proof-v1.js
+          grep -Fq "I know the vocab, but I can’t use it" student-proof-v1.js
+          grep -Fq "Maps & data confuse me" student-proof-v1.js
+          grep -Fq "I don’t know how to write an FRQ" student-proof-v1.js
+          grep -Fq "Am I ready for the AP exam?" student-proof-v1.js
+      - name: Require unsure and next-step guidance
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "Tell me what to do next" student-proof-v1.js
+          grep -Fq "What should I do next?" student-proof-v1.js
+          grep -Fq "I’m still not sure" student-proof-v1.js
+      - name: Require existing validated routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "go('unitReview')" home-clarity.js
+          grep -Fq "go('practiceMastery')" home-clarity.js
+          grep -Fq "go('apSim')" home-clarity.js
+          grep -Fq "route('teach')" student-success-path.js
+          grep -Fq "route('verbs')" student-success-path.js
+      - name: Preserve exam and nonrepeat guardrails
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq "MAX.?=.?60|60-question|60 questions" student-success-path.js ap-simulator.js practice-mastery.js
+          grep -Eqi "nonrepeat|non-repeat|seen|duplicate" practice-mastery.js student-success-path.js unit1-question-bank-v3.js units2-7-question-bank-v3.js
+      - name: Require mobile and accessibility support
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "max-width:720px" student-proof-v1.css
+          grep -Fq "focus-visible" student-proof-v1.css
+          grep -Fq "prefers-reduced-motion" student-proof-v1.css
+          grep -Fq "student-proof-v1.css" index.html
+          grep -Fq "student-proof-v1.js" index.html
