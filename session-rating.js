@@ -44,6 +44,7 @@
       try{
         const res=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()});
         if(!res.ok) throw new Error('Submission failed');
+        if(typeof window.studyBuddyTrack==='function') window.studyBuddyTrack('session_rating_submitted',{rating,session_result:result});
         status.innerHTML='<div style="background:#dcfce7;padding:10px;border-radius:10px;margin-bottom:12px"><b>✓ Thanks for helping us improve Study Buddy.</b></div>';
         send.textContent='Sent';setTimeout(close,1100);
       }catch(e){send.disabled=false;send.textContent='Send rating';status.innerHTML='<p style="color:#b91c1c"><b>That rating did not send. You can try again.</b></p>';}
@@ -51,4 +52,14 @@
     wrap.querySelector('[data-rating]')?.focus();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
+})();
+
+// Load aggregate, privacy-conscious site analytics. No typed student responses are sent.
+(function(){
+  if(document.querySelector('script[data-study-buddy-analytics]')) return;
+  const script=document.createElement('script');
+  script.src='analytics.js';
+  script.async=true;
+  script.dataset.studyBuddyAnalytics='true';
+  document.head.appendChild(script);
 })();
