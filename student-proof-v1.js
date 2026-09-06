@@ -118,5 +118,11 @@
   });
   const app=document.getElementById('app');
   if(app) observer.observe(app,{childList:true,subtree:true});
-  setTimeout(addNextStep,0);
+
+  // Earlier scripts render the original home screen before this late-loaded layer is installed.
+  // Re-render only the home route so first-time students immediately see the student-proof choices.
+  setTimeout(function(){
+    if(getActive()==='home' && typeof render==='function') render();
+    addNextStep();
+  },0);
 })();
