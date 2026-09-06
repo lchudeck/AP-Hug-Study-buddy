@@ -1,0 +1,105 @@
+name: Personalized Units 2-7 Coach validation
+on:
+  pull_request:
+    paths:
+      - 'personalized-units2-7-coach.js'
+      - 'personalized-units2-7-ced-fixes.js'
+      - 'personalized-unit1-coach.js'
+      - 'flashcard-nav-fix.js'
+      - '.github/workflows/personalized-units2-7-coach.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check personalized-units2-7-coach.js
+          node --check personalized-units2-7-ced-fixes.js
+          node --check personalized-unit1-coach.js
+          node --check flashcard-nav-fix.js
+      - name: Audit all CED topics, rescue questions, and five student paths
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const elements={};
+          global.window={};
+          global.localStorage={data:{},getItem(k){return this.data[k]??null},setItem(k,v){this.data[k]=String(v)},clear(){this.data={}}};
+          global.document={
+            body:{appendChild(x){if(x.id)elements[x.id]=x}},
+            getElementById(id){return elements[id]||null},
+            createElement(){return {style:{},dataset:{},innerHTML:'',addEventListener(){}}},
+            querySelector(){return null},querySelectorAll(){return []}
+          };
+          global.MutationObserver=class{constructor(){} observe(){}};
+          global.setTimeout=()=>0;
+          vm.runInThisContext(fs.readFileSync('personalized-units2-7-coach.js','utf8'));
+          vm.runInThisContext(fs.readFileSync('personalized-units2-7-ced-fixes.js','utf8'));
+          const api=window.APHGPersonalCoach27;
+          if(!api)throw new Error('Units 2-7 coach did not install');
+          const lessons=api._lessonsForValidation,names=api._topicNamesForValidation;
+          const expected={
+            2:['2.1 Population Distribution','2.2 Consequences of Population Distribution','2.3 Population Composition','2.4 Population Dynamics','2.5 The Demographic Transition Model','2.6 Malthusian Theory','2.7 Population Policies','2.8 Women and Demographic Change','2.9 Aging Populations','2.10 Causes of Migration','2.11 Forced and Voluntary Migration','2.12 Effects of Migration'],
+            3:['3.1 Introduction to Culture','3.2 Cultural Landscapes','3.3 Cultural Patterns','3.4 Types of Diffusion','3.5 Historical Causes of Diffusion','3.6 Contemporary Causes of Diffusion','3.7 Diffusion of Religion and Language','3.8 Effects of Diffusion'],
+            4:['4.1 Introduction to Political Geography','4.2 Political Processes','4.3 Political Power and Territoriality','4.4 Defining Political Boundaries','4.5 The Function of Political Boundaries','4.6 Internal Boundaries','4.7 Forms of Governance','4.8 Defining Devolutionary Factors','4.9 Challenges to Sovereignty','4.10 Consequences of Centrifugal and Centripetal Forces'],
+            5:['5.1 Introduction to Agriculture','5.2 Settlement Patterns and Survey Methods','5.3 Agricultural Origins and Diffusions','5.4 The Second Agricultural Revolution','5.5 The Green Revolution','5.6 Agricultural Production Regions','5.7 Spatial Organization of Agriculture','5.8 Von Thünen Model','5.9 The Global System of Agriculture','5.10 Consequences of Agricultural Practices','5.11 Challenges of Contemporary Agriculture','5.12 Women in Agriculture'],
+            6:['6.1 The Origin and Influences of Urbanization','6.2 Cities Across the World','6.3 Cities and Globalization','6.4 The Size and Distribution of Cities','6.5 The Internal Structure of Cities','6.6 Density and Land Use','6.7 Infrastructure','6.8 Urban Sustainability','6.9 Urban Data','6.10 Challenges of Urban Changes','6.11 Challenges of Urban Sustainability'],
+            7:['7.1 The Industrial Revolution','7.2 Economic Sectors and Patterns','7.3 Measures of Development','7.4 Women and Economic Development','7.5 Theories of Development','7.6 Trade and the World Economy','7.7 Changes as a Result of the World Economy','7.8 Sustainable Development']
+          };
+          const expectedFlat=Object.values(expected).flat();
+          if(expectedFlat.length!==61)throw new Error('Expected topic list is not 61 topics');
+          for(const entry of expectedFlat){const i=entry.indexOf(' '),id=entry.slice(0,i),title=entry.slice(i+1);if(!lessons[id])throw new Error('Missing CED topic '+id);if(names[id]!==title)throw new Error(`Topic title mismatch ${id}: ${names[id]} vs ${title}`);}
+          if(Object.keys(lessons).length!==61)throw new Error('Coach must contain exactly 61 Unit 2-7 CED topics; found '+Object.keys(lessons).length);
+          const stems=new Map();
+          for(const [topic,l] of Object.entries(lessons)){
+            if(!l.title||!l.teach||l.teach.length<90||!l.example||l.example.length<45)throw new Error('Thin Teach Me content: '+topic);
+            if(!Array.isArray(l.checks)||l.checks.length!==2)throw new Error('Need exactly two new checks: '+topic);
+            for(const c of l.checks){
+              if(!c.q||c.q.length<25)throw new Error('Question too short: '+topic);
+              if(!Array.isArray(c.choices)||c.choices.length!==4||new Set(c.choices).size!==4)throw new Error('Choices invalid: '+topic+' '+c.q);
+              if(c.choices.filter(x=>x===c.a).length!==1)throw new Error('Answer not uniquely keyed: '+topic+' '+c.q);
+              if(!c.why||c.why.length<35)throw new Error('Explanation too thin: '+topic+' '+c.q);
+              if(c.choices.some(x=>/all of the above|none of the above/i.test(x)))throw new Error('Weak distractor: '+topic+' '+c.q);
+              const n=c.q.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(stems.has(n))throw new Error('Duplicate re-check stem: '+topic+' and '+stems.get(n));stems.set(n,topic);
+            }
+          }
+          // Semantic placement guardrails found during the human CED review.
+          if(/primate city/i.test(lessons['6.2'].teach+' '+lessons['6.2'].checks.map(x=>x.q).join(' ')))throw new Error('Primate-city content drifted into 6.2; hierarchy belongs in 6.4');
+          if(!/megacities|metacities/i.test(lessons['6.2'].teach))throw new Error('6.2 missing megacity/metacity outcome');
+          if(!/commodity chain|economies of scale/i.test(lessons['5.7'].teach))throw new Error('5.7 missing current CED economic-organization content');
+          if(/perishable|perishability/i.test(lessons['5.7'].teach))throw new Error('5.7 drifted into 5.8 Von Thünen content');
+          if(!/offshoring/i.test(lessons['7.7'].teach)||!/outsourcing/i.test(lessons['7.7'].teach))throw new Error('7.7 outsourcing/offshoring distinction missing');
+          if(!/structural relationships/i.test(lessons['7.5'].teach))throw new Error('7.5 world-systems framing regressed');
+
+          const loader=fs.readFileSync('flashcard-nav-fix.js','utf8');
+          if(!loader.includes('personalized-units2-7-coach.js'))throw new Error('Units 2-7 coach is not loaded');
+          if(!loader.includes('personalized-units2-7-ced-fixes.js'))throw new Error('CED correction layer is not loaded');
+          if(!loader.includes("p.addEventListener('load',loadUnits27Coach"))throw new Error('Units 2-7 coach is not sequenced after Unit 1 coach');
+          if(!loader.includes("u.addEventListener('load',loadUnits27CedFixes"))throw new Error('CED fixes are not sequenced after Units 2-7 coach');
+          const src=fs.readFileSync('personalized-units2-7-coach.js','utf8');
+          for(const phrase of ['I didn’t know a word or term','The answer choices confused me','I had trouble reading the map or data',"I don't know yet",'Teach Me:','Prove it with a new question','What should I study next?'])if(!src.includes(phrase))throw new Error('Missing student flow: '+phrase);
+          if(!src.includes('unit>=2&&unit<=7'))throw new Error('Wrong-answer rescue is not scoped to Units 2-7');
+
+          // Five deliberately different students/stages of the school year.
+          const profiles=[
+            {name:'struggling early-year student',topic:'2.5',reason:'idk',needle:'Teach Me: The Demographic Transition Model'},
+            {name:'vocabulary-focused fall student',topic:'3.4',reason:'vocab',needle:'Word help:'},
+            {name:'map/data-focused midyear student',topic:'5.7',reason:'map-data',needle:'Map/data help:'},
+            {name:'average unit-test prep student',topic:'6.10',reason:'concept',needle:'Big-idea help:'},
+            {name:'AP-exam-ready spring student',topic:'7.5',reason:'choices',needle:'Choice help:'}
+          ];
+          for(const p of profiles){
+            localStorage.clear();delete elements['aphg-personal-coach-27'];
+            const q={unit:Number(p.topic.split('.')[0]),topic:p.topic,prompt:'Profile test question',choices:['A','B','C','D'],answer:'A'};
+            if(p.reason==='idk')api.openFor(q,true);else{api.openFor(q,false);api.reason(p.reason);}
+            const root=elements['aphg-personal-coach-27'];if(!root||!root.innerHTML.includes(p.needle))throw new Error(`${p.name} did not reach expected targeted Teach Me strategy`);
+            if(!root.innerHTML.includes('Try a new question'))throw new Error(`${p.name} has no re-check path`);
+            api.goCheck();if(!root.innerHTML.includes('Prove it with a new question'))throw new Error(`${p.name} did not reach re-check`);
+            const check=lessons[p.topic].checks[0];api.check(check.a);if(!root.innerHTML.includes('Return to practice')||!root.innerHTML.includes('What should I study next?'))throw new Error(`${p.name} did not reach mastery/next-step return path`);
+            api.close();
+          }
+          console.log(`Units 2-7 personalized coach passed: ${Object.keys(lessons).length} topics, ${stems.size} unique re-check questions, ${profiles.length} student profiles.`);
+          NODE
