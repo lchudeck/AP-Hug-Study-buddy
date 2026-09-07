@@ -72,7 +72,7 @@
       if(route==='mapLab'||route==='visual'||route==='visualPractice'||route==='visualPractice37')
         window.studyBuddyTrack('map_lab_opened',{feature:'maps_data'});
       if(route==='frq') window.studyBuddyTrack('frq_coach_opened',{feature:'frq_coach'});
-      if(route==='finalAP') window.studyBuddyTrack('final_ap_opened',{feature:'final_ap'});
+      if(route==='apSim') window.studyBuddyTrack('final_ap_opened',{feature:'final_ap'});
       return original.apply(this,arguments);
     };
     wrapped.__analyticsWrapped=true;
@@ -98,9 +98,9 @@
     if(unit) window.studyBuddyTrack('unit_selected',{unit:Number(unit[1])});
 
     // Final AP Mode uses changing button labels across versions, so match only explicit start/finish language.
-    if(/start.*final ap|begin.*final ap|start.*exam/.test(text))
+    if(/start.*final ap|begin.*final ap|start.*exam|start.*simulation/.test(text))
       window.studyBuddyTrack('final_ap_started',{feature:'final_ap'});
-    if(/submit.*final|finish.*final|complete.*final|submit.*exam|finish.*exam/.test(text))
+    if(/submit.*final|finish.*final|complete.*final|submit.*exam|finish.*exam|complete.*simulation|finish.*simulation/.test(text))
       window.studyBuddyTrack('final_ap_completed',{feature:'final_ap'});
   },true);
 })();
