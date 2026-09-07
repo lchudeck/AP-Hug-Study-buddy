@@ -21,14 +21,28 @@
   const storeKey='aphgPracticeMasteryV4'; const seenKey='aphgPracticeRecentSeenV2'; let state={mode:'dashboard',unit:1,deck:[],index:0,selected:null,session:[]};
   function load(){try{return JSON.parse(localStorage.getItem(storeKey)||'{}')}catch(e){return {}}} function save(p){localStorage.setItem(storeKey,JSON.stringify(p));}
   function loadSeen(){try{return JSON.parse(localStorage.getItem(seenKey)||'{}')}catch(e){return {}}} function saveSeen(x){localStorage.setItem(seenKey,JSON.stringify(x));}
-  function record(q,correct){const p=load(),x=p[q.topic]||{right:0,total:0,missed:[],recent:[],days:[],streak:0};x.total++;if(correct)x.right++;else if(!x.missed.includes(q.id))x.missed.push(q.id);if(correct)x.missed=x.missed.filter(id=>id!==q.id);x.recent=(x.recent||[]).concat(correct?1:0).slice(-8);x.streak=correct?(x.streak||0)+1:0;const day=new Date().toISOString().slice(0,10);x.days=x.days||[];if(!x.days.includes(day))x.days.push(day);x.days=x.days.slice(-12);p[q.topic]=x;save(p);try{window.APHGTopicSkillMastery?.recordEvidence(q,correct);}catch(e){}}
+  function record(q,correct){const p=load(),x=p[q.topic]||{right:0,total:0,missed:[],recent:[],days:[],streak:0};x.total++;if(correct)x.right++;else if(!x.missed.includes(q.id))x.missed.push(q.id);if(correct)x.missed=x.missed.filter(id=>id!==q.id&&id!==q.remediatesId);x.recent=(x.recent||[]).concat(correct?1:0).slice(-8);x.streak=correct?(x.streak||0)+1:0;const day=new Date().toISOString().slice(0,10);x.days=x.days||[];if(!x.days.includes(day))x.days.push(day);x.days=x.days.slice(-12);p[q.topic]=x;save(p);try{window.APHGTopicSkillMastery?.recordEvidence(q,correct);}catch(e){}}
   function score(t){const x=load()[t];if(!x||!x.total)return null;const recent=x.recent||[];const pct=Math.round(recent.reduce((a,b)=>a+b,0)/recent.length*100);return {pct,attempts:x.total,days:(x.days||[]).length,mastered:x.total>=5&&recent.length>=5&&pct>=80&&(x.days||[]).length>=2&&(x.streak||0)>=2};}
   function shuffle(a){const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
   function keyFor(mode,unit){return mode==='unit'?`unit-${unit}`:mode;}
   function setToQuestions(set){return set.questions.map((q,i)=>{const saved=setQuestions.find(x=>x.setId===set.id&&x.setIndex===i);return {id:saved?.id||`set-${set.id}-${i+1}`,unit:set.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:q[3],stimulus:set.stimulus,stimulusTitle:set.title,setId:set.id,setIndex:i,setSize:set.questions.length,authentic:/^real-/.test(set.id)};});}
   function chooseSets(mode,unit){let candidates=allSets;if(mode==='unit'||mode==='quick')candidates=allSets.filter(s=>s.unit===unit);if(!candidates.length)return [];return shuffle(candidates).slice(0,mode==='cumulative'?2:1);}
+  function stemSignature(prompt){return String(prompt||'').replace(/^(?:Choose the best answer\.|Use AP Human Geography reasoning\.)\s*/i,'').trim().toLowerCase().replace(/\s+/g,' ');}
+  function missedRemediationDeck(){
+    const progress=load(),missedIds=[...new Set(Object.values(progress).flatMap(x=>x.missed||[]))],used=new Set(),deck=[];
+    for(const missedId of shuffle(missedIds)){
+      const missed=bank.find(q=>q.id===missedId);if(!missed)continue;
+      const missedStem=stemSignature(missed.prompt);
+      const alternatives=shuffle(bank.filter(q=>q.topic===missed.topic&&stemSignature(q.prompt)!==missedStem&&!used.has(stemSignature(q.prompt))));
+      if(!alternatives.length)continue;
+      const replacement=alternatives[0],signature=stemSignature(replacement.prompt);used.add(signature);
+      deck.push({...replacement,id:`${replacement.id}-retry-${missedId}`,remediatesId:missedId,choices:shuffle(replacement.choices)});
+      if(deck.length===30)break;
+    }
+    return deck;
+  }
   function buildDeck(mode,unit){
-    if(mode==='missed'){const p=load(),ids=new Set(Object.values(p).flatMap(x=>x.missed||[]));return shuffle(bank.filter(q=>ids.has(q.id))).slice(0,30).map(q=>({...q,choices:shuffle(q.choices)}));}
+    if(mode==='missed')return missedRemediationDeck();
     let pool=variants;if(mode==='unit'||mode==='quick')pool=variants.filter(q=>q.unit===unit);
     const count=mode==='quick'?5:mode==='unit'?25:30,seen=loadSeen(),k=keyFor(mode,unit),recent=new Set(seen[k]||[]);let fresh=pool.filter(q=>!recent.has(q.id));if(fresh.length<count)fresh=pool;
     const selectedSets=chooseSets(mode,unit);const grouped=selectedSets.flatMap(setToQuestions);const fillCount=Math.max(0,count-grouped.length);

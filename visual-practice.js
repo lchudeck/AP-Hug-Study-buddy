@@ -49,7 +49,7 @@
   const oldRender=render;
   render=function(){if(active==='visualPractice'){renderNav();document.getElementById('app').innerHTML=page();return;}oldRender();};
   const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  window.vpMode=m=>{mode=m;selected=null;reveal=false;render();};
+  window.vpMode=m=>{if(m==='frq'){const match=frqs.findIndex(f=>f.unit===sets[si].unit);if(match>=0)fi=match;}else{const match=sets.findIndex(s=>s.unit===frqs[fi].unit);if(match>=0){si=match;qi=0;}}mode=m;selected=null;reveal=false;render();};
   window.vpSet=i=>{si=Number(i);qi=0;selected=null;render();};
   window.vpChoose=i=>{if(selected!==null)return;selected=i;render();};
   window.vpNext=()=>{selected=null;qi++;if(qi>=sets[si].qs.length){qi=0;si=(si+1)%sets.length;}render();};
