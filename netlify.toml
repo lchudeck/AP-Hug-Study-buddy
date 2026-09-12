@@ -11,6 +11,16 @@
     Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+
+[[headers]]
   for = "/sitemap.xml"
   [headers.values]
     Content-Type = "application/xml; charset=UTF-8"
