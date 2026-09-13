@@ -121,6 +121,32 @@
         choices.sort((a,b)=>hash(seed+'|'+a)-hash(seed+'|'+b));
         return {...q,choices};
       }
+      function rebalanceStimulus(chosen,candidates){
+        let count=chosen.filter(q=>q.stimulus).length;
+        let guard=0;
+        while((count<18||count>24)&&guard++<120){
+          const needStimulus=count<18;
+          let swapped=false;
+          for(let i=0;i<chosen.length;i++){
+            if(Boolean(chosen[i].stimulus)===needStimulus)continue;
+            const unit=Number(chosen[i].unit);
+            const replacement=candidates.find(q=>
+              Number(q.unit)===unit&&
+              Boolean(q.stimulus)===needStimulus&&
+              !chosen.some((x,j)=>j!==i&&exactKey(x)===exactKey(q))&&
+              !chosen.some((x,j)=>j!==i&&conceptualDuplicate(x,q))
+            );
+            if(replacement){
+              chosen[i]=replacement;
+              count+=needStimulus?1:-1;
+              swapped=true;
+              break;
+            }
+          }
+          if(!swapped)break;
+        }
+        return count>=18&&count<=24;
+      }
       function buildCache(){
         const originals=[1,2,3].map(n=>baseBuild(n));
         const byExact=new Map();
@@ -155,6 +181,7 @@
             chosen.push(q);
           }
           if(chosen.length!==60)throw new Error('Study Buddy could not assemble 60 validated questions without exact duplicates.');
+          if(!rebalanceStimulus(chosen,candidates))throw new Error('Study Buddy could not preserve the validated 30–40% stimulus range for this exam.');
           chosen.forEach(q=>usage.set(exactKey(q),(usage.get(exactKey(q))||0)+1));
           selected.push({...originals[examNum-1],mcq:chosen.map((q,i)=>shuffledChoices(q,'practice-'+examNum+'-'+i))});
         }
