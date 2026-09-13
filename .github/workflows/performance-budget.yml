@@ -1,0 +1,42 @@
+name: Performance budget
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  performance-budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check initial JavaScript budget
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          html = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script[^>]+src=["\']([^"\']+)["\']', html)
+          local_scripts = [s for s in scripts if not s.startswith(('http://', 'https://', '//'))]
+          missing = [s for s in local_scripts if not Path(s).is_file()]
+          if missing:
+              raise SystemExit(f'Missing script files referenced by index.html: {missing}')
+
+          total_bytes = sum(Path(s).stat().st_size for s in local_scripts)
+          print(f'Initial scripts: {len(local_scripts)}')
+          print(f'Initial JavaScript bytes: {total_bytes:,}')
+
+          # Baseline guardrails. Tighten these as lazy loading/consolidation reduces startup cost.
+          if len(local_scripts) > 49:
+              raise SystemExit('Performance regression: index.html loads more than 49 JavaScript files.')
+          if total_bytes > 960_000:
+              raise SystemExit('Performance regression: initial JavaScript exceeds 960,000 bytes.')
+          PY
+
+      - name: Verify static asset caching
+        run: |
+          grep -F 'for = "/*.js"' netlify.toml
+          grep -F 'for = "/*.css"' netlify.toml
+          grep -F 'stale-while-revalidate=86400' netlify.toml
