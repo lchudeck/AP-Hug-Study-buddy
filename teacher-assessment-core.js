@@ -23,13 +23,21 @@
   function answerBalanced(items,seed){
     const targets=shuffle([0,1,2,3],`${seed}-answers`);return items.map((q,i)=>{const target=targets[i%4],choices=[...q.choices],from=choices.indexOf(q.answer);[choices[from],choices[target]]=[choices[target],choices[from]];return {...q,choices}});
   }
+  function assemble(bank,ids,seed){
+    const byId=new Map(buildBank(bank).map(q=>[q.id,q]));
+    const items=ids.map(id=>byId.get(id)).filter(Boolean);
+    if(items.length!==ids.length)throw new Error('One or more quiz questions are no longer available. Ask the teacher for a new link.');
+    return answerBalanced(items,seed);
+  }
   function select(bank,options={}){
     const count=Math.min(40,Math.max(1,Number(options.count)||20));
     const units=(options.units||[1]).map(Number);
+    const topics=(options.topics||[]).map(String);
     const difficulty=options.difficulty||'mixed';
     const seed=options.seed||'assessment-a';
     const visualRate=options.visualRate==='high'?.5:options.visualRate==='low'?.2:.35;
     let eligible=buildBank(bank).filter(q=>units.includes(q.unit));
+    if(topics.length)eligible=eligible.filter(q=>topics.includes(String(q.topic)));
     if(difficulty!=='mixed')eligible=eligible.filter(q=>q.difficulty===Number(difficulty));
     if(eligible.length<count)throw new Error(`Only ${eligible.length} vetted questions match these settings. Choose fewer questions or a broader difficulty mix.`);
     const desired=Math.min(Math.round(count*visualRate),eligible.filter(q=>q.visual).length);
@@ -40,5 +48,5 @@
     const rest=[...nonVisual,...visualOverflow].slice(0,count-visuals.length);
     return answerBalanced(shuffle([...visuals,...rest],`${seed}-order`),seed);
   }
-  return {normalize,buildBank,select,signature,shuffle};
+  return {normalize,buildBank,select,assemble,signature,shuffle};
 });
