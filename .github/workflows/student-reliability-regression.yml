@@ -7,8 +7,10 @@ on:
       - 'frq-part-scoring.js'
       - 'student-reliability-patch.js'
       - 'session-rating.js'
+      - 'student-proof-v1.js'
       - 'tests/frq-scoring-regression.cjs'
       - 'tests/practice-exam-quality-regression.cjs'
+      - 'tests/readiness-evidence-regression.cjs'
       - '.github/workflows/student-reliability-regression.yml'
   workflow_dispatch:
 
@@ -24,9 +26,13 @@ jobs:
         run: node --check student-reliability-patch.js
       - name: Syntax check FRQ scorer
         run: node --check frq-part-scoring.js
+      - name: Syntax check readiness tracker
+        run: node --check session-rating.js
       - name: Verify reliability patch is loaded in production
         run: grep -q '<script src="student-reliability-patch.js"></script>' index.html
       - name: Run FRQ regression cases
         run: node tests/frq-scoring-regression.cjs
       - name: Run practice exam quality regression
         run: node tests/practice-exam-quality-regression.cjs
+      - name: Run readiness evidence regression
+        run: node tests/readiness-evidence-regression.cjs
