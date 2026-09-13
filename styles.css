@@ -129,6 +129,7 @@ button:active{transform:scale(.98)}
 @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .part-result{border-radius:14px;padding:14px;margin:8px 0;border:2px solid transparent}
 .part-earned{background:#f0fdf4;border-color:#22c55e}
+.part-review{background:#fffbeb;border-color:#f59e0b}
 .part-missing{background:#fef2f2;border-color:#fca5a5}
 .part-result .verdict{font-size:18px;font-weight:900;margin-bottom:6px}
 .part-result .part-fix{background:white;border-radius:10px;padding:10px;margin-top:8px;font-size:14px;color:#374151}

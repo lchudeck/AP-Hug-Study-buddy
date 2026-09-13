@@ -45,9 +45,10 @@
       window.__gradeFrqPart=function(part,text){
         const r=base(part,text);
         if(r.earned){
-          r.feedback=r.feedback+' Study Buddy is using a local coaching check, not an official AP score.';
+          if(!/not an official/i.test(r.feedback||''))r.feedback=r.feedback+' Study Buddy is using a local coaching check, not an official AP score.';
           return r;
         }
+        if(r.status==='unverified'){r.coachingOnly=true;return r;}
         if(!text||/missing|does not contain a recognizable/i.test(r.feedback||''))return r;
         r.feedback=(r.feedback||'Part '+r.letter+': not verified automatically.')+' A different, accurate AP Human Geography example or explanation may still earn the point. Compare your response with the model/rubric and revise if the geographic relationship is not clear.';
         r.coachingOnly=true;
