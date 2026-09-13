@@ -6,13 +6,17 @@
 
   const MODEL_TOPICS={
     'Demographic Transition Model':'2.5',
+    'Demographic Transition Model (DTM)':'2.5',
+    'Von Thünen Model':'5.8',
     'Von Thünen Agricultural Model':'5.8',
     'Concentric Zone Model':'6.5',
     'Sector Model':'6.5',
     'Multiple Nuclei Model':'6.5',
     'Latin American City Model':'6.5',
     "Rostow's Stages of Growth":'7.5',
-    'Weber Least-Cost Theory':'7.2'
+    'Rostow’s Stages of Growth':'7.5',
+    'Weber Least-Cost Theory':'7.2',
+    'Weber Least Cost Theory':'7.2'
   };
 
   // Correct the active Unit 7 FRQ so ownership makes outsourcing/offshoring unambiguous.
@@ -58,11 +62,12 @@
         const small=btn.querySelector('small');
         if(small)small.textContent='CED Topic '+MODEL_TOPICS[name];
       });
-      const modelHeading=[...document.querySelectorAll('main h2')].find(h=>MODEL_TOPICS[h.textContent.trim()]);
+      const modelHeading=[...document.querySelectorAll('.model-card h3, main h3')].find(h=>MODEL_TOPICS[h.textContent.trim()]);
       if(modelHeading){
         const topic=MODEL_TOPICS[modelHeading.textContent.trim()];
-        const pill=modelHeading.parentElement?.querySelector('.pill');
-        if(pill&&/Topic\s+\d/.test(pill.textContent))pill.textContent=pill.textContent.replace(/Topic\s+\d+(?:\.\d+)?/,'Topic '+topic);
+        const card=modelHeading.closest('.model-card')||modelHeading.parentElement;
+        const pill=card?.querySelector('.pill');
+        if(pill)pill.textContent='CED '+topic;
       }
     }catch(e){}
   }
