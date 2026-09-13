@@ -63,3 +63,12 @@
   script.dataset.studyBuddyAnalytics='true';
   document.head.appendChild(script);
 })();
+
+// Reliability corrections intentionally load after all legacy app modules and audit patches.
+(function(){
+  if(document.querySelector('script[data-student-reliability-patch]')) return;
+  const script=document.createElement('script');
+  script.src='student-reliability-patch.js';
+  script.dataset.studentReliabilityPatch='true';
+  document.head.appendChild(script);
+})();
