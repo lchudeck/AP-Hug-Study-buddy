@@ -9,44 +9,33 @@
 
   window.studentProofRoute = function(path){
     switch(path){
-      case 'test':
-        safeGo('unitReview');
-        break;
-      case 'learn':
-        if(typeof sspGo === 'function') sspGo('teach');
-        else safeGo('studentSuccess');
-        break;
-      case 'vocab':
-        safeGo('terms');
-        break;
-      case 'maps':
-        safeGo('visual');
-        break;
-      case 'misses':
-        safeGo('practiceMastery');
-        break;
-      case 'frq':
-        if(typeof sspGo === 'function') sspGo('verbs');
-        else safeGo('frq');
-        break;
-      case 'ap':
-        safeGo('apSim');
-        break;
-      case 'unsure':
-        if(typeof sspGo === 'function') sspGo('plan');
-        else safeGo('studentSuccess');
-        break;
-      default:
-        safeGo('home');
+      case 'test': safeGo('unitReview'); break;
+      case 'learn': if(typeof sspGo === 'function') sspGo('teach'); else safeGo('studentSuccess'); break;
+      case 'vocab': safeGo('terms'); break;
+      case 'maps': safeGo('visual'); break;
+      case 'misses': safeGo('practiceMastery'); break;
+      case 'frq': if(typeof sspGo === 'function') sspGo('verbs'); else safeGo('frq'); break;
+      case 'ap': safeGo('apSim'); break;
+      case 'unsure': if(typeof sspGo === 'function') sspGo('plan'); else safeGo('studentSuccess'); break;
+      default: safeGo('home');
     }
   };
+
+  function readiness(){
+    try{return typeof window.__aphgReadinessEvidence==='function'?window.__aphgReadinessEvidence():null;}catch(e){return null;}
+  }
+  function readinessHtml(r){
+    if(!r)return '<div class="box-info"><b>Readiness evidence is still being set up.</b><p>Complete a few practice questions, then return here.</p></div>';
+    return `<div class="box-${r.enough?'good':r.done>=3?'yellow':'info'}" style="margin-top:14px"><b>${r.label}</b><p style="margin-bottom:8px">Study Buddy does not turn limited practice into a precise “ready” percentage. It looks for several kinds of evidence instead.</p><div style="display:grid;gap:6px">${r.checks.map(c=>`<div><b>${c.done?'✓':'○'} ${c.label}</b> <span style="color:#64748b">(${c.detail})</span></div>`).join('')}</div><p style="margin-bottom:0"><b>${r.enough?'You have broad evidence across the course. Keep reviewing weak topics and take full practice exams under realistic conditions.':'Keep building the unchecked evidence before treating a practice score as a readiness signal.'}</b></p></div>`;
+  }
 
   if(typeof homePage === 'function'){
     homePage = function(){
       let snap={accuracy:null,attempted:0,weak:null};
       try{ if(typeof getMasterySnapshot==='function') snap=getMasterySnapshot()||snap; }catch(e){}
-      const accuracy=Number.isFinite(snap.accuracy)?`${Math.round(snap.accuracy)}%`:'Not enough practice yet';
+      const accuracy=snap.attempted>=10&&Number.isFinite(snap.accuracy)?`${Math.round(snap.accuracy)}%`:'Building evidence';
       const weak=snap.weak?`Unit ${snap.weak.unit}: ${snap.weak.name}`:'Complete a short practice set and Study Buddy will find it.';
+      const r=readiness();
       return `<main class="wrap student-proof-home">
         <section class="card student-proof-hero">
           <div class="student-proof-kicker">Start with your problem, not a feature name</div>
@@ -71,11 +60,12 @@
           <h2>My Progress</h2>
           <p>This is a quick snapshot, not a grade. Practice updates it on this device.</p>
           <div class="readiness-grid">
-            <div class="readiness-tile"><b>${accuracy}</b><span>recent practice accuracy</span></div>
+            <div class="readiness-tile"><b>${accuracy}</b><span>recent practice accuracy${snap.attempted<10?' (shown after 10 questions)':''}</span></div>
             <div class="readiness-tile"><b>${snap.attempted||0}</b><span>questions practiced</span></div>
             <div class="readiness-tile"><b>${weak}</b><span>recommended review</span></div>
           </div>
-          <div class="button-row" style="margin-top:14px"><button class="btn-primary" onclick="studentProofRoute('misses')">Show me what to practice next</button></div>
+          ${readinessHtml(r)}
+          <div class="button-row" style="margin-top:14px"><button class="btn-primary" onclick="studentProofRoute('misses')">Show me what to practice next</button><button class="btn-secondary" onclick="studentProofRoute('ap')">Open AP practice</button></div>
         </section>
       </main>`;
     };
@@ -119,8 +109,6 @@
   const app=document.getElementById('app');
   if(app) observer.observe(app,{childList:true,subtree:true});
 
-  // Earlier scripts render the original home screen before this late-loaded layer is installed.
-  // Re-render only the home route so first-time students immediately see the student-proof choices.
   setTimeout(function(){
     if(getActive()==='home' && typeof render==='function') render();
     addNextStep();
