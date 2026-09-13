@@ -29,8 +29,8 @@ jobs:
           print(f'Initial JavaScript bytes: {total_bytes:,}')
 
           # Baseline guardrails. Tighten these as lazy loading/consolidation reduces startup cost.
-          if len(local_scripts) > 49:
-              raise SystemExit('Performance regression: index.html loads more than 49 JavaScript files.')
+          if len(local_scripts) > 48:
+              raise SystemExit('Performance regression: index.html loads more than 48 JavaScript files.')
           if total_bytes > 960_000:
               raise SystemExit('Performance regression: initial JavaScript exceeds 960,000 bytes.')
           PY
