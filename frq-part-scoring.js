@@ -7,13 +7,14 @@
   const STOP=new Set(['the','and','or','to','of','in','a','an','is','are','was','were','it','this','that','with','from','for','one','as','by','on','be','can','could','would','may','more','less','into','their','its','has','have','had','such','because','therefore','which','they','them','than','also']);
   const STEM=w=>w.replace(/(ingly|edly|ing|ed|es|s)$/,'');
   const SYNONYM_GROUPS=[
-    ['increase','rise','grow','expand','higher','boost'],['decrease','decline','fall','reduce','lower','shrink'],
+    ['increase','rise','grow','expand','higher','larger','boost'],['decrease','decline','fall','reduce','lower','shrink'],
     ['job','employment','work','labor'],['money','income','wage','salary','earn'],['cost','expense','price'],
     ['outside','external','third-party','thirdparty','subcontract'],['company','firm','business','corporation'],
-    ['foreign','abroad','overseas','international','another-country'],['move','relocate','shift','transfer'],
+    ['foreign','abroad','overseas','international','another-country'],['relocate','shift','transfer'],
     ['city','urban'],['rural','countryside'],['country','state','nation'],['people','population','residents'],
     ['manufacture','manufacturing','production','factory','assembly'],['trade','exchange','commerce'],
-    ['migration','migrate','move'],['transport','transportation','shipping','ship'],['agriculture','agricultural','farm','farming']
+    ['migration','migrate','move'],['transport','transportation','shipping','ship','rail','road','transit'],['agriculture','agricultural','farm','farming'],
+    ['consumer','customer','buyer','market'],['producer','farmer','seller','supplier'],['connect','reach','access']
   ];
   const synonymIndex=new Map();
   SYNONYM_GROUPS.forEach((g,i)=>g.forEach(w=>synonymIndex.set(STEM(w),i)));
