@@ -1,74 +1,8 @@
 // Once-per-session, privacy-safe Study Buddy rating via Netlify Forms.
-(function(){
-  if(window.__studyBuddySessionRatingInstalled) return;
-  window.__studyBuddySessionRatingInstalled=true;
+(function(){if(window.__studyBuddySessionRatingInstalled)return;window.__studyBuddySessionRatingInstalled=true;const D=8*60*1000,K='studyBuddySessionRatingSeen';let timer;function ctx(){const section=(typeof active!=='undefined'&&active)?active:'unknown',title=document.querySelector('main h2, main h1')?.textContent?.trim()||document.title;return{section,title,url:location.href}}function eligible(){try{return!sessionStorage.getItem(K)}catch(e){return true}}function mark(){try{sessionStorage.setItem(K,'1')}catch(e){}}function schedule(){if(!eligible())return;clearTimeout(timer);timer=setTimeout(open,D)}function open(){if(!eligible()||document.getElementById('session-rating-modal'))return;mark();const c=ctx(),w=document.createElement('div');w.id='session-rating-modal';w.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px';w.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="session-rating-title" style="background:white;color:#111;max-width:460px;width:100%;border-radius:16px;padding:20px;max-height:90vh;overflow:auto"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start"><div><h2 id="session-rating-title" style="margin:0 0 6px">How was Study Buddy today?</h2><p style="margin-top:0">One quick rating helps us make it better for students.</p></div><button type="button" id="session-rating-close" aria-label="Not now" style="font-size:22px;border:0;background:transparent;cursor:pointer;min-width:44px;min-height:44px">×</button></div><fieldset style="border:0;padding:0;margin:0 0 14px"><legend><b>Rate this study session</b></legend><div id="session-stars" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${[1,2,3,4,5].map(n=>`<button type="button" data-rating="${n}" aria-label="${n} out of 5 stars" style="font-size:28px;border:1px solid #d1d5db;background:#fff;border-radius:10px;min-width:48px;min-height:48px;cursor:pointer">☆</button>`).join('')}</div></fieldset><fieldset style="border:0;padding:0;margin:0 0 14px"><legend><b>What best describes your session?</b></legend><label style="display:block;margin:8px 0"><input type="radio" name="session-result" value="Helped me understand"> Helped me understand</label><label style="display:block;margin:8px 0"><input type="radio" name="session-result" value="Easy to use"> Easy to use</label><label style="display:block;margin:8px 0"><input type="radio" name="session-result" value="Still stuck"> I’m still stuck</label><label style="display:block;margin:8px 0"><input type="radio" name="session-result" value="Confusing to use"> It was confusing to use</label></fieldset><div id="session-rating-status" aria-live="polite"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="session-rating-send" disabled style="padding:10px 14px;font-weight:700;min-height:44px;cursor:pointer">Send rating</button><button type="button" id="session-rating-later" style="padding:10px 14px;min-height:44px;cursor:pointer">Not now</button></div><p style="font-size:12px;margin-bottom:0">No name, email, answers, or written work are collected.</p></div>`;document.body.appendChild(w);let rating=0;const stars=[...w.querySelectorAll('[data-rating]')],send=w.querySelector('#session-rating-send'),close=()=>w.remove();stars.forEach(b=>b.addEventListener('click',()=>{rating=+b.dataset.rating;stars.forEach((s,i)=>{s.textContent=i<rating?'★':'☆';s.setAttribute('aria-pressed',i<rating?'true':'false')});send.disabled=false}));w.querySelector('#session-rating-close').onclick=close;w.querySelector('#session-rating-later').onclick=close;w.addEventListener('click',e=>{if(e.target===w)close()});send.onclick=async()=>{const result=w.querySelector('input[name="session-result"]:checked')?.value||'No selection',status=w.querySelector('#session-rating-status'),data=new URLSearchParams({'form-name':'study-buddy-session-rating',rating:String(rating),'session-result':result,'page-title':c.title,section:c.section,'page-url':c.url});send.disabled=true;send.textContent='Sending…';try{const res=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()});if(!res.ok)throw Error();if(typeof window.studyBuddyTrack==='function')window.studyBuddyTrack('session_rating_submitted',{rating,session_result:result});status.innerHTML='<div style="background:#dcfce7;padding:10px;border-radius:10px;margin-bottom:12px"><b>✓ Thanks for helping us improve Study Buddy.</b></div>';send.textContent='Sent';setTimeout(close,1100)}catch(e){send.disabled=false;send.textContent='Send rating';status.innerHTML='<p style="color:#b91c1c"><b>That rating did not send. You can try again.</b></p>'}};w.querySelector('[data-rating]')?.focus()}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',schedule):schedule()})();
 
-  const PROMPT_DELAY_MS=8*60*1000;
-  const SEEN_KEY='studyBuddySessionRatingSeen';
-  let timer;
+// Local-only readiness evidence. No identity or student answers leave the device.
+(function(){if(window.__aphgReadinessEvidenceInstalled)return;window.__aphgReadinessEvidenceInstalled=1;const K='aphgReadinessEvidenceV1',L=()=>{try{return Object.assign({d:[],u:[],m:0,s:0,f:0},JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){return{d:[],u:[],m:0,s:0,f:0}}},S=x=>{try{localStorage.setItem(K,JSON.stringify(x))}catch(e){}},day=x=>{let d=new Date().toISOString().slice(0,10);if(!x.d.includes(d))x.d.push(d);x.d=x.d.slice(-30)},q=(z,m)=>{if(!z)return;let x=L(),u=+(z.unit||String(z[0]||'').match(/\d+/)?.[0]||0);day(x);if(u>0&&u<8&&!x.u.includes(u))x.u.push(u);if(m)x.m++;if(z.stimulus||z.visual)x.s++;S(x)},f=()=>{let x=L();day(x);x.f++;S(x)};window.__aphgReadinessEvidence=()=>{let x=L(),checks=[['Practice across all 7 units',x.u.length===7,`${x.u.length}/7 units`],['Practice on more than one day',x.d.length>=2,`${x.d.length} days`],['Work unfamiliar mixed-unit questions',x.m>=20,`${x.m}/20 mixed`],['Use maps, data, or other stimuli',x.s>=10,`${x.s}/10 stimulus`],['Complete at least one FRQ',x.f>=1,`${x.f} FRQ`]].map(([label,done,detail])=>({label,done,detail})),done=checks.filter(c=>c.done).length;return{checks,done,total:5,label:done===5?'Strong readiness evidence':done>=3?'Developing readiness evidence':'Building readiness evidence',enough:done===5}};function I(){try{if(typeof chooseAnswer==='function'&&!chooseAnswer.__r){let o=chooseAnswer;chooseAnswer=function(c){try{if(!selectedChoice){let a=getQuizSet();q(a[qIndex%a.length],0)}}catch(e){}return o(c)};chooseAnswer.__r=1}}catch(e){}try{if(typeof setExamAnswer==='function'&&!setExamAnswer.__r){let o=setExamAnswer;setExamAnswer=function(i,c){try{if(!examSubmitted&&examAnswers[i]===undefined)q(buildPracticeExam(activeExam+1).mcq[i],1)}catch(e){}return o(i,c)};setExamAnswer.__r=1}}catch(e){}try{if(typeof gradeOneFrq==='function'&&!gradeOneFrq.__r){let o=gradeOneFrq;gradeOneFrq=function(p,a){if(String(a||'').trim())f();return o(p,a)};gradeOneFrq.__r=1}}catch(e){}try{if(typeof localGradeFRQ==='function'&&!localGradeFRQ.__r){let o=localGradeFRQ;localGradeFRQ=function(a,p){if(String(a||'').trim())f();return o(a,p)};localGradeFRQ.__r=1}}catch(e){}}setTimeout(I,0);setTimeout(I,800)})();
 
-  function context(){
-    const section=(typeof active!=='undefined'&&active)?active:'unknown';
-    const title=document.querySelector('main h2, main h1')?.textContent?.trim()||document.title;
-    return {section,title,url:location.href};
-  }
-  function eligible(){
-    try{return !sessionStorage.getItem(SEEN_KEY);}catch(e){return true;}
-  }
-  function markSeen(){try{sessionStorage.setItem(SEEN_KEY,'1');}catch(e){}}
-  function schedule(){
-    if(!eligible()) return;
-    clearTimeout(timer);
-    timer=setTimeout(open,PROMPT_DELAY_MS);
-  }
-  function open(){
-    if(!eligible()||document.getElementById('session-rating-modal')) return;
-    markSeen();
-    const c=context(),wrap=document.createElement('div');
-    wrap.id='session-rating-modal';
-    wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px';
-    wrap.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="session-rating-title" style="background:white;color:#111;max-width:460px;width:100%;border-radius:16px;padding:20px;max-height:90vh;overflow:auto"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start"><div><h2 id="session-rating-title" style="margin:0 0 6px">How was Study Buddy today?</h2><p style="margin-top:0">One quick rating helps us make it better for students.</p></div><button type="button" id="session-rating-close" aria-label="Not now" style="font-size:22px;border:0;background:transparent;cursor:pointer;min-width:44px;min-height:44px">×</button></div><fieldset style="border:0;padding:0;margin:0 0 14px"><legend><b>Rate this study session</b></legend><div id="session-stars" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${[1,2,3,4,5].map(n=>`<button type="button" data-rating="${n}" aria-label="${n} out of 5 stars" style="font-size:28px;border:1px solid #d1d5db;background:#fff;border-radius:10px;min-width:48px;min-height:48px;cursor:pointer">☆</button>`).join('')}</div></fieldset><fieldset style="border:0;padding:0;margin:0 0 14px"><legend><b>What best describes your session?</b></legend><label style="display:block;margin:8px 0"><input type="radio" name="session-result" value="Helped me understand"> Helped me understand</label><label style="display:block;margin:8px 0"><input type="radio" name="session-result" value="Easy to use"> Easy to use</label><label style="display:block;margin:8px 0"><input type="radio" name="session-result" value="Still stuck"> I’m still stuck</label><label style="display:block;margin:8px 0"><input type="radio" name="session-result" value="Confusing to use"> It was confusing to use</label></fieldset><div id="session-rating-status" aria-live="polite"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="session-rating-send" disabled style="padding:10px 14px;font-weight:700;min-height:44px;cursor:pointer">Send rating</button><button type="button" id="session-rating-later" style="padding:10px 14px;min-height:44px;cursor:pointer">Not now</button></div><p style="font-size:12px;margin-bottom:0">No name, email, answers, or written work are collected.</p></div>`;
-    document.body.appendChild(wrap);
-    let rating=0;
-    const stars=[...wrap.querySelectorAll('[data-rating]')],send=wrap.querySelector('#session-rating-send');
-    stars.forEach(btn=>btn.addEventListener('click',()=>{rating=Number(btn.dataset.rating);stars.forEach((s,i)=>{s.textContent=i<rating?'★':'☆';s.setAttribute('aria-pressed',i<rating?'true':'false');});send.disabled=false;}));
-    const close=()=>wrap.remove();
-    wrap.querySelector('#session-rating-close').onclick=close;
-    wrap.querySelector('#session-rating-later').onclick=close;
-    wrap.addEventListener('click',e=>{if(e.target===wrap)close();});
-    send.onclick=async()=>{
-      const result=wrap.querySelector('input[name="session-result"]:checked')?.value||'No selection';
-      const status=wrap.querySelector('#session-rating-status');
-      const data=new URLSearchParams({'form-name':'study-buddy-session-rating','rating':String(rating),'session-result':result,'page-title':c.title,'section':c.section,'page-url':c.url});
-      send.disabled=true;send.textContent='Sending…';
-      try{
-        const res=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()});
-        if(!res.ok) throw new Error('Submission failed');
-        if(typeof window.studyBuddyTrack==='function') window.studyBuddyTrack('session_rating_submitted',{rating,session_result:result});
-        status.innerHTML='<div style="background:#dcfce7;padding:10px;border-radius:10px;margin-bottom:12px"><b>✓ Thanks for helping us improve Study Buddy.</b></div>';
-        send.textContent='Sent';setTimeout(close,1100);
-      }catch(e){send.disabled=false;send.textContent='Send rating';status.innerHTML='<p style="color:#b91c1c"><b>That rating did not send. You can try again.</b></p>';}
-    };
-    wrap.querySelector('[data-rating]')?.focus();
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
-})();
-
-// Load aggregate, privacy-conscious site analytics. No typed student responses are sent.
-(function(){
-  if(document.querySelector('script[data-study-buddy-analytics]')) return;
-  const script=document.createElement('script');
-  script.src='analytics.js';
-  script.async=true;
-  script.dataset.studyBuddyAnalytics='true';
-  document.head.appendChild(script);
-})();
-
-// Reliability corrections intentionally load after all legacy app modules and audit patches.
-(function(){
-  if(document.querySelector('script[data-student-reliability-patch]')) return;
-  const script=document.createElement('script');
-  script.src='student-reliability-patch.js';
-  script.dataset.studentReliabilityPatch='true';
-  document.head.appendChild(script);
-})();
+(function(){if(document.querySelector('script[data-study-buddy-analytics]'))return;const s=document.createElement('script');s.src='analytics.js';s.async=true;s.dataset.studyBuddyAnalytics='true';document.head.appendChild(s)})();
+(function(){if(document.querySelector('script[data-student-reliability-patch]'))return;const s=document.createElement('script');s.src='student-reliability-patch.js';s.dataset.studentReliabilityPatch='true';document.head.appendChild(s)})();
