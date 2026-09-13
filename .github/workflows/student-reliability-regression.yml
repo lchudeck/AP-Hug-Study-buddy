@@ -1,0 +1,26 @@
+name: Student reliability regression
+
+on:
+  pull_request:
+    paths:
+      - 'frq-part-scoring.js'
+      - 'student-reliability-patch.js'
+      - 'session-rating.js'
+      - 'tests/frq-scoring-regression.cjs'
+      - '.github/workflows/student-reliability-regression.yml'
+  workflow_dispatch:
+
+jobs:
+  frq-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check reliability patch
+        run: node --check student-reliability-patch.js
+      - name: Syntax check FRQ scorer
+        run: node --check frq-part-scoring.js
+      - name: Run FRQ regression cases
+        run: node tests/frq-scoring-regression.cjs
