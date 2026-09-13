@@ -1,0 +1,25 @@
+name: Teacher builder validation
+on:
+  pull_request:
+    paths:
+      - teacher-assessment-core.js
+      - teacher-builder.js
+      - teacher-builder.css
+      - teacher-builder.html
+      - unit1-visual-assessment-bank.js
+      - tests/teacher-assessment-core-regression.cjs
+      - .github/workflows/teacher-builder.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript and assessment rules
+        run: |
+          node --check teacher-assessment-core.js
+          node --check teacher-builder.js
+          node --check unit1-visual-assessment-bank.js
+          node tests/teacher-assessment-core-regression.cjs
