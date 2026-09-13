@@ -1,0 +1,15 @@
+const assert=require('assert');
+const core=require('../teacher-assessment-core.js');
+const items=Array.from({length:60},(_,i)=>({id:`q${i}`,unit:i<50?1:2,topic:`1.${i%7+1}`,prompt:`Question ${i}`,choices:['A','B','C','D'],answer:'A',explain:'Verified explanation',difficulty:i%3+1,visual:i%3===0?'<svg></svg>':''}));
+const bank=core.buildBank([...items,items[0]]);
+assert.equal(bank.length,60,'duplicate stems must be removed');
+const test=core.select(bank,{units:[1],count:20,difficulty:'mixed',visualRate:'standard',seed:'version-a'});
+assert.equal(test.length,20,'must create requested count');
+assert.equal(new Set(test.map(core.signature)).size,20,'assessment must not contain duplicate stems');
+assert.equal(test.filter(q=>q.visual).length,7,'standard mix should target 35% stimuli');
+const answerPositions=test.map(q=>q.choices.indexOf(q.answer));
+for(let i=0;i<4;i++)assert(answerPositions.filter(x=>x===i).length>=4,'correct answers must be balanced');
+assert.deepEqual(test,core.select(bank,{units:[1],count:20,difficulty:'mixed',visualRate:'standard',seed:'version-a'}),'same seed must be reproducible');
+assert.notDeepEqual(test,core.select(bank,{units:[1],count:20,difficulty:'mixed',visualRate:'standard',seed:'version-b'}),'A/B seeds must differ');
+assert.throws(()=>core.select(bank,{units:[2],count:20}),/Only 10 vetted questions/,'insufficient bank must fail clearly');
+console.log('Teacher assessment core passed: validation, deduplication, reproducibility, A/B variation, stimulus mix, and answer balance.');
