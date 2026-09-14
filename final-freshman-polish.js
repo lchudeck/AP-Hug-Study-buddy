@@ -79,17 +79,47 @@
   }
 
   let visualSectionName='maps';
+  let authenticMapData=null,authenticMapLoad=null,authenticMapUnavailable=false;
   let mapActivityIndex=0,mapActivityChoice=null,mapActivityScore=0;
   const mapInfo={
-    reference:{title:'Reference map',notice:'Locations, boundaries, roads, rivers, and place names are the focus.',use:'Finding where something is and understanding its location relative to other features.',limit:'It usually does not show a statistical variable or explain why a pattern exists.',ap:'Use reference maps for location evidence: “The city is near the river and interstate.”'},
-    choropleth:{title:'Choropleth map',notice:'Defined areas change shade or color according to a value.',use:'Comparing rates, percentages, or standardized values among states, counties, or countries.',limit:'Large areas can look more important than they are; raw totals can mislead when populations differ.',ap:'Check the legend and ask whether the map uses a rate/percentage or a raw total.'},
-    symbol:{title:'Proportional-symbol map',notice:'Symbols stay at locations but change size to represent magnitude.',use:'Comparing totals such as city population, trade volume, or number of events.',limit:'Large symbols can overlap and hide exact locations or smaller values.',ap:'Describe both magnitude and spatial pattern: “The largest symbols cluster in…”'},
+    reference:{title:'Reference map',notice:'Actual U.S. state boundaries are the focus.',use:'Finding where something is and understanding its location relative to other features.',limit:'It usually does not show a statistical variable or explain why a pattern exists.',ap:'Use reference maps for location evidence: “The state is north of…”'},
+    choropleth:{title:'Choropleth map',notice:'Actual states shaded by 2020 Census population (raw totals).',use:'Comparing rates, percentages, or standardized values among states, counties, or countries.',limit:'This example uses raw totals, so populous states look darkest regardless of their land area.',ap:'Check the legend and ask whether the map uses a rate/percentage or a raw total.'},
+    symbol:{title:'Proportional-symbol map',notice:'Actual state locations sized by 2020 Census population.',use:'Comparing totals such as city population, trade volume, or number of events.',limit:'Large symbols can overlap and hide exact locations or smaller values.',ap:'Describe both magnitude and spatial pattern: “The largest symbols cluster in…”'},
     dots:{title:'Dot-density map',notice:'Repeated dots represent a fixed amount of a phenomenon.',use:'Showing concentration, dispersion, and distribution within larger areas.',limit:'Dots usually do not mark exact individual locations, and dense areas can visually merge.',ap:'Use words such as clustered, dispersed, concentrated, or sparse.'},
     isoline:{title:'Isoline map',notice:'Lines connect places with equal values.',use:'Continuous data such as elevation, temperature, pressure, or precipitation.',limit:'Values between lines are estimated; close lines can be hard to read.',ap:'Closer lines usually mean a faster change across space.'},
     cartogram:{title:'Cartogram',notice:'Geographic areas are intentionally resized according to a variable.',use:'Making magnitude visually obvious, such as population or GDP.',limit:'Distortion makes exact location, shape, and distance harder to interpret.',ap:'Do not mistake resized area for actual land area.'}
   };
 
+  function populationColor(value){
+    if(value>=20000000)return '#1e3a8a';
+    if(value>=10000000)return '#1d4ed8';
+    if(value>=6000000)return '#3b82f6';
+    if(value>=3000000)return '#93c5fd';
+    if(value>=1000000)return '#bfdbfe';
+    return '#dbeafe';
+  }
+
+  function realMapSvg(kind){
+    if(!authenticMapData)return '';
+    const states=authenticMapData.states;
+    const paths=states.map(s=>`<path d="${s.path}" fill="${kind==='choropleth'?populationColor(s.population):'#e2e8f0'}" stroke="${kind==='choropleth'?'#fff':'#64748b'}" stroke-width="${kind==='choropleth'?1.2:1.5}"><title>${s.name}${kind==='reference'?'':`: ${s.population.toLocaleString()} people`}</title></path>`).join('');
+    const symbols=kind==='symbol'?states.map(s=>`<circle class="pop-symbol" cx="${s.cx}" cy="${s.cy}" r="${Math.max(4,Math.sqrt(s.population/39538223)*48).toFixed(1)}"><title>${s.name}: ${s.population.toLocaleString()} people</title></circle>`).join(''):'';
+    const legend=kind==='choropleth'?`<g transform="translate(535 565)" aria-hidden="true">${['#dbeafe','#bfdbfe','#93c5fd','#3b82f6','#1d4ed8','#1e3a8a'].map((c,i)=>`<rect x="${i*48}" width="48" height="18" fill="${c}"/>`).join('')}<text x="0" y="38" font-size="20" fill="#334155">under 1M</text><text x="223" y="38" font-size="20" fill="#334155">20M+</text></g>`:kind==='symbol'?'<text x="525" y="592" font-size="20" fill="#334155">Larger circle = more people</text>':'';
+    const label=kind==='reference'?'Reference map of actual U.S. state boundaries':kind==='choropleth'?'Choropleth map of 2020 Census state population totals':'Proportional symbol map of 2020 Census state population totals';
+    return `<svg viewBox="0 0 975 610" class="lesson-svg map-learning-svg authentic-us-map" role="img" aria-label="${label}"><rect width="975" height="610" fill="#f8fafc"/>${paths}${symbols}${legend}</svg>`;
+  }
+
+  function loadAuthenticMaps(){
+    if(authenticMapData||authenticMapLoad||authenticMapUnavailable)return authenticMapLoad;
+    authenticMapLoad=fetch('data/us-state-map-2020.json?v=20260914',{cache:'force-cache'})
+      .then(r=>{if(!r.ok)throw new Error(`Map data ${r.status}`);return r.json();})
+      .then(data=>{if(!Array.isArray(data.states)||data.states.length!==51)throw new Error('Incomplete map data');authenticMapData=data;return data;})
+      .catch(()=>{authenticMapUnavailable=true;return null;});
+    return authenticMapLoad;
+  }
+
   function mapSvg(kind){
+    if(['reference','choropleth','symbol'].includes(kind)&&authenticMapData)return realMapSvg(kind);
     const open='<svg viewBox="0 0 460 190" class="lesson-svg map-learning-svg" role="img"';
     if(kind==='reference')return `${open} aria-label="Reference map schematic"><rect x="35" y="25" width="390" height="125" rx="10" fill="#f8fafc" stroke="#64748b"/><path d="M165 25v125M295 25v125" stroke="#94a3b8"/><path d="M55 118 C130 80 185 135 255 95 S355 90 410 55" fill="none" stroke="#2563eb" stroke-width="5"/><path d="M70 45 L375 140" stroke="#111827" stroke-width="7"/><text x="78" y="42" font-size="14">Highway</text><text x="330" y="55" font-size="14">River</text><text x="176" y="90" font-size="14">Boundary</text><text x="35" y="177" font-size="14">Locations and features—not one statistical variable</text></svg>`;
     if(kind==='choropleth')return `${open} aria-label="Choropleth map schematic"><rect x="35" y="35" width="120" height="100" fill="#dbeafe" stroke="#64748b"/><rect x="160" y="35" width="130" height="100" fill="#93c5fd" stroke="#64748b"/><rect x="295" y="35" width="130" height="100" fill="#1d4ed8" stroke="#64748b"/><text x="45" y="170" font-size="14">Lighter</text><text x="350" y="170" font-size="14">Darker = higher value</text></svg>`;
@@ -124,7 +154,8 @@
   function renderVisualPractice(){
     if(typeof active!=='undefined')active='visualLab';
     if(typeof renderNav==='function')renderNav();
-    const maps=`<h3>Unit 1: Maps</h3><p class="muted">Click any map type to learn what to notice, when to use it, and the limitation AP questions often test.</p><div class="visual-grid map-learning-grid">${['reference','choropleth','symbol','dots','isoline','cartogram'].map(mapCard).join('')}</div><div id="mapDetailHost" aria-live="polite"></div><div id="mapActivityHost">${mapActivityHtml()}</div>`;
+    const sourceNote=authenticMapData?'<p class="map-data-note"><b>Real map data:</b> U.S. Census Bureau state boundaries and official 2020 resident population totals, bundled with Study Buddy. No live public API or AI-generated map is used.</p>':authenticMapUnavailable?'<p class="map-data-note"><b>Offline fallback:</b> The map lesson is using its built-in schematics because the local boundary file did not load.</p>':'<p class="map-data-note" aria-live="polite">Loading the bundled Census map…</p>';
+    const maps=`<h3>Unit 1: Maps</h3><p class="muted">Click any map type to learn what to notice, when to use it, and the limitation AP questions often test.</p>${sourceNote}<div class="visual-grid map-learning-grid">${['reference','choropleth','symbol','dots','isoline','cartogram'].map(mapCard).join('')}</div><div id="mapDetailHost" aria-live="polite"></div><div id="mapActivityHost">${mapActivityHtml()}</div>`;
     const spatial=`<h3>Unit 1: Spatial Concepts</h3><div class="visual-grid"><figure class="visual-card"><figcaption><b>Clustered, dispersed, and linear patterns</b></figcaption>${patternSvg()}</figure><div class="visual-card"><b>Scale of analysis</b><p>A national pattern can hide regional or local variation.</p></div><div class="visual-card"><b>GIS layers</b><p>Geographers combine location-based layers to investigate relationships.</p></div><div class="visual-card"><b>Distance decay</b><p>Interaction often decreases as distance increases.</p></div></div>`;
     const population=`<h3>Unit 2: Population & Migration</h3><div class="visual-grid"><figure class="visual-card"><figcaption><b>Population pyramids</b><br>Read age structure before explaining consequences.</figcaption>${pyramidSvg()}</figure><figure class="visual-card"><figcaption><b>Demographic Transition Model</b><br>Compare changes in birth and death rates.</figcaption>${dtmSvg()}</figure><div class="visual-card"><b>Migration flows</b><p>Identify origin, destination, push/pull factors, and consequences.</p></div></div>`;
     app.innerHTML=`<main class="wrap"><section class="card"><h2>🗺️ Maps & Visuals</h2><p>Learn the visual first, then practice interpreting it the way AP Human Geography expects.</p><div class="box-info"><b>Learn → Try → Practice</b><p>Open a map card, complete the Map Detective activity, then move into AP-style visual questions when you're ready.</p><div class="button-row"><button class="btn-primary" data-open-visual="12">More Units 1–2 visual practice</button><button class="btn-secondary" data-open-visual="37">Units 3–7 visual practice</button></div></div><div class="button-row"><button class="${visualSectionName==='maps'?'btn-primary':'btn-secondary'}" data-visual="maps">Unit 1 Maps</button><button class="${visualSectionName==='spatial'?'btn-primary':'btn-secondary'}" data-visual="spatial">Spatial Concepts</button><button class="${visualSectionName==='population'?'btn-primary':'btn-secondary'}" data-visual="population">Unit 2 Population</button></div></section><section class="card">${visualSectionName==='maps'?maps:visualSectionName==='spatial'?spatial:population}</section></main>`;
@@ -153,6 +184,9 @@
     }));
     app.querySelector('[data-map-next]')?.addEventListener('click',()=>{mapActivityIndex++;mapActivityChoice=null;renderVisualPractice();document.getElementById('mapActivityHost')?.scrollIntoView({behavior:'smooth',block:'center'});});
     app.querySelector('[data-map-restart]')?.addEventListener('click',()=>{mapActivityIndex=0;mapActivityChoice=null;mapActivityScore=0;renderVisualPractice();});
+    if(visualSectionName==='maps'&&!authenticMapData&&!authenticMapUnavailable){
+      loadAuthenticMaps()?.then(data=>{if(data&&typeof active!=='undefined'&&active==='visualLab'&&visualSectionName==='maps')renderVisualPractice();});
+    }
   }
 
   // One public entry point keeps home cards and navigation on the same maps UI.

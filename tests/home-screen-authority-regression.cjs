@@ -22,6 +22,7 @@ for(const route of ['test','learn','misses','vocab','maps','frq','ap'])assert.ma
 assert.match(app,/data-student-route="unsure"/,'missing student start route: unsure');
 assert.match(routeLayer,/closest\('\[data-student-route\]'\)/,'home cards must use one delegated route handler');
 assert.match(polish,/window\.openMapsVisuals=renderVisualPractice/,'the chosen maps screen must expose one public entry point');
+assert.match(fs.readFileSync('visual-learning.js','utf8'),/window\.openMapsVisuals/,'the older visual route must delegate to the chosen maps screen');
 assert.match(routeLayer,/p==='maps'\)typeof window\.openMapsVisuals/,'the maps card must use the authoritative maps screen');
 assert.match(routeLayer,/localStorage\.getItem\('aphgStudentSuccessV1'\)/,'student routes must follow the saved current unit');
 assert.doesNotMatch(css,/#app[^}]*min-height|pointer-events|z-index/,'mobile home CSS must not rely on stacking or forced-height patches');
