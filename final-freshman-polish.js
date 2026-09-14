@@ -5,8 +5,8 @@
 
   const EXAM_DATE=new Date('2027-05-03T08:00:00-07:00');
   const findTab=re=>typeof tabs!=='undefined'?tabs.find(t=>re.test(String(t&&t[1]||''))):null;
-  const hiddenTopLevel=[/AP Mastery/i,/Map Lab/i,/Use the Vocab/i,/Visual Practice/i];
-  const primary=[/home/i,/unit review/i,/practice/i,/key terms|vocabulary/i,/maps?\s*&?\s*visual/i,/frq coach/i,/ap exam prep/i];
+  const hiddenTopLevel=[/AP Mastery/i,/AP Exam Prep/i,/Map Lab/i,/Use the Vocab/i,/Visual Practice/i];
+  const primary=[/home/i,/unit review/i,/practice/i,/key terms|vocabulary/i,/maps?\s*&?\s*visual/i,/frq coach/i];
 
   function syncExamBadge(){
     const label=document.querySelector('.exam-badge .date');
@@ -154,6 +154,9 @@
     app.querySelector('[data-map-next]')?.addEventListener('click',()=>{mapActivityIndex++;mapActivityChoice=null;renderVisualPractice();document.getElementById('mapActivityHost')?.scrollIntoView({behavior:'smooth',block:'center'});});
     app.querySelector('[data-map-restart]')?.addEventListener('click',()=>{mapActivityIndex=0;mapActivityChoice=null;mapActivityScore=0;renderVisualPractice();});
   }
+
+  // One public entry point keeps home cards and navigation on the same maps UI.
+  window.openMapsVisuals=renderVisualPractice;
 
   try{consolidateTabs();if(typeof renderNav==='function')renderNav();}catch(e){}
   nav.addEventListener('click',e=>{

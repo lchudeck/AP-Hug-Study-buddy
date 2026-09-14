@@ -3,12 +3,22 @@
   if(window.__freshmanFixesV2Installed)return;
   window.__freshmanFixesV2Installed=true;
 
-  // Keep the seven destinations a student needs most. Specialized labs remain
-  // reachable from the home and mastery pages.
+  // Keep one clear freshman path in the top navigation. Deeper tools stay
+  // available from the home screen and the unit-review learning button.
   if(typeof tabs!=='undefined'){
-    const wanted=['home','unitReview','unitMasteryAll','practiceMastery','mastery','terms','frq'];
+    const wanted=[
+      ['home','🏠 Start Here'],
+      ['unitReview','📝 Unit Review'],
+      ['practiceMastery','🎯 Practice Questions'],
+      ['terms','📚 Key Terms'],
+      ['visualLab','🗺️ Maps & Visuals'],
+      ['frq','✍️ FRQ Coach']
+    ];
     const available=new Map(tabs.map(t=>[t[0],t]));
-    const simplified=wanted.map(k=>available.get(k)).filter(Boolean);
+    const simplified=wanted.map(([key,label])=>{
+      const tab=available.get(key);
+      return tab?[key,label]:null;
+    }).filter(Boolean);
     tabs.splice(0,tabs.length,...simplified);
   }
 
