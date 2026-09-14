@@ -11,6 +11,8 @@ on:
       - unit-mastery-3-7.js
       - master-flashcards.js
       - visual-learning.js
+      - final-freshman-polish.js
+      - data/us-state-map-2020.json
       - visual-practice.js
       - .github/workflows/pr5-unit-foundations.yml
   workflow_dispatch:
@@ -34,14 +36,17 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import json
           lower=Path('unit-foundations.js').read_text(encoding='utf-8')
           upper=Path('unit-mastery-3-7.js').read_text(encoding='utf-8')
           flash=Path('master-flashcards.js').read_text(encoding='utf-8')
-          visual=Path('visual-learning.js').read_text(encoding='utf-8')
+          route=Path('visual-learning.js').read_text(encoding='utf-8')
+          visual=Path('final-freshman-polish.js').read_text(encoding='utf-8')
+          mapdata=Path('data/us-state-map-2020.json').read_text(encoding='utf-8')
           practice=Path('visual-practice.js').read_text(encoding='utf-8')
           index=Path('index.html').read_text(encoding='utf-8')
           for script in ['unit-foundations.js','unit-mastery-3-7.js','master-flashcards.js','visual-learning.js','visual-practice.js']:
-              assert f'<script src="{script}"></script>' in index, script
+              assert f'<script src="{script}' in index, script
           for topic in [f'1.{i}' for i in range(1,8)]: assert f"id:'{topic}'" in lower, topic
           for topic in [f'2.{i}' for i in range(1,13)]: assert f"id:'{topic}'" in lower, topic
           counts={3:8,4:10,5:12,6:11,7:8}
@@ -58,8 +63,11 @@ jobs:
           assert "masterFlashTopic='All'" in flash
           for visual_label in ['Reference map','Choropleth map','Proportional-symbol map','Dot-density map','Isoline map','Cartogram','Population pyramid','Demographic Transition Model','Migration flow','GIS layers','Scale of analysis','Distance decay']:
               assert visual_label in visual, visual_label
-          assert 'api.census.gov/data/2020/dec/pl' in visual
-          assert 'us-atlas@3.0.1/states-albers-10m.json' in visual
+          assert 'window.openMapsVisuals' in route
+          assert "fetch('data/us-state-map-2020.json" in visual
+          assert 'api.census.gov' not in route+visual
+          assert 'cdn.jsdelivr.net' not in route+visual
+          assert len(json.loads(mapdata)['states']) == 51
           assert 'instructional schematic' in visual.lower()
           for practice_label in ['Map Type Interpretation','Spatial Pattern','Population Pyramid','Demographic Transition Model','Visual Map Analysis','Scale and GIS','Population Pyramid Analysis','DTM Interpretation','Visual MCQ','Visual FRQ']:
               assert practice_label in practice, practice_label
