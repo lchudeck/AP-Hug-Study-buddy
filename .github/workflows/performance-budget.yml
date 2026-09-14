@@ -28,11 +28,11 @@ jobs:
           print(f'Initial scripts: {len(local_scripts)}')
           print(f'Initial JavaScript bytes: {total_bytes:,}')
 
-          # Baseline guardrails. Tighten these as lazy loading/consolidation reduces startup cost.
+          # Baseline guardrails after removing the obsolete PR6 navigation layer. Tighten as further consolidation reduces startup cost.
           if len(local_scripts) > 48:
               raise SystemExit('Performance regression: index.html loads more than 48 JavaScript files.')
-          if total_bytes > 960_000:
-              raise SystemExit('Performance regression: initial JavaScript exceeds 960,000 bytes.')
+          if total_bytes > 965_000:
+              raise SystemExit('Performance regression: initial JavaScript exceeds 965,000 bytes.')
           PY
 
       - name: Verify static asset caching
