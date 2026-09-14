@@ -32,6 +32,7 @@ jobs:
           node --check master-flashcards.js
           node --check visual-learning.js
           node --check visual-practice.js
+          node --check final-freshman-polish.js
       - name: Verify all-unit mastery, flashcards, visuals, and practice
         run: |
           python - <<'PY'
@@ -61,8 +62,11 @@ jobs:
           for term in required: assert term.lower() in combined.lower(), term
           assert 'currentFlashDeck=function' in flash
           assert "masterFlashTopic='All'" in flash
-          for visual_label in ['Reference map','Choropleth map','Proportional-symbol map','Dot-density map','Isoline map','Cartogram','Population pyramid','Demographic Transition Model','Migration flow','GIS layers','Scale of analysis','Distance decay']:
+          for visual_label in ['Political reference map','Choropleth map','Proportional-symbol map','Dot-density map','Isoline map','Cartogram','Population pyramid','Demographic Transition Model','Migration flow','GIS layers','Scale of analysis','Distance decay']:
               assert visual_label in visual, visual_label
+          for scale_label in ['Scale Challenge','National analysis','Regional analysis','State analysis','Map scale','WEST_STATES']:
+              assert scale_label in visual, scale_label
+          assert visual.count("view:'") >= 6, 'Scale practice needs at least six questions'
           assert 'window.openMapsVisuals' in route
           assert "fetch('data/us-state-map-2020.json" in visual
           assert 'api.census.gov' not in route+visual
