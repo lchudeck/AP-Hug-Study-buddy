@@ -11,10 +11,11 @@
   function syncExamBadge(){
     const label=document.querySelector('.exam-badge .date');
     const countdown=document.getElementById('countdown');
-    if(label)label.textContent='May 3, 2027 Exam';
+    if(label&&label.textContent!=='May 3, 2027 Exam')label.textContent='May 3, 2027 Exam';
     if(countdown){
       const days=Math.max(0,Math.ceil((EXAM_DATE-Date.now())/86400000));
-      countdown.textContent=days===0?'Exam day':`${days} days`;
+      const text=days===0?'Exam day':`${days} days`;
+      if(countdown.textContent!==text)countdown.textContent=text;
     }
   }
 
@@ -28,9 +29,9 @@
     if(finalAP)finalAP[1]='🎓 AP Exam Prep';
   }
 
-  function polishNav(){
+  function polishNav(refresh=true){
     consolidateTabs();
-    if(typeof renderNav==='function'&&!nav.dataset.consolidating){
+    if(refresh&&typeof renderNav==='function'&&!nav.dataset.consolidating){
       nav.dataset.consolidating='1';
       try{renderNav();}catch(e){}
       delete nav.dataset.consolidating;
@@ -208,7 +209,11 @@
   }
   window.__aphgRetryVariantGuard={signature:sig,conceptKey,getMissed:()=>missed};
 
-  const observer=new MutationObserver(()=>{if(!nav.dataset.consolidating)polishNav();addPayoff();syncExamBadge();});
+  // Rendering the navigation from this observer creates another child-list
+  // mutation and can lock Safari in a self-triggering render loop. The app's
+  // normal render path already rebuilds the navigation; observers only polish
+  // the DOM that is present.
+  const observer=new MutationObserver(()=>{polishNav(false);addPayoff();syncExamBadge();});
   observer.observe(document.body,{childList:true,subtree:true});
   polishNav();syncExamBadge();setInterval(syncExamBadge,30000);setTimeout(addPayoff,250);
 })();
