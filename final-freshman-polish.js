@@ -80,9 +80,12 @@
 
   let visualSectionName='maps';
   let authenticMapData=null,authenticMapLoad=null,authenticMapUnavailable=false;
+  let worldMapData=null,worldMapLoad=null,worldMapUnavailable=false;
   let mapActivityIndex=0,mapActivityChoice=null,mapActivityScore=0;
+  let scaleActivityIndex=0,scaleActivityChoice=null,scaleActivityScore=0;
   const mapInfo={
-    reference:{title:'Reference map',notice:'Actual U.S. state boundaries are the focus.',use:'Finding where something is and understanding its location relative to other features.',limit:'It usually does not show a statistical variable or explain why a pattern exists.',ap:'Use reference maps for location evidence: “The state is north of…”'},
+    reference:{title:'Political reference map',notice:'Actual U.S. state and national boundaries from the Census Bureau.',use:'Locating countries, states, capitals, borders, and places relative to one another.',limit:'Boundaries show where political units are; they do not explain why a spatial pattern exists.',ap:'Political maps are reference maps. Use them for location and boundary evidence: “The state borders…”'},
+    world:{title:'World political reference map',notice:'Actual country boundaries from Natural Earth at 1:110 million scale.',use:'Locating countries, international borders, and world regions.',limit:'A small-scale world map cannot show detailed local boundaries or internal variation.',ap:'Use the world view for global patterns, then change the scale of analysis to investigate regional or local differences.'},
     choropleth:{title:'Choropleth map',notice:'Actual states shaded by 2020 Census population (raw totals).',use:'Comparing rates, percentages, or standardized values among states, counties, or countries.',limit:'This example uses raw totals, so populous states look darkest regardless of their land area.',ap:'Check the legend and ask whether the map uses a rate/percentage or a raw total.'},
     symbol:{title:'Proportional-symbol map',notice:'Actual state locations sized by 2020 Census population.',use:'Comparing totals such as city population, trade volume, or number of events.',limit:'Large symbols can overlap and hide exact locations or smaller values.',ap:'Describe both magnitude and spatial pattern: “The largest symbols cluster in…”'},
     dots:{title:'Dot-density map',notice:'Instructional schematic: repeated dots represent a fixed amount.',use:'Showing concentration, dispersion, and distribution within larger areas.',limit:'Dots usually do not mark exact individual locations, and dense areas can visually merge.',ap:'Use words such as clustered, dispersed, concentrated, or sparse.'},
@@ -109,6 +112,42 @@
     return `<svg viewBox="0 0 975 610" class="lesson-svg map-learning-svg authentic-us-map" role="img" aria-label="${label}"><rect width="975" height="610" fill="#f8fafc"/>${paths}${symbols}${legend}</svg>`;
   }
 
+  const WEST_STATES=['Alaska','Arizona','California','Colorado','Hawaii','Idaho','Montana','Nevada','New Mexico','Oregon','Utah','Washington','Wyoming'];
+  const STATE_LABELS={Washington:'WA',Oregon:'OR',California:'CA',Idaho:'ID',Nevada:'NV',Arizona:'AZ',Utah:'UT',Montana:'MT',Wyoming:'WY',Colorado:'CO','New Mexico':'NM',Alaska:'AK',Hawaii:'HI'};
+
+  function worldPoliticalMapSvg(){
+    if(!worldMapData){
+      const text=worldMapUnavailable?'The bundled world map could not load.':'Loading the bundled world political map…';
+      return `<svg viewBox="0 0 1000 520" class="lesson-svg map-learning-svg" role="img" aria-label="${text}"><rect width="1000" height="520" fill="#f8fafc"/><text x="500" y="260" text-anchor="middle" font-size="24" fill="#475569">${text}</text></svg>`;
+    }
+    const paths=worldMapData.countries.map(country=>`<path d="${country.path}" fill="#dbeafe" stroke="#475569" stroke-width=".7" fill-rule="evenodd"><title>${country.name}</title></path>`).join('');
+    return `<svg viewBox="0 0 1000 520" class="lesson-svg map-learning-svg authentic-world-map" role="img" aria-label="World political reference map using Natural Earth country boundaries"><rect width="1000" height="520" fill="#f8fafc"/>${paths}</svg>`;
+  }
+
+  function focusedRealMapSvg(names,label){
+    if(!authenticMapData)return mapSvg('reference');
+    const focus=new Set(names);
+    const paths=authenticMapData.states.map(s=>`<path d="${s.path}" fill="${focus.has(s.name)?populationColor(s.population):'#e5e7eb'}" stroke="#fff" stroke-width="1.2" opacity="${focus.has(s.name)?1:.42}"><title>${s.name}: ${s.population.toLocaleString()} people</title></path>`).join('');
+    const labels=authenticMapData.states.filter(s=>focus.has(s.name)&&STATE_LABELS[s.name]).map(s=>`<text x="${s.cx}" y="${s.cy+5}" text-anchor="middle" font-size="17" font-weight="800" fill="#0f172a">${STATE_LABELS[s.name]}</text>`).join('');
+    return `<svg viewBox="0 0 975 610" class="lesson-svg map-learning-svg authentic-us-map" role="img" aria-label="${label}"><rect width="975" height="610" fill="#f8fafc"/>${paths}${labels}<text x="490" y="592" text-anchor="middle" font-size="20" fill="#334155">Highlighted areas are included in this scale of analysis</text></svg>`;
+  }
+
+  function scaleMapSvg(view){
+    if(view==='global')return worldPoliticalMapSvg();
+    if(view==='national')return authenticMapData?realMapSvg('choropleth'):mapSvg('choropleth');
+    if(view==='west')return focusedRealMapSvg(WEST_STATES,'Regional-scale map highlighting the Census West region');
+    return focusedRealMapSvg(['Washington'],'State-scale map highlighting Washington');
+  }
+
+  function loadWorldMap(){
+    if(worldMapData||worldMapLoad||worldMapUnavailable)return worldMapLoad;
+    worldMapLoad=fetch('data/world-political-map-110m.json?v=20260914-authentic',{cache:'force-cache'})
+      .then(r=>{if(!r.ok)throw new Error(`World map data ${r.status}`);return r.json();})
+      .then(data=>{if(!Array.isArray(data.countries)||data.countries.length<170)throw new Error('Incomplete world map data');worldMapData=data;return data;})
+      .catch(()=>{worldMapUnavailable=true;return null;});
+    return worldMapLoad;
+  }
+
   function loadAuthenticMaps(){
     if(authenticMapData||authenticMapLoad||authenticMapUnavailable)return authenticMapLoad;
     authenticMapLoad=fetch('data/us-state-map-2020.json?v=20260914-authentic',{cache:'force-cache'})
@@ -119,6 +158,7 @@
   }
 
   function mapSvg(kind){
+    if(kind==='world')return worldPoliticalMapSvg();
     if(['reference','choropleth','symbol'].includes(kind)&&authenticMapData)return realMapSvg(kind);
     const open='<svg viewBox="0 0 460 190" class="lesson-svg map-learning-svg" role="img"';
     if(kind==='reference')return `${open} aria-label="Reference map schematic"><rect x="35" y="25" width="390" height="125" rx="10" fill="#f8fafc" stroke="#64748b"/><path d="M165 25v125M295 25v125" stroke="#94a3b8"/><path d="M55 118 C130 80 185 135 255 95 S355 90 410 55" fill="none" stroke="#2563eb" stroke-width="5"/><path d="M70 45 L375 140" stroke="#111827" stroke-width="7"/><text x="78" y="42" font-size="14">Highway</text><text x="330" y="55" font-size="14">River</text><text x="176" y="90" font-size="14">Boundary</text><text x="35" y="177" font-size="14">Locations and features—not one statistical variable</text></svg>`;
@@ -134,11 +174,22 @@
   function dtmSvg(){return `<svg viewBox="0 0 460 190" class="lesson-svg" role="img" aria-label="Demographic Transition Model"><line x1="45" y1="155" x2="430" y2="155" stroke="currentColor"/><line x1="45" y1="155" x2="45" y2="25" stroke="currentColor"/><path d="M55 45 L130 48 L205 65 L280 105 L355 132 L425 136" fill="none" stroke="currentColor" stroke-width="4"/><path d="M55 52 L125 102 L200 132 L280 138 L355 138 L425 142" fill="none" stroke="currentColor" stroke-width="2"/><text x="300" y="65">Birth rate</text><text x="300" y="128">Death rate</text></svg>`;}
 
   const mapActivities=[
+    {kind:'reference',q:'Which description best identifies this actual U.S. boundary map?',choices:['A political reference map','A dot-density map','An isoline map','A cartogram'],answer:0,why:'It shows the locations and boundaries of political units. Political maps are a type of reference map.'},
     {kind:'choropleth',q:'What map type is shown?',choices:['Choropleth map','Reference map','Dot-density map','Cartogram'],answer:0,why:'Defined areas are shaded according to a value.'},
     {kind:'dots',q:'What spatial pattern does this map best help you describe?',choices:['Concentration and dispersion','Exact road locations','Elevation contours only','Political boundaries only'],answer:0,why:'Dot-density maps are designed to show where a phenomenon is concentrated or sparse.'},
     {kind:'symbol',q:'Which statement is the strongest AP-style interpretation?',choices:['The largest mapped value is in the eastern location','The map proves the eastern place has the largest land area','Every circle marks the same value','The western location has the highest density'],answer:0,why:'On proportional-symbol maps, symbol size represents magnitude—not land area or density unless the legend says so.'},
     {kind:'isoline',q:'If two isolines are very close together, what does that usually mean?',choices:['The mapped value changes quickly over a short distance','The map is a cartogram','Population is evenly distributed','The lines show political borders'],answer:0,why:'Closely spaced isolines indicate a steep or rapid spatial change.'},
     {kind:'reference',q:'A world map hides neighborhood differences that appear on a city map. Which concept is most important?',choices:['Scale of analysis','Relocation diffusion','Centripetal force','Agricultural density'],answer:0,why:'Patterns can look different when the scale of analysis changes.'}
+  ];
+
+  const scaleActivities=[
+    {view:'global',q:'What is the scale of analysis in this actual political map?',choices:['Local','Regional','National','Global'],answer:3,why:'The map includes countries across the world, so the analysis is global.'},
+    {view:'national',q:'What is the scale of analysis in this U.S. population map?',choices:['Regional','Local','National','Global'],answer:2,why:'The map examines population patterns across the entire United States, so the analysis is national.'},
+    {view:'west',q:'What is the scale of analysis in the highlighted map?',choices:['National','Regional','Local','Global'],answer:1,why:'The highlighted states form the Census West region, so the evidence is grouped and examined regionally.'},
+    {view:'washington',q:'Which conclusion is safest from this state-scale view?',choices:['It identifies Washington within the national pattern but cannot show county differences','It proves every part of Washington has the same population','It shows neighborhood-level variation','It compares every country in the world'],answer:0,why:'A state-level view can locate Washington and its statewide total, but it cannot reveal variation among counties or neighborhoods.'},
+    {view:'national',q:'Why could a national map lead to a different conclusion than a county map?',choices:['Counties always have larger populations than states','Changing scale changes the Census totals','National maps cannot show political boundaries','National aggregation can hide local clusters and differences'],answer:3,why:'Changing the scale of analysis changes which variations are visible. Aggregated national or state data can conceal local patterns.'},
+    {view:'west',q:'Which statement correctly distinguishes map scale from scale of analysis?',choices:['They are two names for the same idea','Map scale compares map distance with ground distance; scale of analysis is the geographic level being studied','Map scale means local, regional, national, or global','Scale of analysis only describes symbol size'],answer:1,why:'Map scale is a distance relationship. Scale of analysis describes whether evidence is examined locally, regionally, nationally, or globally.'},
+    {view:'washington',q:'To investigate differences hidden inside Washington, what should a geographer do next?',choices:['Switch to a world map','Remove the legend','Use county- or neighborhood-level data','Replace population data with a political boundary only'],answer:2,why:'A finer local scale can reveal variation that a statewide total hides.'}
   ];
 
   function mapCard(key){const m=mapInfo[key];return `<button type="button" class="visual-card visual-card-button" data-map-detail="${key}" aria-expanded="false"><span class="visual-card-title">${m.title}</span><span class="visual-card-sub">${m.notice}</span>${mapSvg(key)}<span class="visual-card-cta">Click to learn how to read it →</span></button>`;}
@@ -151,14 +202,22 @@
     return `<section class="map-activity"><div class="map-activity-head"><div><span class="pill">Mapping activity</span><h4>Map Detective · ${mapActivityIndex+1} of ${mapActivities.length}</h4></div><b>${mapActivityScore} correct</b></div>${mapSvg(a.kind)}<p><b>${a.q}</b></p><div class="quiz-options">${a.choices.map((c,i)=>`<button type="button" class="quiz-option ${answered&&i===a.answer?'correct':answered&&i===mapActivityChoice&&i!==a.answer?'wrong':''}" data-map-answer="${i}" ${answered?'disabled':''}>${String.fromCharCode(65+i)}. ${c}</button>`).join('')}</div>${answered?`<div class="${mapActivityChoice===a.answer?'box-good':'box-warn'}"><b>${mapActivityChoice===a.answer?'Correct':'Not yet.'}</b><p>${a.why}</p></div><button type="button" class="btn-primary" data-map-next>${mapActivityIndex===mapActivities.length-1?'See results':'Next challenge →'}</button>`:''}</section>`;
   }
 
+  function scaleActivityHtml(){
+    if(scaleActivityIndex>=scaleActivities.length)return `<section class="map-activity"><span class="pill">Scale challenge complete</span><h4>${scaleActivityScore} of ${scaleActivities.length} correct</h4><p>${scaleActivityScore>=5?'Strong scale-of-analysis thinking.':'Review how the geographic level changes what a map reveals, then try again.'}</p><button class="btn-primary" type="button" data-scale-restart>Try again</button></section>`;
+    const a=scaleActivities[scaleActivityIndex],answered=scaleActivityChoice!==null;
+    return `<section class="map-activity" id="scaleActivityHost"><div class="map-activity-head"><div><span class="pill">Scale of analysis</span><h4>Scale Challenge · ${scaleActivityIndex+1} of ${scaleActivities.length}</h4></div><b>${scaleActivityScore} correct</b></div>${scaleMapSvg(a.view)}<p><b>${a.q}</b></p><div class="quiz-options">${a.choices.map((c,i)=>`<button type="button" class="quiz-option ${answered&&i===a.answer?'correct':answered&&i===scaleActivityChoice&&i!==a.answer?'wrong':''}" data-scale-answer="${i}" ${answered?'disabled':''}>${String.fromCharCode(65+i)}. ${c}</button>`).join('')}</div>${answered?`<div class="${scaleActivityChoice===a.answer?'box-good':'box-warn'}"><b>${scaleActivityChoice===a.answer?'Correct':'Not yet.'}</b><p>${a.why}</p></div><button type="button" class="btn-primary" data-scale-next>${scaleActivityIndex===scaleActivities.length-1?'See results':'Next scale question →'}</button>`:''}</section>`;
+  }
+
   function renderVisualPractice(){
     if(typeof active!=='undefined')active='visualLab';
     if(typeof renderNav==='function')renderNav();
-    const sourceNote=authenticMapData?'<p class="map-data-note"><b>Real map data:</b> U.S. Census Bureau state boundaries and official 2020 resident population totals, bundled with Study Buddy. No live public API or AI-generated map is used.</p>':authenticMapUnavailable?'<p class="map-data-note"><b>Offline fallback:</b> The map lesson is using its built-in schematics because the local boundary file did not load.</p>':'<p class="map-data-note" aria-live="polite">Loading the bundled Census map…</p>';
-    const maps=`<h3>Unit 1: Maps</h3><p class="muted">Click any map type to learn what to notice, when to use it, and the limitation AP questions often test.</p>${sourceNote}<div class="visual-grid map-learning-grid">${['reference','choropleth','symbol','dots','isoline','cartogram'].map(mapCard).join('')}</div><div id="mapDetailHost" aria-live="polite"></div><div id="mapActivityHost">${mapActivityHtml()}</div>`;
+    const sourceNote=authenticMapData?'<p class="map-data-note"><b>Real map data:</b> U.S. Census Bureau state boundaries and official 2020 resident population totals, plus Natural Earth country boundaries, bundled with Study Buddy. No live public API or AI-generated map is used.</p>':authenticMapUnavailable?'<p class="map-data-note"><b>Offline fallback:</b> The map lesson is using its built-in schematics because the local boundary file did not load.</p>':'<p class="map-data-note" aria-live="polite">Loading the bundled Census map…</p>';
+    const maps=`<h3>Unit 1: Maps</h3><p class="muted">Click any map type to learn what to notice, when to use it, and the limitation AP questions often test.</p>${sourceNote}<div class="visual-grid map-learning-grid">${['reference','world','choropleth','symbol','dots','isoline','cartogram'].map(mapCard).join('')}</div><div id="mapDetailHost" aria-live="polite"></div><div id="mapActivityHost">${mapActivityHtml()}</div>`;
     const spatial=`<h3>Unit 1: Spatial Concepts</h3><div class="visual-grid"><figure class="visual-card"><figcaption><b>Clustered, dispersed, and linear patterns</b></figcaption>${patternSvg()}</figure><div class="visual-card"><b>Scale of analysis</b><p>A national pattern can hide regional or local variation.</p></div><div class="visual-card"><b>GIS layers</b><p>Geographers combine location-based layers to investigate relationships.</p></div><div class="visual-card"><b>Distance decay</b><p>Interaction often decreases as distance increases.</p></div></div>`;
+    const scale=`<h3>Unit 1: Scale of Analysis</h3><p class="muted">Compare the same verified Census state boundaries at different geographic levels. Ask what each view reveals—and what it hides.</p>${sourceNote}<div class="visual-grid map-learning-grid"><figure class="visual-card"><figcaption><b>Global analysis</b><br>Countries are compared across the world.</figcaption>${scaleMapSvg('global')}</figure><figure class="visual-card"><figcaption><b>National analysis</b><br>All 50 states and Washington, D.C. are compared.</figcaption>${scaleMapSvg('national')}</figure><figure class="visual-card"><figcaption><b>Regional analysis</b><br>The Census West region is highlighted within the country.</figcaption>${scaleMapSvg('west')}</figure><figure class="visual-card"><figcaption><b>State analysis</b><br>Washington is isolated, but county and neighborhood variation remains hidden.</figcaption>${scaleMapSvg('washington')}</figure></div><div class="box-info"><b>Do not mix these up</b><p><b>Map scale</b> compares distance on a map with distance on Earth. <b>Scale of analysis</b> is the geographic level being studied: local, regional, national, or global.</p></div>${scaleActivityHtml()}`;
     const population=`<h3>Unit 2: Population & Migration</h3><div class="visual-grid"><figure class="visual-card"><figcaption><b>Population pyramids</b><br>Read age structure before explaining consequences.</figcaption>${pyramidSvg()}</figure><figure class="visual-card"><figcaption><b>Demographic Transition Model</b><br>Compare changes in birth and death rates.</figcaption>${dtmSvg()}</figure><div class="visual-card"><b>Migration flows</b><p>Identify origin, destination, push/pull factors, and consequences.</p></div></div>`;
-    app.innerHTML=`<main class="wrap"><section class="card"><h2>🗺️ Maps & Visuals</h2><p>Learn the visual first, then practice interpreting it the way AP Human Geography expects.</p><div class="box-info"><b>Learn → Try → Practice</b><p>Open a map card, complete the Map Detective activity, then move into AP-style visual questions when you're ready.</p><div class="button-row"><button class="btn-primary" data-open-visual="12">More Units 1–2 visual practice</button><button class="btn-secondary" data-open-visual="37">Units 3–7 visual practice</button></div></div><div class="button-row"><button class="${visualSectionName==='maps'?'btn-primary':'btn-secondary'}" data-visual="maps">Unit 1 Maps</button><button class="${visualSectionName==='spatial'?'btn-primary':'btn-secondary'}" data-visual="spatial">Spatial Concepts</button><button class="${visualSectionName==='population'?'btn-primary':'btn-secondary'}" data-visual="population">Unit 2 Population</button></div></section><section class="card">${visualSectionName==='maps'?maps:visualSectionName==='spatial'?spatial:population}</section></main>`;
+    const sectionContent=visualSectionName==='maps'?maps:visualSectionName==='scale'?scale:visualSectionName==='spatial'?spatial:population;
+    app.innerHTML=`<main class="wrap"><section class="card"><h2>🗺️ Maps & Visuals</h2><p>Learn the visual first, then practice interpreting it the way AP Human Geography expects.</p><div class="box-info"><b>Learn → Try → Practice</b><p>Open a map card, complete the Map Detective activity, then move into AP-style visual questions when you're ready.</p><div class="button-row"><button class="btn-primary" data-open-visual="12">More Units 1–2 visual practice</button><button class="btn-secondary" data-open-visual="37">Units 3–7 visual practice</button></div></div><div class="button-row"><button class="${visualSectionName==='maps'?'btn-primary':'btn-secondary'}" data-visual="maps">Map Types</button><button class="${visualSectionName==='scale'?'btn-primary':'btn-secondary'}" data-visual="scale">Scale of Analysis</button><button class="${visualSectionName==='spatial'?'btn-primary':'btn-secondary'}" data-visual="spatial">Spatial Concepts</button><button class="${visualSectionName==='population'?'btn-primary':'btn-secondary'}" data-visual="population">Unit 2 Population</button></div></section><section class="card">${sectionContent}</section></main>`;
 
     app.querySelectorAll('[data-visual]').forEach(b=>b.addEventListener('click',()=>{visualSectionName=b.dataset.visual;renderVisualPractice();}));
     app.querySelectorAll('[data-open-visual]').forEach(b=>b.addEventListener('click',()=>{
@@ -184,8 +243,20 @@
     }));
     app.querySelector('[data-map-next]')?.addEventListener('click',()=>{mapActivityIndex++;mapActivityChoice=null;renderVisualPractice();document.getElementById('mapActivityHost')?.scrollIntoView({behavior:'smooth',block:'center'});});
     app.querySelector('[data-map-restart]')?.addEventListener('click',()=>{mapActivityIndex=0;mapActivityChoice=null;mapActivityScore=0;renderVisualPractice();});
-    if(visualSectionName==='maps'&&!authenticMapData&&!authenticMapUnavailable){
-      loadAuthenticMaps()?.then(data=>{if(data&&typeof active!=='undefined'&&active==='visualLab'&&visualSectionName==='maps')renderVisualPractice();});
+    app.querySelectorAll('[data-scale-answer]').forEach(b=>b.addEventListener('click',()=>{
+      if(scaleActivityChoice!==null)return;
+      scaleActivityChoice=Number(b.dataset.scaleAnswer);
+      if(scaleActivityChoice===scaleActivities[scaleActivityIndex].answer)scaleActivityScore++;
+      renderVisualPractice();
+      document.getElementById('scaleActivityHost')?.scrollIntoView({behavior:'smooth',block:'center'});
+    }));
+    app.querySelector('[data-scale-next]')?.addEventListener('click',()=>{scaleActivityIndex++;scaleActivityChoice=null;renderVisualPractice();document.getElementById('scaleActivityHost')?.scrollIntoView({behavior:'smooth',block:'center'});});
+    app.querySelector('[data-scale-restart]')?.addEventListener('click',()=>{scaleActivityIndex=0;scaleActivityChoice=null;scaleActivityScore=0;renderVisualPractice();});
+    if(['maps','scale'].includes(visualSectionName)&&!authenticMapData&&!authenticMapUnavailable){
+      loadAuthenticMaps()?.then(data=>{if(data&&typeof active!=='undefined'&&active==='visualLab'&&['maps','scale'].includes(visualSectionName))renderVisualPractice();});
+    }
+    if(['maps','scale'].includes(visualSectionName)&&!worldMapData&&!worldMapUnavailable){
+      loadWorldMap()?.then(data=>{if(data&&typeof active!=='undefined'&&active==='visualLab'&&['maps','scale'].includes(visualSectionName))renderVisualPractice();});
     }
   }
 
