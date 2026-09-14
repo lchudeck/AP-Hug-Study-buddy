@@ -28,10 +28,8 @@ jobs:
           index=Path('index.html').read_text(encoding='utf-8')
           ux=Path('student-ux.js').read_text(encoding='utf-8')
           assert '<script src="student-ux.js"></script>' in index
-          assert "go('ced')" in ux
-          assert "go('quiz')" in ux
-          assert "go('examLab')" in ux
-          assert "go('apSim')" in ux
+          assert 'homePage=' not in ux
+          assert 'function homePage' not in ux
           assert 'Mixed-Unit Answer Review' in ux
           assert 'SIM_SECONDS=19*60' in ux
           assert 'remaining' in ux

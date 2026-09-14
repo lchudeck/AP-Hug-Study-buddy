@@ -1491,41 +1491,23 @@ function startFrqHelp(){ active='frq'; render(); }
 function startFullExam(){ active='simulator'; simPhase='intro'; render(); }
 
 function homePage(){
-  const snap=(typeof getMasterySnapshot==='function')?getMasterySnapshot():{accuracy:null,attempted:0,weak:null,flashNeed:'—'};
-  const target=snap.weak?`Unit ${snap.weak.unit}: ${snap.weak.name}`:'Take 10 adaptive questions to find your target unit.';
-  return `<main>
-    <section class="card">
-      <h2>Start Here</h2>
-      <p>Pick the button that matches how much time you have or what feels hardest. The app will point you to the next best AP skill.</p>
-      <div class="home-cta-grid">
-        <button class="home-cta primary" onclick="startTwentyMinuteSession()"><b>⏱ Start my 20-minute session</b><span>Adaptive quiz → pyramid drill → one mixed FRQ → missed vocab.</span></button>
-        <button class="home-cta" onclick="startVocabNeed()"><b>📖 I need vocab help</b><span>Only study cards marked “Need practice” or not mastered yet.</span></button>
-        <button class="home-cta" onclick="startFrqHelp()"><b>✍️ I need FRQ help</b><span>Answer A–G parts with rubric coaching and rewrites.</span></button>
-        <button class="home-cta" onclick="startFullExam()"><b>🎓 Take a full practice exam</b><span>60 MCQ + 3 FRQ AP-style simulator with feedback.</span></button>
-      </div>
-      <div class="box-yellow"><b>Your current target:</b> ${target}</div>
-    </section>
-
-    <section class="grid2" style="margin-top:18px">
-      <section class="card">
-        <h2>FRQ Survival Rules</h2>
-        <div class="student-rule"><b>This is not an essay.</b> Each part should usually be 1–2 sentences. Label every answer A, B, C, etc.</div>
-        <p><b>Identify:</b> short term or phrase.</p>
-        <p><b>Describe:</b> one clear feature, pattern, or example.</p>
-        <p><b>Explain:</b> cause and effect. Use <b>because</b>, <b>therefore</b>, or <b>this leads to</b>.</p>
-      </section>
-      ${readinessDashboardHtml ? readinessDashboardHtml() : ''}
-    </section>
-
-    <section class="card" style="margin-top:18px">
-      <h2>Fast APHG Score Boosters</h2>
-      <div class="ap-recipe">
-        <div class="ap-step"><b>Maps</b><span>Say what the map shows, describe the spatial pattern, then explain why scale matters.</span></div>
-        <div class="ap-step"><b>Models</b><span>Name the model, describe the pattern, apply it to a real place, then give a limitation.</span></div>
-        <div class="ap-step"><b>FRQs</b><span>Label parts, use AP vocabulary, and make every explain answer show cause/effect.</span></div>
-      </div>
-    </section>
-  </main>`;
+  let snap={accuracy:null,attempted:0,weak:null};
+  try{if(typeof getMasterySnapshot==='function')snap=getMasterySnapshot()||snap;}catch(e){}
+  const accuracy=snap.attempted>=10&&Number.isFinite(snap.accuracy)?`${Math.round(snap.accuracy)}%`:'Building evidence';
+  const weak=snap.weak?`Unit ${snap.weak.unit}: ${snap.weak.name}`:'Complete a short practice set and Study Buddy will find it.';
+  let readiness=null;
+  try{if(typeof window.__aphgReadinessEvidence==='function')readiness=window.__aphgReadinessEvidence();}catch(e){}
+  const readinessHtml=!readiness?'<div class="box-info"><b>Complete some practice to build readiness evidence.</b></div>':`<div class="box-${readiness.enough?'good':readiness.done>=3?'yellow':'info'}" style="margin-top:14px"><b>${readiness.label}</b><p>Study Buddy does not turn limited practice into a precise “ready” percentage.</p><div style="display:grid;gap:6px">${readiness.checks.map(check=>`<div><b>${check.done?'✓':'○'} ${check.label}</b> <span style="color:#64748b">(${check.detail})</span></div>`).join('')}</div><p><b>${readiness.enough?'Broad evidence is present. Keep reviewing weak topics and use realistic full-exam practice.':'Build the unchecked evidence before treating a practice score as a readiness signal.'}</b></p></div>`;
+  const cards=[
+    ['test','📚 My test is coming up','Review one unit, its vocabulary and models, then check yourself with AP-style questions.'],
+    ['learn','🧠 I don’t understand this yet','Get a short CED-aligned explanation, common mix-ups, and a worked example.'],
+    ['misses','🎯 I keep missing questions','Practice weak topics and retry the same skill with a different question.'],
+    ['vocab','📖 I know the vocab, but I can’t use it','Practice terms as geographic concepts, not just definitions.'],
+    ['maps','🗺️ Maps & data confuse me','Practice maps, models, scale, patterns, and visual evidence.'],
+    ['frq','✍️ I don’t know how to write an FRQ','Start with one command word and one AP-style sentence.'],
+    ['ap','🏆 Am I ready for the AP exam?','Use mixed-unit AP-style practice and see what still needs work.']
+  ];
+  return `<main class="wrap student-proof-home"><section class="card student-proof-hero"><div class="student-proof-kicker">Start with your problem, not a feature name</div><h2>What do you need help with?</h2><p class="lead">Pick the sentence that sounds most like you. Study Buddy will take you to the right tool.</p><div class="student-proof-grid">${cards.map(card=>`<button type="button" class="student-proof-card" data-student-route="${card[0]}"><b>${card[1]}</b><span>${card[2]}</span></button>`).join('')}</div><div class="student-proof-unsure"><div><b>Not sure what to choose?</b><span>Tell Study Buddy what unit you’re in and how much time you have.</span></div><button type="button" class="btn-primary" data-student-route="unsure">Tell me what to do next</button></div></section><section class="card"><h2>My Progress</h2><p>This is a quick snapshot, not a grade. Practice updates it on this device.</p><div class="readiness-grid"><div class="readiness-tile"><b>${accuracy}</b><span>recent practice accuracy${snap.attempted<10?' (shown after 10 questions)':''}</span></div><div class="readiness-tile"><b>${snap.attempted||0}</b><span>questions practiced</span></div><div class="readiness-tile"><b>${weak}</b><span>recommended review</span></div></div>${readinessHtml}<div class="button-row" style="margin-top:14px"><button type="button" class="btn-primary" data-student-route="misses">Show me what to practice next</button><button type="button" class="btn-secondary" data-student-route="ap">Open AP practice</button></div></section></main>`;
 }
 
 function modelLabelPrompt(m){

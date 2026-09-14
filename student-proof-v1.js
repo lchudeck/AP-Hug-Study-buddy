@@ -1,5 +1,51 @@
 // Student-proof start paths and evidence-based readiness.
-(function(){if(window.__studentProofV1Installed)return;window.__studentProofV1Installed=1;const G=r=>{if(typeof go==='function')go(r)};window.studentProofRoute=p=>{if(p==='test')G('unitReview');else if(p==='learn')typeof sspGo==='function'?sspGo('teach'):G('studentSuccess');else if(p==='vocab')G('terms');else if(p==='maps')G('visual');else if(p==='misses')G('practiceMastery');else if(p==='frq')typeof sspGo==='function'?sspGo('verbs'):G('frq');else if(p==='ap')G('apSim');else if(p==='unsure')typeof sspGo==='function'?sspGo('plan'):G('studentSuccess');else G('home')};
-const R=()=>{try{return typeof window.__aphgReadinessEvidence==='function'?window.__aphgReadinessEvidence():null}catch(e){return null}},RH=r=>!r?'<div class="box-info"><b>Complete some practice to build readiness evidence.</b></div>':`<div class="box-${r.enough?'good':r.done>=3?'yellow':'info'}" style="margin-top:14px"><b>${r.label}</b><p>Study Buddy does not turn limited practice into a precise “ready” percentage.</p><div style="display:grid;gap:6px">${r.checks.map(c=>`<div><b>${c.done?'✓':'○'} ${c.label}</b> <span style="color:#64748b">(${c.detail})</span></div>`).join('')}</div><p><b>${r.enough?'Broad evidence is present. Keep reviewing weak topics and use realistic full-exam practice.':'Build the unchecked evidence before treating a practice score as a readiness signal.'}</b></p></div>`;
-if(typeof homePage==='function')homePage=function(){let s={accuracy:null,attempted:0,weak:null};try{if(typeof getMasterySnapshot==='function')s=getMasterySnapshot()||s}catch(e){}const a=s.attempted>=10&&Number.isFinite(s.accuracy)?`${Math.round(s.accuracy)}%`:'Building evidence',w=s.weak?`Unit ${s.weak.unit}: ${s.weak.name}`:'Complete a short practice set and Study Buddy will find it.',r=R();return `<main class="wrap student-proof-home"><section class="card student-proof-hero"><div class="student-proof-kicker">Start with your problem, not a feature name</div><h2>What do you need help with?</h2><p class="lead">Pick the sentence that sounds most like you. Study Buddy will take you to the right tool.</p><div class="student-proof-grid"><button class="student-proof-card" onclick="studentProofRoute('test')"><b>📚 My test is coming up</b><span>Review one unit, its vocabulary and models, then check yourself with AP-style questions.</span></button><button class="student-proof-card" onclick="studentProofRoute('learn')"><b>🧠 I don’t understand this yet</b><span>Get a short CED-aligned explanation, common mix-ups, and a worked example.</span></button><button class="student-proof-card" onclick="studentProofRoute('misses')"><b>🎯 I keep missing questions</b><span>Practice weak topics and retry the same skill with a different question.</span></button><button class="student-proof-card" onclick="studentProofRoute('vocab')"><b>📖 I know the vocab, but I can’t use it</b><span>Practice terms as geographic concepts, not just definitions.</span></button><button class="student-proof-card" onclick="studentProofRoute('maps')"><b>🗺️ Maps & data confuse me</b><span>Practice maps, models, scale, patterns, and visual evidence.</span></button><button class="student-proof-card" onclick="studentProofRoute('frq')"><b>✍️ I don’t know how to write an FRQ</b><span>Start with one command word and one AP-style sentence.</span></button><button class="student-proof-card" onclick="studentProofRoute('ap')"><b>🏆 Am I ready for the AP exam?</b><span>Use mixed-unit AP-style practice and see what still needs work.</span></button></div><div class="student-proof-unsure"><div><b>Not sure what to choose?</b><span>Tell Study Buddy what unit you’re in and how much time you have.</span></div><button class="btn-primary" onclick="studentProofRoute('unsure')">Tell me what to do next</button></div></section><section class="card"><h2>My Progress</h2><p>This is a quick snapshot, not a grade. Practice updates it on this device.</p><div class="readiness-grid"><div class="readiness-tile"><b>${a}</b><span>recent practice accuracy${s.attempted<10?' (shown after 10 questions)':''}</span></div><div class="readiness-tile"><b>${s.attempted||0}</b><span>questions practiced</span></div><div class="readiness-tile"><b>${w}</b><span>recommended review</span></div></div>${RH(r)}<div class="button-row" style="margin-top:14px"><button class="btn-primary" onclick="studentProofRoute('misses')">Show me what to practice next</button><button class="btn-secondary" onclick="studentProofRoute('ap')">Open AP practice</button></div></section></main>`};
-const N={unitReview:['After your unit review, do a short practice set and correct only the ideas you missed.','misses','Practice what I missed'],practiceMastery:['When a topic starts making sense, switch to mixed AP-style questions.','ap','Check AP readiness'],terms:['Use the term in a geographic example, then apply it.','misses','Practice weak topics'],visual:['Name the strongest pattern and explain what could cause it.','misses','Practice weak topics'],frq:['If a full FRQ feels too big, practice one sentence first.','frq','Practice one FRQ sentence'],apSim:['Use your misses as a study list before another long mixed set.','misses','Practice my weak topics'],studentSuccess:['Learn, practice, then correct a miss before moving on.','home','Back to my choices']};function A(){const app=document.getElementById('app');if(!app||app.querySelector('.student-proof-next'))return;let k='';try{k=String(active||'')}catch(e){}const n=N[k],m=app.querySelector('main');if(!n||!m)return;const x=document.createElement('section');x.className='card student-proof-next';x.setAttribute('aria-label','What should I do next?');x.innerHTML=`<h3>What should I do next?</h3><p>${n[0]}</p><div class="button-row"><button class="btn-secondary" onclick="studentProofRoute('${n[1]}')">${n[2]}</button><button class="btn-secondary" onclick="studentProofRoute('unsure')">I’m still not sure</button></div>`;m.appendChild(x)}let q=0,o=new MutationObserver(()=>{if(q)return;q=1;requestAnimationFrame(()=>{q=0;A()})}),app=document.getElementById('app');if(app)o.observe(app,{childList:true,subtree:true});setTimeout(()=>{try{if(active==='home'&&typeof render==='function')render()}catch(e){}A()},0)})();
+(function(){
+  if(window.__studentProofV1Installed)return;
+  window.__studentProofV1Installed=1;
+
+  const G=r=>{if(typeof go==='function')go(r)};
+  window.studentProofRoute=p=>{
+    if(p==='test')G('unitReview');
+    else if(p==='learn')typeof sspGo==='function'?sspGo('teach'):G('studentSuccess');
+    else if(p==='vocab')G('terms');
+    else if(p==='maps')G('visual');
+    else if(p==='misses')G('practiceMastery');
+    else if(p==='frq')typeof sspGo==='function'?sspGo('verbs'):G('frq');
+    else if(p==='ap')G('apSim');
+    else if(p==='unsure')typeof sspGo==='function'?sspGo('plan'):G('studentSuccess');
+    else G('home');
+  };
+
+  // Use one delegated listener rather than relying only on inline handlers.
+  // This is more reliable on iOS Safari when the home screen is re-rendered.
+  document.addEventListener('click',e=>{
+    const target=e.target.closest('[data-student-route]');
+    if(!target)return;
+    const route=target.getAttribute('data-student-route');
+    if(!route)return;
+    e.preventDefault();
+    window.studentProofRoute(route);
+  });
+
+  const N={unitReview:['After your unit review, do a short practice set and correct only the ideas you missed.','misses','Practice what I missed'],practiceMastery:['When a topic starts making sense, switch to mixed AP-style questions.','ap','Check AP readiness'],terms:['Use the term in a geographic example, then apply it.','misses','Practice weak topics'],visual:['Name the strongest pattern and explain what could cause it.','misses','Practice weak topics'],frq:['If a full FRQ feels too big, practice one sentence first.','frq','Practice one FRQ sentence'],apSim:['Use your misses as a study list before another long mixed set.','misses','Practice my weak topics'],studentSuccess:['Learn, practice, then correct a miss before moving on.','home','Back to my choices']};
+
+  function A(){
+    const app=document.getElementById('app');
+    if(!app||app.querySelector('.student-proof-next'))return;
+    let k='';
+    try{k=String(active||'')}catch(e){}
+    const n=N[k],m=app.querySelector('main');
+    if(!n||!m)return;
+    const x=document.createElement('section');
+    x.className='card student-proof-next';
+    x.setAttribute('aria-label','What should I do next?');
+    x.innerHTML=`<h3>What should I do next?</h3><p>${n[0]}</p><div class="button-row"><button type="button" class="btn-secondary" data-student-route="${n[1]}">${n[2]}</button><button type="button" class="btn-secondary" data-student-route="unsure">I’m still not sure</button></div>`;
+    m.appendChild(x);
+  }
+
+  let q=0;
+  const app=document.getElementById('app');
+  const o=new MutationObserver(()=>{if(q)return;q=1;requestAnimationFrame(()=>{q=0;A()})});
+  if(app)o.observe(app,{childList:true,subtree:true});
+  setTimeout(()=>{try{if(active==='home'&&typeof render==='function')render()}catch(e){}A()},0);
+})();
