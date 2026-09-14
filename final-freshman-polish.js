@@ -5,8 +5,8 @@
 
   const EXAM_DATE=new Date('2027-05-03T08:00:00-07:00');
   const findTab=re=>typeof tabs!=='undefined'?tabs.find(t=>re.test(String(t&&t[1]||''))):null;
-  const hiddenTopLevel=[/AP Mastery/i,/Map Lab/i,/Use the Vocab/i,/Visual Practice/i];
-  const primary=[/home/i,/unit review/i,/practice/i,/key terms|vocabulary/i,/maps?\s*&?\s*visual/i,/frq coach/i,/ap exam prep/i];
+  const hiddenTopLevel=[/AP Mastery/i,/AP Exam Prep/i,/Map Lab/i,/Use the Vocab/i,/Visual Practice/i];
+  const primary=[/home/i,/unit review/i,/practice/i,/key terms|vocabulary/i,/maps?\s*&?\s*visual/i,/frq coach/i];
 
   function syncExamBadge(){
     const label=document.querySelector('.exam-badge .date');

@@ -215,7 +215,7 @@ units.forEach(u=>{(extraByUnit[u.id]||[]).forEach(v=>{if(!u.vocab.includes(v))u.
 // STATE
 // ═══════════════════════════════════════════
 let active="home";
-let selectedUnit=6, selectedPrompt=5;
+let selectedUnit=1, selectedPrompt=0;
 let answer="", showKey=false;
 let qIndex=0, qFilter="All", selectedChoice="";
 let stats={correct:0,total:0}, missedUnits={}, lastMissed=null;
@@ -1582,7 +1582,7 @@ function render(){
   if(active==="home") app.innerHTML=homePage();
   else if(active==="quiz") app.innerHTML=quizPage();
   else if(active==="frq") app.innerHTML=frqPage();
-  else if(active==="terms"){selectedUnit=selectedUnit||6;app.innerHTML=termsPage();}
+  else if(active==="terms"){selectedUnit=selectedUnit||1;app.innerHTML=termsPage();}
   else if(active==="flashcards"){termView="flashcards";active="terms";app.innerHTML=termsPage();}
   else if(active==="practice") app.innerHTML=practiceExamsPage();
   else if(active==="simulator") app.innerHTML=apSimulatorPage();

@@ -41,6 +41,17 @@
   .map-detail-grid{grid-template-columns:1fr}
 }
 @media(max-width:700px){
+  .hero{padding:22px 18px 18px}
+  .hero h1{font-size:clamp(38px,12vw,54px);line-height:1}
+  .hero .sub{font-size:17px;line-height:1.45;margin-top:12px}
+  .hero .trust-row{margin-top:14px;gap:8px}
+  .hero .trust-row span{padding:7px 10px;font-size:13px}
+  .exam-badge{margin-top:16px;padding:14px 16px}
+  .exam-badge .date{font-size:24px}
+  .trust-strip{grid-template-columns:repeat(2,1fr)}
+  .trust-strip>div{padding:14px 18px}
+  .trust-strip>div:last-child{grid-column:1/-1}
+
   #nav{gap:2px}
   #nav button{padding:10px 12px}
   #nav .nav-core{font-size:14px}
