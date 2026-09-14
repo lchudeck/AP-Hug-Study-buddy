@@ -155,6 +155,9 @@
     app.querySelector('[data-map-restart]')?.addEventListener('click',()=>{mapActivityIndex=0;mapActivityChoice=null;mapActivityScore=0;renderVisualPractice();});
   }
 
+  // One public entry point keeps home cards and navigation on the same maps UI.
+  window.openMapsVisuals=renderVisualPractice;
+
   try{consolidateTabs();if(typeof renderNav==='function')renderNav();}catch(e){}
   nav.addEventListener('click',e=>{
     const b=e.target.closest('button');

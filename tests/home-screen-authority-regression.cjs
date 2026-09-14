@@ -21,7 +21,8 @@ assert.doesNotMatch(app,/Start my 20-minute session|pyramid drill → one mixed 
 for(const route of ['test','learn','misses','vocab','maps','frq','ap'])assert.match(app,new RegExp(`\\['${route}'`),`missing student start route: ${route}`);
 assert.match(app,/data-student-route="unsure"/,'missing student start route: unsure');
 assert.match(routeLayer,/closest\('\[data-student-route\]'\)/,'home cards must use one delegated route handler');
-assert.match(routeLayer,/p==='maps'\)G\('visualLab'\)/,'the maps card must open the live visual lab');
+assert.match(polish,/window\.openMapsVisuals=renderVisualPractice/,'the chosen maps screen must expose one public entry point');
+assert.match(routeLayer,/p==='maps'\)typeof window\.openMapsVisuals/,'the maps card must use the authoritative maps screen');
 assert.match(routeLayer,/localStorage\.getItem\('aphgStudentSuccessV1'\)/,'student routes must follow the saved current unit');
 assert.doesNotMatch(css,/#app[^}]*min-height|pointer-events|z-index/,'mobile home CSS must not rely on stacking or forced-height patches');
 assert.match(polish,/function polishNav\(refresh=true\)/,'navigation polish must distinguish rendering from DOM-only updates');

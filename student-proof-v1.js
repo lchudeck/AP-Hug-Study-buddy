@@ -11,7 +11,7 @@
     if(p==='test')G('unitReview');
     else if(p==='learn')typeof sspGo==='function'?sspGo('teach'):G('studentSuccess');
     else if(p==='vocab'){selectedUnit=currentUnit();G('terms');}
-    else if(p==='maps')G('visualLab');
+    else if(p==='maps')typeof window.openMapsVisuals==='function'?window.openMapsVisuals():G('visualLab');
     else if(p==='misses')G('practiceMastery');
     else if(p==='frq'){
       if(typeof prompts!=='undefined'){
