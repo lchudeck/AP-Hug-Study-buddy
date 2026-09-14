@@ -3,9 +3,20 @@
   const app=document.getElementById('app');
   if(!nav||!app)return;
 
+  const EXAM_DATE=new Date('2027-05-03T08:00:00-07:00');
   const findTab=re=>typeof tabs!=='undefined'?tabs.find(t=>re.test(String(t&&t[1]||''))):null;
   const hiddenTopLevel=[/AP Mastery/i,/Map Lab/i,/Use the Vocab/i,/Visual Practice/i];
   const primary=[/home/i,/unit review/i,/practice/i,/key terms|vocabulary/i,/maps?\s*&?\s*visual/i,/frq coach/i,/ap exam prep/i];
+
+  function syncExamBadge(){
+    const label=document.querySelector('.exam-badge .date');
+    const countdown=document.getElementById('countdown');
+    if(label)label.textContent='May 3, 2027 Exam';
+    if(countdown){
+      const days=Math.max(0,Math.ceil((EXAM_DATE-Date.now())/86400000));
+      countdown.textContent=days===0?'Exam day':`${days} days`;
+    }
+  }
 
   function consolidateTabs(){
     if(typeof tabs==='undefined')return;
@@ -26,15 +37,14 @@
     }
     const buttons=[...nav.querySelectorAll('button')];
     buttons.forEach((b,i)=>{
-      const t=b.textContent.trim();
-      const hide=hiddenTopLevel.some(re=>re.test(t));
+      const text=b.textContent.trim();
+      const hide=hiddenTopLevel.some(re=>re.test(text));
       b.hidden=hide;
       b.classList.toggle('nav-consolidated-hidden',hide);
       b.classList.remove('nav-core','nav-more');
       if(!hide){
-        if(i===0||primary.some(r=>r.test(t)))b.classList.add('nav-core');
-        else b.classList.add('nav-more');
-        b.setAttribute('aria-label',t);
+        b.classList.add(i===0||primary.some(re=>re.test(text))?'nav-core':'nav-more');
+        b.setAttribute('aria-label',text);
       }
       if(i===0)b.classList.add('nav-first');
     });
@@ -67,11 +77,11 @@
     box.querySelector('[data-next="home"]').addEventListener('click',()=>clickNav(/home|start/i));
   }
 
-  // ---- One consolidated Maps & Visuals destination ----
   let visualSectionName='maps';
+  let mapActivityIndex=0,mapActivityChoice=null,mapActivityScore=0;
   const mapInfo={
     reference:{title:'Reference map',notice:'Locations, boundaries, roads, rivers, and place names are the focus.',use:'Finding where something is and understanding its location relative to other features.',limit:'It usually does not show a statistical variable or explain why a pattern exists.',ap:'Use reference maps for location evidence: “The city is near the river and interstate.”'},
-    choropleth:{title:'Choropleth map',notice:'Defined areas change shade or color according to a value.',use:'Comparing rates, percentages, or other standardized values among states, counties, or countries.',limit:'Large areas can look more important than they are. Raw totals can also mislead when populations differ.',ap:'Check the legend and ask whether the map uses a rate/percentage or a raw total.'},
+    choropleth:{title:'Choropleth map',notice:'Defined areas change shade or color according to a value.',use:'Comparing rates, percentages, or standardized values among states, counties, or countries.',limit:'Large areas can look more important than they are; raw totals can mislead when populations differ.',ap:'Check the legend and ask whether the map uses a rate/percentage or a raw total.'},
     symbol:{title:'Proportional-symbol map',notice:'Symbols stay at locations but change size to represent magnitude.',use:'Comparing totals such as city population, trade volume, or number of events.',limit:'Large symbols can overlap and hide exact locations or smaller values.',ap:'Describe both magnitude and spatial pattern: “The largest symbols cluster in…”'},
     dots:{title:'Dot-density map',notice:'Repeated dots represent a fixed amount of a phenomenon.',use:'Showing concentration, dispersion, and distribution within larger areas.',limit:'Dots usually do not mark exact individual locations, and dense areas can visually merge.',ap:'Use words such as clustered, dispersed, concentrated, or sparse.'},
     isoline:{title:'Isoline map',notice:'Lines connect places with equal values.',use:'Continuous data such as elevation, temperature, pressure, or precipitation.',limit:'Values between lines are estimated; close lines can be hard to read.',ap:'Closer lines usually mean a faster change across space.'},
@@ -92,16 +102,32 @@
   function pyramidSvg(){return `<svg viewBox="0 0 460 190" class="lesson-svg" role="img" aria-label="Population pyramid comparison"><line x1="230" y1="20" x2="230" y2="165" stroke="currentColor"/>${[72,62,51,39,28].map((w,i)=>{const y=135-i*25;return `<rect x="${230-w}" y="${y}" width="${w-3}" height="17"/><rect x="233" y="${y}" width="${w-3}" height="17"/>`;}).join('')}<text x="165" y="182">Rapid-growth shape</text></svg>`;}
   function dtmSvg(){return `<svg viewBox="0 0 460 190" class="lesson-svg" role="img" aria-label="Demographic Transition Model"><line x1="45" y1="155" x2="430" y2="155" stroke="currentColor"/><line x1="45" y1="155" x2="45" y2="25" stroke="currentColor"/><path d="M55 45 L130 48 L205 65 L280 105 L355 132 L425 136" fill="none" stroke="currentColor" stroke-width="4"/><path d="M55 52 L125 102 L200 132 L280 138 L355 138 L425 142" fill="none" stroke="currentColor" stroke-width="2"/><text x="300" y="65">Birth rate</text><text x="300" y="128">Death rate</text></svg>`;}
 
+  const mapActivities=[
+    {kind:'choropleth',q:'What map type is shown?',choices:['Choropleth map','Reference map','Dot-density map','Cartogram'],answer:0,why:'Defined areas are shaded according to a value.'},
+    {kind:'dots',q:'What spatial pattern does this map best help you describe?',choices:['Concentration and dispersion','Exact road locations','Elevation contours only','Political boundaries only'],answer:0,why:'Dot-density maps are designed to show where a phenomenon is concentrated or sparse.'},
+    {kind:'symbol',q:'Which statement is the strongest AP-style interpretation?',choices:['The largest mapped value is in the eastern location','The map proves the eastern place has the largest land area','Every circle marks the same value','The western location has the highest density'],answer:0,why:'On proportional-symbol maps, symbol size represents magnitude—not land area or density unless the legend says so.'},
+    {kind:'isoline',q:'If two isolines are very close together, what does that usually mean?',choices:['The mapped value changes quickly over a short distance','The map is a cartogram','Population is evenly distributed','The lines show political borders'],answer:0,why:'Closely spaced isolines indicate a steep or rapid spatial change.'},
+    {kind:'reference',q:'A world map hides neighborhood differences that appear on a city map. Which concept is most important?',choices:['Scale of analysis','Relocation diffusion','Centripetal force','Agricultural density'],answer:0,why:'Patterns can look different when the scale of analysis changes.'}
+  ];
+
   function mapCard(key){const m=mapInfo[key];return `<button type="button" class="visual-card visual-card-button" data-map-detail="${key}" aria-expanded="false"><span class="visual-card-title">${m.title}</span><span class="visual-card-sub">${m.notice}</span>${mapSvg(key)}<span class="visual-card-cta">Click to learn how to read it →</span></button>`;}
   function mapDetail(key){const m=mapInfo[key];return `<div class="map-detail-panel" data-map-panel="${key}"><div><span class="pill">Map skill</span><h4>${m.title}</h4></div><div class="map-detail-grid"><div><b>Best for</b><p>${m.use}</p></div><div><b>Limitation</b><p>${m.limit}</p></div><div><b>AP move</b><p>${m.ap}</p></div></div><button type="button" class="btn-secondary" data-close-map>Close</button></div>`;}
+
+  function mapActivityHtml(){
+    if(mapActivityIndex>=mapActivities.length)return `<section class="map-activity"><span class="pill">Map Detective complete</span><h4>${mapActivityScore} of ${mapActivities.length} correct</h4><p>${mapActivityScore>=4?'Strong map-reading start.':'Review the map cards above, then try once more.'}</p><button class="btn-primary" type="button" data-map-restart>Try again</button></section>`;
+    const a=mapActivities[mapActivityIndex];
+    const answered=mapActivityChoice!==null;
+    return `<section class="map-activity"><div class="map-activity-head"><div><span class="pill">Mapping activity</span><h4>Map Detective · ${mapActivityIndex+1} of ${mapActivities.length}</h4></div><b>${mapActivityScore} correct</b></div>${mapSvg(a.kind)}<p><b>${a.q}</b></p><div class="quiz-options">${a.choices.map((c,i)=>`<button type="button" class="quiz-option ${answered&&i===a.answer?'correct':answered&&i===mapActivityChoice&&i!==a.answer?'wrong':''}" data-map-answer="${i}" ${answered?'disabled':''}>${String.fromCharCode(65+i)}. ${c}</button>`).join('')}</div>${answered?`<div class="${mapActivityChoice===a.answer?'box-good':'box-warn'}"><b>${mapActivityChoice===a.answer?'Correct':'Not yet.'}</b><p>${a.why}</p></div><button type="button" class="btn-primary" data-map-next>${mapActivityIndex===mapActivities.length-1?'See results':'Next challenge →'}</button>`:''}</section>`;
+  }
 
   function renderVisualPractice(){
     if(typeof active!=='undefined')active='visualLab';
     if(typeof renderNav==='function')renderNav();
-    const maps=`<h3>Unit 1: Maps</h3><p class="muted">Click any map type to learn what to notice, when to use it, and the limitation AP questions often test.</p><div class="visual-grid map-learning-grid">${['reference','choropleth','symbol','dots','isoline','cartogram'].map(mapCard).join('')}</div><div id="mapDetailHost" aria-live="polite"></div>`;
+    const maps=`<h3>Unit 1: Maps</h3><p class="muted">Click any map type to learn what to notice, when to use it, and the limitation AP questions often test.</p><div class="visual-grid map-learning-grid">${['reference','choropleth','symbol','dots','isoline','cartogram'].map(mapCard).join('')}</div><div id="mapDetailHost" aria-live="polite"></div><div id="mapActivityHost">${mapActivityHtml()}</div>`;
     const spatial=`<h3>Unit 1: Spatial Concepts</h3><div class="visual-grid"><figure class="visual-card"><figcaption><b>Clustered, dispersed, and linear patterns</b></figcaption>${patternSvg()}</figure><div class="visual-card"><b>Scale of analysis</b><p>A national pattern can hide regional or local variation.</p></div><div class="visual-card"><b>GIS layers</b><p>Geographers combine location-based layers to investigate relationships.</p></div><div class="visual-card"><b>Distance decay</b><p>Interaction often decreases as distance increases.</p></div></div>`;
     const population=`<h3>Unit 2: Population & Migration</h3><div class="visual-grid"><figure class="visual-card"><figcaption><b>Population pyramids</b><br>Read age structure before explaining consequences.</figcaption>${pyramidSvg()}</figure><figure class="visual-card"><figcaption><b>Demographic Transition Model</b><br>Compare changes in birth and death rates.</figcaption>${dtmSvg()}</figure><div class="visual-card"><b>Migration flows</b><p>Identify origin, destination, push/pull factors, and consequences.</p></div></div>`;
-    app.innerHTML=`<main class="wrap"><section class="card"><h2>🗺️ Maps & Visuals</h2><p>Learn the visual first, then practice interpreting it the way AP Human Geography expects.</p><div class="box-info"><b>Two ways to use this section</b><p><b>Learn:</b> click the map and model cards below. <b>Practice:</b> move into AP-style visual questions when you're ready.</p><div class="button-row"><button class="btn-primary" data-open-visual="12">Practice Units 1–2 visuals</button><button class="btn-secondary" data-open-visual="37">Practice Units 3–7 visuals</button></div></div><div class="button-row"><button class="${visualSectionName==='maps'?'btn-primary':'btn-secondary'}" data-visual="maps">Unit 1 Maps</button><button class="${visualSectionName==='spatial'?'btn-primary':'btn-secondary'}" data-visual="spatial">Spatial Concepts</button><button class="${visualSectionName==='population'?'btn-primary':'btn-secondary'}" data-visual="population">Unit 2 Population</button></div></section><section class="card">${visualSectionName==='maps'?maps:visualSectionName==='spatial'?spatial:population}</section></main>`;
+    app.innerHTML=`<main class="wrap"><section class="card"><h2>🗺️ Maps & Visuals</h2><p>Learn the visual first, then practice interpreting it the way AP Human Geography expects.</p><div class="box-info"><b>Learn → Try → Practice</b><p>Open a map card, complete the Map Detective activity, then move into AP-style visual questions when you're ready.</p><div class="button-row"><button class="btn-primary" data-open-visual="12">More Units 1–2 visual practice</button><button class="btn-secondary" data-open-visual="37">Units 3–7 visual practice</button></div></div><div class="button-row"><button class="${visualSectionName==='maps'?'btn-primary':'btn-secondary'}" data-visual="maps">Unit 1 Maps</button><button class="${visualSectionName==='spatial'?'btn-primary':'btn-secondary'}" data-visual="spatial">Spatial Concepts</button><button class="${visualSectionName==='population'?'btn-primary':'btn-secondary'}" data-visual="population">Unit 2 Population</button></div></section><section class="card">${visualSectionName==='maps'?maps:visualSectionName==='spatial'?spatial:population}</section></main>`;
+
     app.querySelectorAll('[data-visual]').forEach(b=>b.addEventListener('click',()=>{visualSectionName=b.dataset.visual;renderVisualPractice();}));
     app.querySelectorAll('[data-open-visual]').forEach(b=>b.addEventListener('click',()=>{
       if(b.dataset.openVisual==='12'){active='visualPractice';if(typeof vpMode==='function')vpMode('mcq');else render();}
@@ -117,6 +143,15 @@
       host.querySelector('[data-close-map]').addEventListener('click',()=>{host.innerHTML='';b.setAttribute('aria-expanded','false');b.focus();});
       host.scrollIntoView({behavior:'smooth',block:'nearest'});
     }));
+    app.querySelectorAll('[data-map-answer]').forEach(b=>b.addEventListener('click',()=>{
+      if(mapActivityChoice!==null)return;
+      mapActivityChoice=Number(b.dataset.mapAnswer);
+      if(mapActivityChoice===mapActivities[mapActivityIndex].answer)mapActivityScore++;
+      renderVisualPractice();
+      document.getElementById('mapActivityHost')?.scrollIntoView({behavior:'smooth',block:'center'});
+    }));
+    app.querySelector('[data-map-next]')?.addEventListener('click',()=>{mapActivityIndex++;mapActivityChoice=null;renderVisualPractice();document.getElementById('mapActivityHost')?.scrollIntoView({behavior:'smooth',block:'center'});});
+    app.querySelector('[data-map-restart]')?.addEventListener('click',()=>{mapActivityIndex=0;mapActivityChoice=null;mapActivityScore=0;renderVisualPractice();});
   }
 
   try{consolidateTabs();if(typeof renderNav==='function')renderNav();}catch(e){}
@@ -126,7 +161,7 @@
     e.preventDefault();e.stopImmediatePropagation();renderVisualPractice();window.scrollTo({top:0,behavior:'smooth'});
   },true);
 
-  // ---- Adaptive retry guard: same concept, different wording/question ----
+  // Keep adaptive retries useful without repeating the exact missed question.
   let missed=null;
   const sig=q=>String(q&&q[1]||'').toLowerCase().replace(/\s+/g,' ').trim();
   function unitOf(q){return Number(String(q&&q[0]||'').match(/\d+/)?.[0]||0);}
@@ -173,8 +208,7 @@
   }
   window.__aphgRetryVariantGuard={signature:sig,conceptKey,getMissed:()=>missed};
 
-  const observer=new MutationObserver(()=>{if(!nav.dataset.consolidating)polishNav();addPayoff();});
+  const observer=new MutationObserver(()=>{if(!nav.dataset.consolidating)polishNav();addPayoff();syncExamBadge();});
   observer.observe(document.body,{childList:true,subtree:true});
-  polishNav();
-  setTimeout(addPayoff,250);
+  polishNav();syncExamBadge();setInterval(syncExamBadge,30000);setTimeout(addPayoff,250);
 })();
