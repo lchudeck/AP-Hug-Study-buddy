@@ -3,9 +3,13 @@ on:
   pull_request:
     paths:
       - teacher-assessment-core.js
+      - assessment-bank-source.js
       - teacher-builder.js
       - teacher-builder.css
       - teacher-builder.html
+      - student-quiz.html
+      - student-quiz.css
+      - student-quiz.js
       - unit1-visual-assessment-bank.js
       - tests/teacher-assessment-core-regression.cjs
       - .github/workflows/teacher-builder.yml
@@ -20,6 +24,8 @@ jobs:
       - name: Check JavaScript and assessment rules
         run: |
           node --check teacher-assessment-core.js
+          node --check assessment-bank-source.js
           node --check teacher-builder.js
+          node --check student-quiz.js
           node --check unit1-visual-assessment-bank.js
           node tests/teacher-assessment-core-regression.cjs
