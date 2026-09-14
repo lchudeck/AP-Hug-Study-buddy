@@ -31,6 +31,11 @@
 .map-detail-grid>div{padding:12px;background:#fff;border:1px solid #dbe3ef;border-radius:12px}
 .map-detail-grid b{display:block;margin-bottom:4px;color:#172554}
 .map-detail-grid p{margin:0;color:#475569;line-height:1.5}
+.map-activity{margin-top:22px;padding:18px;border:1px solid #c7d2fe;background:linear-gradient(135deg,#eef2ff,#fff);border-radius:16px}
+.map-activity-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:8px}
+.map-activity h4{font-size:21px;margin:7px 0 0}
+.map-activity .map-learning-svg{max-width:620px;border:1px solid #dbe3ef}
+.map-activity .quiz-options{margin-top:10px}
 
 @media(max-width:900px){
   .map-detail-grid{grid-template-columns:1fr}
@@ -44,4 +49,5 @@
   .payoff-actions{display:grid;grid-template-columns:1fr;width:100%}
   .payoff-actions button{width:100%}
   .visual-card-button{padding:14px}
+  .map-activity-head{display:block}
 }
