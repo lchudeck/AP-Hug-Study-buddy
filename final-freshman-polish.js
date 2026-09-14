@@ -115,22 +115,12 @@
   const WEST_STATES=['Alaska','Arizona','California','Colorado','Hawaii','Idaho','Montana','Nevada','New Mexico','Oregon','Utah','Washington','Wyoming'];
   const STATE_LABELS={Washington:'WA',Oregon:'OR',California:'CA',Idaho:'ID',Nevada:'NV',Arizona:'AZ',Utah:'UT',Montana:'MT',Wyoming:'WY',Colorado:'CO','New Mexico':'NM',Alaska:'AK',Hawaii:'HI'};
 
-  function coordinatePath(ring){
-    return ring.map((point,i)=>`${i?'L':'M'}${((Number(point[0])+180)/360*1000).toFixed(1)},${((90-Number(point[1]))/180*500).toFixed(1)}`).join('')+'Z';
-  }
-
-  function worldGeometryPath(geometry){
-    if(!geometry)return '';
-    const polygons=geometry.type==='Polygon'?[geometry.coordinates]:geometry.type==='MultiPolygon'?geometry.coordinates:[];
-    return polygons.map(polygon=>polygon.map(coordinatePath).join('')).join('');
-  }
-
   function worldPoliticalMapSvg(){
-    if(!worldMapData)return '<svg viewBox="0 0 1000 520" class="lesson-svg map-learning-svg" role="img" aria-label="Loading bundled Natural Earth world boundaries"><rect width="1000" height="520" fill="#f8fafc"/><text x="500" y="260" text-anchor="middle" font-size="24" fill="#475569">Loading the bundled world political map…</text></svg>';
-    const paths=worldMapData.features.map(feature=>{
-      const name=feature.properties?.ADMIN||feature.properties?.NAME||'Country';
-      return `<path d="${worldGeometryPath(feature.geometry)}" fill="#dbeafe" stroke="#475569" stroke-width=".7" fill-rule="evenodd"><title>${name}</title></path>`;
-    }).join('');
+    if(!worldMapData){
+      const text=worldMapUnavailable?'The bundled world map could not load.':'Loading the bundled world political map…';
+      return `<svg viewBox="0 0 1000 520" class="lesson-svg map-learning-svg" role="img" aria-label="${text}"><rect width="1000" height="520" fill="#f8fafc"/><text x="500" y="260" text-anchor="middle" font-size="24" fill="#475569">${text}</text></svg>`;
+    }
+    const paths=worldMapData.countries.map(country=>`<path d="${country.path}" fill="#dbeafe" stroke="#475569" stroke-width=".7" fill-rule="evenodd"><title>${country.name}</title></path>`).join('');
     return `<svg viewBox="0 0 1000 520" class="lesson-svg map-learning-svg authentic-world-map" role="img" aria-label="World political reference map using Natural Earth country boundaries"><rect width="1000" height="520" fill="#f8fafc"/>${paths}</svg>`;
   }
 
@@ -151,9 +141,9 @@
 
   function loadWorldMap(){
     if(worldMapData||worldMapLoad||worldMapUnavailable)return worldMapLoad;
-    worldMapLoad=fetch('data/natural-earth-countries-110m.geojson?v=20260914-authentic',{cache:'force-cache'})
+    worldMapLoad=fetch('data/world-political-map-110m.json?v=20260914-authentic',{cache:'force-cache'})
       .then(r=>{if(!r.ok)throw new Error(`World map data ${r.status}`);return r.json();})
-      .then(data=>{if(!Array.isArray(data.features)||data.features.length<170)throw new Error('Incomplete world map data');worldMapData=data;return data;})
+      .then(data=>{if(!Array.isArray(data.countries)||data.countries.length<170)throw new Error('Incomplete world map data');worldMapData=data;return data;})
       .catch(()=>{worldMapUnavailable=true;return null;});
     return worldMapLoad;
   }
