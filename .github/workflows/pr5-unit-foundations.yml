@@ -13,6 +13,7 @@ on:
       - visual-learning.js
       - final-freshman-polish.js
       - data/us-state-map-2020.json
+      - data/natural-earth-countries-110m.geojson
       - visual-practice.js
       - .github/workflows/pr5-unit-foundations.yml
   workflow_dispatch:
@@ -44,6 +45,7 @@ jobs:
           route=Path('visual-learning.js').read_text(encoding='utf-8')
           visual=Path('final-freshman-polish.js').read_text(encoding='utf-8')
           mapdata=Path('data/us-state-map-2020.json').read_text(encoding='utf-8')
+          worlddata=Path('data/natural-earth-countries-110m.geojson').read_text(encoding='utf-8')
           practice=Path('visual-practice.js').read_text(encoding='utf-8')
           index=Path('index.html').read_text(encoding='utf-8')
           for script in ['unit-foundations.js','unit-mastery-3-7.js','master-flashcards.js','visual-learning.js','visual-practice.js']:
@@ -66,12 +68,15 @@ jobs:
               assert visual_label in visual, visual_label
           for scale_label in ['Scale Challenge','National analysis','Regional analysis','State analysis','Map scale','WEST_STATES']:
               assert scale_label in visual, scale_label
-          assert visual.count("view:'") >= 6, 'Scale practice needs at least six questions'
+          assert visual.count("view:'") >= 7, 'Scale practice needs global, national, regional, and state questions'
+          assert "fetch('data/natural-earth-countries-110m.geojson" in visual
+          assert "view:'global'" in visual and "view:'national'" in visual and "view:'west'" in visual and "view:'washington'" in visual
           assert 'window.openMapsVisuals' in route
           assert "fetch('data/us-state-map-2020.json" in visual
           assert 'api.census.gov' not in route+visual
           assert 'cdn.jsdelivr.net' not in route+visual
           assert len(json.loads(mapdata)['states']) == 51
+          assert len(json.loads(worlddata)['features']) >= 170
           assert 'instructional schematic' in visual.lower()
           for practice_label in ['Map Type Interpretation','Spatial Pattern','Population Pyramid','Demographic Transition Model','Visual Map Analysis','Scale and GIS','Population Pyramid Analysis','DTM Interpretation','Visual MCQ','Visual FRQ']:
               assert practice_label in practice, practice_label
