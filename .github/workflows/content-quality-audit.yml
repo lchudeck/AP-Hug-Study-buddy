@@ -12,7 +12,7 @@ jobs:
           node <<'NODE'
           const fs=require('fs'),vm=require('vm');
           const html=fs.readFileSync('index.html','utf8');
-          const scripts=[...html.matchAll(/<script src="([^"]+\.js)"/g)].map(m=>m[1]).filter(f=>fs.existsSync(f));
+          const scripts=[...html.matchAll(/<script src="([^"]+\.js)(?:\?[^"]*)?"/g)].map(m=>m[1]).filter(f=>fs.existsSync(f));
           const sandbox={window:{},localStorage:{getItem:()=>null,setItem:()=>{}},document:{getElementById:()=>({innerHTML:'',querySelectorAll:()=>[]}),querySelectorAll:()=>[],body:{textContent:''}},console,setInterval:()=>0,clearInterval:()=>{},setTimeout:()=>0,MutationObserver:function(){this.observe=()=>{}},location:{}};
           sandbox.window=sandbox;vm.createContext(sandbox);
           for(const f of scripts){try{vm.runInContext(fs.readFileSync(f,'utf8'),sandbox,{filename:f});}catch(e){}}

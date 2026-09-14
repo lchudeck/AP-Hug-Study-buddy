@@ -18,12 +18,21 @@
 .payoff-actions button:first-child{background:#0f172a;color:white;border-color:#0f172a}
 
 .map-learning-grid{align-items:stretch}
+.visual-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px}
+.visual-card{border:1px solid #dde3ed;border-radius:16px;padding:12px;background:#fff}
+.visual-card figcaption{margin-bottom:8px}
+.visual-card figcaption span,.visual-card small{font-size:13px;color:#64748b}
+.visual-card svg,.lesson-svg{width:100%;height:auto;display:block;background:#f8fafc;border-radius:12px}
+.map-land{fill:#eef2ff;stroke:#64748b}.map-line,.axis{fill:none;stroke:#475569;stroke-width:2}.map-area{fill:#c7d2fe;stroke:#4338ca;stroke-width:2}.iso-line{fill:none;stroke:#2563eb;stroke-width:3}.lesson-svg circle{fill:#2563eb}.gis-layer{fill:#dbeafe;stroke:#1d4ed8;stroke-width:2}.arrow-line,.flow-arrow{fill:none;stroke:#1d4ed8;stroke-width:4}.return-arrow{fill:none;stroke:#64748b;stroke-width:3;stroke-dasharray:8 5}.scale-box,.scale-cell{fill:#e2e8f0;stroke:#94a3b8}.scale-cell.hot{fill:#93c5fd}.decay-line{fill:none;stroke:#7c3aed;stroke-width:5}.pyr-left{fill:#bfdbfe}.pyr-right{fill:#ddd6fe}.birth-line{fill:none;stroke:#2563eb;stroke-width:4}.death-line{fill:none;stroke:#9333ea;stroke-width:4}.origin-node{fill:#dbeafe;stroke:#2563eb}.dest-node{fill:#dcfce7;stroke:#16a34a}
 .visual-card-button{display:flex;flex-direction:column;text-align:left;width:100%;min-height:100%;padding:16px;background:#fff;color:#172033;border:1px solid #dbe3ef;border-radius:16px;box-shadow:none;cursor:pointer;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
 .visual-card-button:hover,.visual-card-button:focus-visible{transform:translateY(-2px);border-color:#7aa2ff;box-shadow:0 10px 24px rgba(15,23,42,.08)}
 .visual-card-button[aria-expanded="true"]{border-color:#2454d6;box-shadow:0 0 0 3px rgba(37,84,214,.12)}
 .visual-card-title{font-size:18px;font-weight:800;margin-bottom:5px}
 .visual-card-sub{font-size:14px;line-height:1.45;color:#475569;min-height:42px}
 .map-learning-svg{width:100%;margin-top:12px;background:#f8fafc;border-radius:12px}
+.authentic-us-map{aspect-ratio:975/610}
+.authentic-us-map .pop-symbol{fill:rgba(37,99,235,.38);stroke:#1d4ed8;stroke-width:1.5}
+.map-data-note{margin:12px 0 2px;padding:11px 13px;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff;color:#334155;font-size:14px;line-height:1.45}
 .visual-card-cta{display:block;margin-top:auto;padding-top:10px;font-size:13px;font-weight:800;color:#2454d6}
 .map-detail-panel{margin-top:18px;padding:18px;border:1px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#f8fafc);border-radius:16px}
 .map-detail-panel h4{font-size:22px;margin:8px 0 12px}
@@ -41,6 +50,17 @@
   .map-detail-grid{grid-template-columns:1fr}
 }
 @media(max-width:700px){
+  .hero{padding:22px 18px 18px}
+  .hero h1{font-size:clamp(38px,12vw,54px);line-height:1}
+  .hero .sub{font-size:17px;line-height:1.45;margin-top:12px}
+  .hero .trust-row{margin-top:14px;gap:8px}
+  .hero .trust-row span{padding:7px 10px;font-size:13px}
+  .exam-badge{margin-top:16px;padding:14px 16px}
+  .exam-badge .date{font-size:24px}
+  .trust-strip{grid-template-columns:repeat(2,1fr)}
+  .trust-strip>div{padding:14px 18px}
+  .trust-strip>div:last-child{grid-column:1/-1}
+
   #nav{gap:2px}
   #nav button{padding:10px 12px}
   #nav .nav-core{font-size:14px}

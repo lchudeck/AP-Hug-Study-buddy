@@ -36,10 +36,10 @@ jobs:
             await new Promise(r=>dom.window.addEventListener('load',r,{once:true}));
             await sleep(150);
             const d=dom.window.document;
-            const visual=[...d.querySelectorAll('#nav button')].find(b=>/Maps & Visual Practice|Visual Lab/i.test(b.textContent));
-            if(!visual)throw new Error('Maps & Visual Practice nav button missing');
+            const visual=[...d.querySelectorAll('#nav button')].find(b=>/Maps & Visuals|Visual Lab/i.test(b.textContent));
+            if(!visual)throw new Error('Maps & Visuals nav button missing');
             visual.click();await sleep(30);
-            if(!/Maps & Visual Practice/i.test(d.querySelector('#app')?.textContent||''))throw new Error('Visual practice did not open after click');
+            if(!/Maps & Visuals/i.test(d.querySelector('#app')?.textContent||''))throw new Error('Visual practice did not open after click');
             const spatial=[...d.querySelectorAll('#app button')].find(b=>/Spatial Concepts/i.test(b.textContent));
             if(!spatial)throw new Error('Spatial Concepts button missing');spatial.click();await sleep(10);
             if(!/Clustered, dispersed, and linear/i.test(d.querySelector('#app')?.textContent||''))throw new Error('Spatial visual section did not render');
