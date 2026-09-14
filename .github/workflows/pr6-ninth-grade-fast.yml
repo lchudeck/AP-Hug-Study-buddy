@@ -82,7 +82,7 @@ jobs:
 
             // Deliberately miss items and finish the session. A concept may return,
             // but the exact stem must never appear twice and the session must stop at 60.
-            w.urHome();await sleep(2);btn(/Start here/i)?.click();await sleep(2);
+            w.urHome();await sleep(2);[...d.querySelectorAll('#app button')].find(b=>/Start here/i.test(b.textContent))?.click();await sleep(2);
             const sessionStems=[],missedStems=[];
             for(let guard=0;guard<61;guard++){
               const options=[...d.querySelectorAll('.quiz-option:not([disabled])')];if(!options.length)break;
