@@ -4,17 +4,18 @@
   window.__studentProofV1Installed=1;
 
   const G=r=>{if(typeof go==='function')go(r)};
-  let currentUnit=1;
-  try{currentUnit=Number(JSON.parse(localStorage.getItem('aphgStudentSuccessV1')||'{}').unit)||1;}catch(e){}
+  const currentUnit=()=>{
+    try{return Number(JSON.parse(localStorage.getItem('aphgStudentSuccessV1')||'{}').unit)||1;}catch(e){return 1;}
+  };
   window.studentProofRoute=p=>{
     if(p==='test')G('unitReview');
     else if(p==='learn')typeof sspGo==='function'?sspGo('teach'):G('studentSuccess');
-    else if(p==='vocab'){selectedUnit=currentUnit;G('terms');}
+    else if(p==='vocab'){selectedUnit=currentUnit();G('terms');}
     else if(p==='maps')G('visualLab');
     else if(p==='misses')G('practiceMastery');
     else if(p==='frq'){
       if(typeof prompts!=='undefined'){
-        const idx=prompts.findIndex(item=>Number(item&&item.unit)===currentUnit);
+        const idx=prompts.findIndex(item=>Number(item&&item.unit)===currentUnit());
         if(idx>=0)selectedPrompt=idx;
       }
       G('frq');

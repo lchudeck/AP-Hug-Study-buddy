@@ -72,7 +72,7 @@ jobs:
               ['I keep missing questions',/Practice|Mastery|weak/i],
               ['I know the vocab, but I can’t use it',/Vocabulary|Key Terms|Flashcard/i],
               ['Maps & data confuse me',/Visual|Map|Model/i],
-              ['I don’t know how to write an FRQ',/FRQ command-word coach/i],
+              ['I don’t know how to write an FRQ',/FRQ Coach/i],
               ['Am I ready for the AP exam?',/AP Exam|Simulator|Practice Test|exam/i],
               ['Tell me what to do next',/Today.s APHG plan/i]
             ];
