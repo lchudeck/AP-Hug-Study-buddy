@@ -111,7 +111,7 @@
 
   function loadAuthenticMaps(){
     if(authenticMapData||authenticMapLoad||authenticMapUnavailable)return authenticMapLoad;
-    authenticMapLoad=fetch('data/us-state-map-2020.json?v=20260914',{cache:'force-cache'})
+    authenticMapLoad=fetch('data/us-state-map-2020.json?v=20260914-authentic',{cache:'force-cache'})
       .then(r=>{if(!r.ok)throw new Error(`Map data ${r.status}`);return r.json();})
       .then(data=>{if(!Array.isArray(data.states)||data.states.length!==51)throw new Error('Incomplete map data');authenticMapData=data;return data;})
       .catch(()=>{authenticMapUnavailable=true;return null;});
