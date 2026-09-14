@@ -34,7 +34,7 @@ jobs:
           js=Path('app.js').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
           assert '<link rel="stylesheet" href="styles.css">' in index
-          assert '<script src="app.js"></script>' in index
+          assert re.search(r'<script src="app\.js(?:\?[^\"]*)?"></script>', index)
           assert '<style>' not in index
           assert '<script>' not in index
           assert 'May 5, 2026' not in index + js

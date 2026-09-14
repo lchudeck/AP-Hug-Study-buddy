@@ -16,27 +16,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq "My test is coming up" student-proof-v1.js
-          grep -Fq "I don’t understand this yet" student-proof-v1.js
-          grep -Fq "I keep missing questions" student-proof-v1.js
-          grep -Fq "I know the vocab, but I can’t use it" student-proof-v1.js
-          grep -Fq "Maps & data confuse me" student-proof-v1.js
-          grep -Fq "I don’t know how to write an FRQ" student-proof-v1.js
-          grep -Fq "Am I ready for the AP exam?" student-proof-v1.js
+          grep -Fq "My test is coming up" app.js
+          grep -Fq "I don’t understand this yet" app.js
+          grep -Fq "I keep missing questions" app.js
+          grep -Fq "I know the vocab, but I can’t use it" app.js
+          grep -Fq "Maps & data confuse me" app.js
+          grep -Fq "I don’t know how to write an FRQ" app.js
+          grep -Fq "Am I ready for the AP exam?" app.js
       - name: Require unsure and next-step guidance
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq "Tell me what to do next" student-proof-v1.js
+          grep -Fq "Tell me what to do next" app.js
           grep -Fq "What should I do next?" student-proof-v1.js
           grep -Fq "I’m still not sure" student-proof-v1.js
       - name: Require existing validated routes
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq "go('unitReview')" home-clarity.js
-          grep -Fq "go('practiceMastery')" home-clarity.js
-          grep -Fq "go('apSim')" home-clarity.js
+          grep -Fq "G('unitReview')" student-proof-v1.js
+          grep -Fq "G('practiceMastery')" student-proof-v1.js
+          grep -Fq "G('apSim')" student-proof-v1.js
           grep -Fq "route('teach')" student-success-path.js
           grep -Fq "route('verbs')" student-success-path.js
       - name: Preserve exam and nonrepeat guardrails
