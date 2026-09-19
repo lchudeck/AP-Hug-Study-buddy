@@ -1,10 +1,7 @@
-// Freshman usability fixes found during the PR #9 student walkthrough.
 (function(){
   if(window.__freshmanFixesV2Installed)return;
   window.__freshmanFixesV2Installed=true;
 
-  // Keep one clear freshman path in the top navigation. Deeper tools stay
-  // available from the home screen and the unit-review learning button.
   if(typeof tabs!=='undefined'){
     const wanted=[
       ['home','🏠 Start Here'],
@@ -22,9 +19,6 @@
     tabs.splice(0,tabs.length,...simplified);
   }
 
-  // Keep the coach focused on writing. The full seven-part pre-writing
-  // checklist duplicated the same directions and pushed the answer boxes far
-  // below the fold.
   if(typeof frqPage==='function'){
     const oldFrqPage=frqPage;
     frqPage=function(){
@@ -37,8 +31,6 @@
     };
   }
 
-  // Make the AP Mastery snapshot recognize work completed in Unit Review and
-  // Practice & Mastery, not only the original quiz screen.
   if(typeof getMasterySnapshot==='function'){
     const oldSnapshot=getMasterySnapshot;
     getMasterySnapshot=function(){
@@ -61,14 +53,12 @@
   }
 
   function polish(){
-    // Always state the correct answer after a miss.
     document.querySelectorAll('.box-warn b').forEach(label=>{
       if(!/^Not yet/.test(label.textContent)||/correct answer/i.test(label.textContent))return;
       const card=label.closest('.card'),correct=card&&card.querySelector('.quiz-option.correct');
       if(correct)label.textContent='Not yet — the correct answer is '+correct.textContent.replace(/^[A-D]\.\s*/,'')+'.';
     });
 
-    // Show only the currently selected unit's topic list.
     document.querySelectorAll('.card').forEach(card=>{
       const heading=card.querySelector('h3');
       if(!heading||heading.textContent.trim()!=='Progress by Topic')return;
@@ -88,7 +78,6 @@
       if(p)p.textContent='“Ready” means at least five attempts, 80% correct, two correct in a row, and successful practice on two different days.';
     });
 
-    // Give a manageable next vocabulary set instead of a discouraging total.
     document.querySelectorAll('.mastery-tile,.readiness-tile').forEach(tile=>{
       const span=tile.querySelector('span');
       if(span&&span.textContent.trim()==='Quiz accuracy'){
@@ -117,7 +106,6 @@
       span.textContent='cards in your first set';
     });
 
-    // Explain the goal without implying that specific connector words are required.
     document.querySelectorAll('.box-yellow').forEach(box=>{
       if(box.innerHTML.includes('one matching FRQ'))box.innerHTML=box.innerHTML.replace('one matching FRQ','one related FRQ');
       if(!/Point recipe/.test(box.textContent))return;

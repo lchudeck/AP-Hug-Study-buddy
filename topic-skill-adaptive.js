@@ -1,5 +1,3 @@
-// Topic + skill adaptive mastery engine.
-// Adds a shared CED-level evidence layer to the main quiz without collecting identity data.
 (function(){
   if(window.__topicSkillAdaptiveInstalled) return;
   window.__topicSkillAdaptiveInstalled=true;
@@ -68,7 +66,6 @@
     stat.recent=(stat.recent||[]).concat(correct?1:0).slice(-10);
     stat.streak=correct?(stat.streak||0)+1:0;
     stat.lastSeen=now;
-    // spaced retrieval: missed = soon, then 1d, 3d, 7d as successful streak grows
     const delay=!correct?0:stat.streak>=5?7*DAY:stat.streak>=3?3*DAY:DAY;
     stat.nextReview=now+delay;
     return stat;
@@ -94,7 +91,6 @@
     const current=(load().topics||{})[topic],legacy=legacyTopicStat(topic);
     if(!current) return legacy;
     if(!legacy) return current;
-    // Practice & Mastery and main quiz are separate experiences; combine their evidence.
     return {
       attempts:(current.attempts||0)+(legacy.attempts||0),
       correct:(current.correct||0)+(legacy.correct||0),
@@ -109,9 +105,7 @@
     const all=stat.correct/stat.attempts;
     const confidence=Math.min(1,stat.attempts/8);
     let score=(recent*.7+all*.3)*100;
-    // low evidence should not look falsely precise/high
     score=50+(score-50)*confidence;
-    // small recency penalty after 14 days so mastered material comes back into rotation
     if(stat.lastSeen&&Date.now()-stat.lastSeen>14*DAY) score-=8;
     return Math.max(0,Math.min(100,Math.round(score)));
   }
@@ -135,7 +129,6 @@
     ).slice(0,limit);
   }
 
-  // Wrap the existing main-quiz answer handler once it is available.
   if(typeof chooseAnswer==='function'){
     const oldChooseAnswer=chooseAnswer;
     chooseAnswer=function(choice){
@@ -149,7 +142,6 @@
     };
   }
 
-  // Make legacy unit targeting derive from CED topic evidence first.
   const oldGetWeakestUnit=typeof getWeakestUnit==='function'?getWeakestUnit:null;
   getWeakestUnit=function(){
     const weak=weakTopics(1)[0];
@@ -160,7 +152,6 @@
     return oldGetWeakestUnit?oldGetWeakestUnit():null;
   };
 
-  // Adaptive quiz now targets exact weak/due topics when its question bank supports them.
   adaptiveDeck=function(){
     const weak=weakTopics(5);
     if(!weak.length) return quiz.slice();
@@ -175,7 +166,6 @@
     return deck.length?deck:quiz;
   };
 
-  // Difficulty is now based on demonstrated topic mastery rather than broad unit averages.
   const oldRecommendedDifficulty=typeof recommendedDifficulty==='function'?recommendedDifficulty:null;
   recommendedDifficulty=function(){
     const done=practicedTopics().map(x=>x.mastery).filter(x=>x!==null);
@@ -186,7 +176,6 @@
     return {level:1,label:'Support Mode',desc:'Study Buddy is prioritizing weak CED topics, explanations, and quick retrieval practice.'};
   };
 
-  // Replace the unit-only weak-spots panel with specific CED topics + skill evidence.
   weakSpotsHtml=function(){
     const weak=weakTopics(5),s=load(),skillRows=Object.entries(SKILLS).map(([key,label])=>{
       const st=(s.skills||{})[key],m=mastery(st);
@@ -198,7 +187,6 @@
     return topicHtml+skillHtml;
   };
 
-  // Add topic specificity to the AP Mastery snapshot/recommendation while preserving the existing page.
   if(typeof getMasterySnapshot==='function'){
     const oldSnapshot=getMasterySnapshot;
     getMasterySnapshot=function(){

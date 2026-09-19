@@ -1,8 +1,6 @@
-// Units 2–7 depth pass: 3 adaptive question forms per CED topic.
 (function(){
  if(typeof quiz==='undefined'||window.__units27DepthV3)return; window.__units27DepthV3=true;
  const specs=[
- // U2 Population & Migration
  ['2.1','Physiological density','total population divided by arable land','A country has little arable land but a large population concentrated in a river valley.','Physiological density reveals pressure on farmland.',['Arithmetic density','Agricultural density','Carrying capacity'],'density-types'],
  ['2.2','Carrying capacity','the population an environment can support under given resources and technology','A dry region adds desalination and water recycling, allowing more residents to be supported.','Technology can change carrying capacity; high density alone does not prove overpopulation.',['Arithmetic density','Population momentum','Dependency ratio'],'density-overpopulation'],
  ['2.3','Population pyramid','a graph of age and sex structure','A country has a very wide base and a narrow top.','The structure suggests high youth dependency and future demand for schools and jobs.',['DTM','Sex ratio','NIR'],'pyramid-dtm'],
@@ -15,7 +13,6 @@
  ['2.10','Pull factor','a condition that attracts migrants to a destination','A worker moves because wages and job openings are higher in another region.','Higher wages are a destination attraction, so they are a pull factor.',['Push factor','Intervening obstacle','Forced migration'],'push-pull'],
  ['2.11','Forced migration','movement in which people have little realistic choice about leaving','Families flee an armed conflict across an international border.','Conflict can force migration; crossing a border may make them refugees.',['Voluntary migration','Counterurbanization','Step migration'],'forced-voluntary'],
  ['2.12','Remittances','money migrants send to people in their origin communities','Workers abroad send part of their pay to relatives at home.','Remittances can support housing, education, and consumption but may create uneven dependence.',['Brain drain','Chain migration','Intervening opportunity'],'remittance-effects'],
- // U3 Culture
  ['3.1','Cultural landscape','visible imprint of culture on the built and natural environment','A neighborhood contains distinctive religious buildings, signs, foods, and architecture.','Cultural landscapes reveal how groups shape place.',['Cultural hearth','Formal region','Distance decay'],'culture-landscape'],
  ['3.2','Sequent occupance','successive cultural groups leave layers on a landscape','A city shows Indigenous place names, colonial street plans, and newer immigrant districts.','Multiple historical groups can leave visible layers in the same place.',['Placelessness','Assimilation','Contagious diffusion'],'sequent-occupance'],
  ['3.3','Cultural hearth','an area where a cultural trait originates and spreads outward','A religion begins in one region and later diffuses widely.','The origin area is the cultural hearth.',['Perceptual region','Functional region','Nation-state'],'hearth-region'],
@@ -24,7 +21,6 @@
  ['3.6','Hierarchical diffusion','spread through influential people or important places','A fashion appears first among celebrities and major-city influencers, then reaches smaller places.','The trait moves through a hierarchy rather than simply person-to-person.',['Relocation diffusion','Contagious diffusion','Stimulus diffusion'],'hierarchical-relocation'],
  ['3.7','Lingua franca','a common language used among speakers with different native languages','Businesspeople from several countries use English to negotiate a trade agreement.','A lingua franca facilitates communication across language groups.',['Dialect','Ethnic religion','Toponym'],'lingua-franca'],
  ['3.8','Syncretism','blending elements from different cultural traditions','A religious festival combines local Indigenous practices with an introduced faith tradition.','Syncretism creates a blended cultural form.',['Assimilation','Placelessness','Cultural extinction'],'syncretism-assimilation'],
- // U4 Political
  ['4.1','State','a political unit with territory, population, government, and sovereignty','A territory has recognized borders and an independent government.','A state is a political entity; a nation is a cultural group.',['Nation','Nation-state','Stateless nation'],'nation-state'],
  ['4.2','Self-determination','the idea that peoples should have a voice in their political status and governance','A culturally distinct group demands the right to decide whether it should have autonomy.','Self-determination links identity to political control.',['Reapportionment','Supranationalism','Gerrymandering'],'self-determination'],
  ['4.3','Territoriality','efforts to control or influence a geographic area','Two states make competing claims over the same strategic island chain.','Territoriality connects power and control to space.',['Centripetal force','Urbanization','Agribusiness'],'territoriality'],
@@ -35,7 +31,6 @@
  ['4.8','Devolution','transfer of political power from a central government to regional governments','A national government grants a culturally distinct region more control over education and taxation.','Devolution shifts power downward without necessarily causing independence.',['Secession','Annexation','Reapportionment'],'devolution-secession'],
  ['4.9','Supranationalism','cooperation in which states accept shared rules or institutions above the national level','Member states agree to common regulations set through a regional organization.','Participation can limit some independent state action while increasing cooperation.',['Irredentism','Balkanization','Federalism'],'sovereignty-supranational'],
  ['4.10','Centripetal force','a force that promotes unity within a state','A widely trusted national institution and shared civic identity strengthen loyalty across regions.','Centripetal forces hold states together; centrifugal forces divide them.',['Centrifugal force','Devolution','Gerrymandering'],'centripetal-centrifugal'],
- // U5 Agriculture
  ['5.1','Subsistence agriculture','farming primarily to feed the farmer’s household or local community','A household grows staple crops mainly for its own consumption.','Subsistence production is oriented toward direct consumption rather than large-scale sale.',['Commercial agriculture','Agribusiness','Plantation agriculture'],'subsistence-commercial'],
  ['5.2','Long-lot survey','a land-division pattern of long narrow parcels extending from a road or river','Farm parcels are narrow strips so many owners have access to the river.','Long-lot patterns maximize access to a transportation or water corridor.',['Township and range','Metes and bounds','Concentric zone'],'survey-patterns'],
  ['5.3','First Agricultural Revolution','the transition from hunting and gathering to plant and animal domestication','Communities begin cultivating crops and keeping domesticated animals.','Domestication supported more permanent settlements.',['Second Agricultural Revolution','Green Revolution','Industrial Revolution'],'ag-revolutions'],
@@ -48,7 +43,6 @@
  ['5.10','Agricultural runoff','fertilizer and other farm chemicals moving into waterways','Nutrient-rich runoff produces algal blooms and oxygen-poor water downstream.','Excess nutrients can cause eutrophication.',['Crop rotation','Terracing','Long-lot surveying'],'ag-environment'],
  ['5.11','Food desert','an area with limited access to affordable nutritious food','Residents of a low-income neighborhood must travel far to reach a full-service grocery store.','Food access depends on location, transportation, income, and retail geography.',['Food sovereignty','Greenbelt','Agricultural density'],'food-access'],
  ['5.12','Gender gap in agriculture','unequal access by women to land, credit, technology, or markets','Women perform much farm labor but rarely hold legal title to land or receive formal credit.','Reducing access gaps can improve productivity and household food security.',['Vertical integration','Crop rotation','Pastoral nomadism'],'women-agriculture'],
- // U6 Urban
  ['6.1','Urbanization','an increasing share of a population living in urban places','Industrial jobs and rural-to-urban migration rapidly increase the city population.','Urbanization is population concentration in cities, not simply physical suburban growth.',['Suburbanization','Counterurbanization','Gentrification'],'urbanization-suburbanization'],
  ['6.2','Megacity','an urban agglomeration with more than about 10 million people','A metropolitan area grows beyond 10 million residents.','Megacity refers to population size, while world city refers to global influence.',['World city','Primate city','Edge city'],'megacity-worldcity'],
  ['6.3','World city','a city with major influence over global finance, culture, transport, and corporate networks','A city hosts global banks, headquarters, media firms, and major international air connections.','World cities are important nodes in global flows.',['Primate city','Suburb','Squatter settlement'],'worldcity-primate'],
@@ -60,7 +54,6 @@
  ['6.9','Urban data','quantitative and qualitative evidence used to analyze city patterns and inequality','A researcher combines census rent data with resident interviews about displacement.','Different data types reveal both measurable change and lived experience.',['Primate-city rule','Environmental determinism','Crop rotation'],'urban-data'],
  ['6.10','Redlining','historic denial or restriction of loans and investment in neighborhoods based on discriminatory risk classifications','Neighborhoods once marked high risk receive less mortgage investment for decades.','Past discriminatory lending can shape present-day wealth and spatial inequality.',['Gentrification','Infilling','Urban growth boundary'],'redlining-gentrification'],
  ['6.11','Gentrification','reinvestment and higher-income in-migration that can raise property values and displace longtime residents','Rents and property taxes rise rapidly after new investment and wealthier residents arrive.','Gentrification can bring amenities while also causing displacement.',['Suburbanization','Urbanization','Counterurbanization'],'gentrification-renewal'],
- // U7 Development
  ['7.1','Industrialization','growth of manufacturing and mechanized production in an economy','Factory employment and manufactured exports expand rapidly.','Industrialization shifts production toward secondary-sector activity.',['Urbanization','Agricultural intensification','Devolution'],'industrialization'],
  ['7.2','Quaternary sector','economic activity focused on information, research, and knowledge','Software research, data science, and biotechnology R&D expand.','Quaternary work centers on information and knowledge rather than goods production.',['Primary sector','Secondary sector','Tertiary retail'],'economic-sectors'],
  ['7.3','Human Development Index','a development measure combining income, education, and life expectancy','Two countries have similar GDP per capita but very different schooling and life expectancy.','HDI captures social dimensions that GDP alone misses.',['GDP per capita','GNI only','GII only'],'gdp-hdi'],
@@ -78,13 +71,41 @@
    'Which claim would be most defensible in an AP Human Geography response?',
    'Which conclusion best connects the example to a geographic process?'
  ];
+ const reasoningDistractors={
+  '2.2':['population per total land determines resource support','water technology automatically sustains growth after fertility falls','infrastructure determines the working-age-to-dependent balance'],
+  '2.10':['higher wages make the origin less attractive','job openings prevent arrival at the destination','economic opportunity removes meaningful choice'],
+  '3.2':['multiple cultural layers make places less distinctive','successive groups abandoned their original traits','street plans spread through direct contact'],
+  '3.3':['shared opinions define a religion’s origin','the origin is a service node for surrounding places','religion and sovereignty share one boundary'],
+  '3.4':['restaurants spread from high-status groups','food spread by direct contact without migration','the cuisine changed without a group relocating'],
+  '3.6':['celebrities physically carried the fashion to each place','the fashion spread evenly between neighbors','the fashion changed substantially as it spread'],
+  '3.7':['participants use a regional form of one native language','the language belongs to one ancestry group','the shared term names the meeting place'],
+  '3.8':['the introduced faith replaced Indigenous practices','blending removed the festival’s local meaning','both traditions disappeared after contact'],
+  '4.1':['cultural identity alone creates sovereignty','every recognized state contains one nation','the governed territory lacks a population'],
+  '4.4':['the border predates all cultural patterns','the colonial border no longer functions','the border follows the ethnic territory'],
+  '4.6':['opposition voters are divided among many districts','seats are redistributed after a census','authority moves from the state to districts'],
+  '4.7':['the center can withdraw provincial powers','the provinces are sovereign member countries','shared identity defines the power structure'],
+  '4.9':['members seek to annex ethnic territory','cooperation fragments the region into hostile units','members are protected provinces within one state'],
+  '5.1':['the household produces for a distant market','a corporation coordinates every production stage','hired labor grows one estate export crop'],
+  '5.5':['industrial-era mechanization caused the yield increase','farmers rejected synthetic inputs and HYV seeds','herders moved livestock seasonally'],
+  '5.7':['the sequence shows an environmental population limit','each stage serves a settlement hierarchy','coffee originated at every network location'],
+  '5.11':['residents control local food production and distribution','protected open land blocks grocery access','farmers per arable land determines retail access'],
+  '6.3':['the city is largest within its country','global headquarters cluster outside the central city','informal housing creates global influence'],
+  '6.7':['urban services are cultural traits spreading between neighborhoods','census-based seat changes determine service reliability','farmers per arable land explains neighborhood differences'],
+  '6.8':['development spreads at low density beyond the city','racial fear induces rapid home sales','lenders deny investment to marked neighborhoods'],
+  '6.11':['people and investment move to outlying communities','the national urban population share rises','households leave metro areas for rural settlements'],
+  '7.2':['workers extract laboratory raw materials','researchers manufacture standardized goods','workers sell finished goods to consumers'],
+  '7.5':['countries follow one internal sequence toward mass consumption','transport costs organize farming around one market','settlements form a threshold-and-range hierarchy'],
+  '7.6':['countries produce for their own households','governments transfer production authority to regions','each production site is proportionally smaller']
+ };
+ const lowerLead=text=>/^[A-Z]{2,}\b/.test(text)?text:text.charAt(0).toLowerCase()+text.slice(1);
  specs.forEach((s,idx)=>{
    const [topic,concept,def,scenario,why,distr,mis]=s,unit=Number(topic.split('.')[0]),base=['Unit '+unit];
-   const reasonAnswer=`This illustrates ${concept} because ${why.charAt(0).toLowerCase()+why.slice(1)}`;
+   const reasonAnswer=`This illustrates ${concept} because ${lowerLead(why)}`;
+   const reasonDistractors=(reasoningDistractors[topic]||['a related feature is mistaken for the defining mechanism','the outcome is mistaken for evidence of the process','similar scale is mistaken for the same relationship']).map((reason,i)=>`This illustrates ${distr[i]} because ${reason}.`);
    const forms=[
      Object.assign([...base,`Which term best matches this definition: ${def}?`,[concept,...distr],concept,why],{topic,skill:'concept',difficulty:1,misconception:mis}),
      Object.assign([...base,`${scenario} Which concept best explains the situation?`,[concept,...distr],concept,why],{topic,skill:skillFor(topic),difficulty:2,misconception:mis}),
-     Object.assign([...base,`${scenario} ${reasoningStems[idx%reasoningStems.length]}`,[reasonAnswer,`This illustrates ${distr[0]} because the terms describe the same process`,`No geographic concept can be supported without a map`,`The pattern is explained only by the scale of analysis`],reasonAnswer,`${concept} fits the evidence because ${why.charAt(0).toLowerCase()+why.slice(1)} The defining relationship is ${def}; ${distr[0]} does not account for that relationship.`,],{topic,skill:'reasoning',difficulty:3,misconception:mis})
+     Object.assign([...base,`${scenario} ${reasoningStems[idx%reasoningStems.length]}`,[reasonAnswer,...reasonDistractors],reasonAnswer,`${concept} fits the evidence because ${lowerLead(why)} The defining relationship is ${def}; ${distr[0]} does not account for that relationship.`,],{topic,skill:'reasoning',difficulty:3,misconception:mis})
    ];
    forms.forEach(q=>{if(!existing.has(q[1])){quiz.push(q);existing.add(q[1]);}});
  });
