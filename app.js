@@ -1,6 +1,3 @@
-// ═══════════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════════
 
 const units=[
 {id:1,name:"Thinking Geographically",weight:"8–10%",color:"#0f766e",
@@ -211,9 +208,6 @@ units.forEach(u=>{(extraByUnit[u.id]||[]).forEach(v=>{if(!u.vocab.includes(v))u.
 
 
 
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
 let active="home";
 let selectedUnit=1, selectedPrompt=0;
 let answer="", showKey=false;
@@ -244,9 +238,6 @@ let masteryView="dashboard"; // dashboard, pyramids, mixed, exams
 let pyramidDrillIndex=0, pyramidSelected="", pyramidFeedback=null;
 let mixedFrqIndex=0, mixedAnswers={}, mixedFeedback=null;
 
-// ═══════════════════════════════════════════
-// NAV & ROUTING
-// ═══════════════════════════════════════════
 const tabs=[
   ["home","🏠 Start Here"],
   ["quiz","📝 Practice Quiz"],
@@ -265,9 +256,6 @@ function renderNav(){
   ).join("");
 }
 
-// ═══════════════════════════════════════════
-// COUNTDOWN
-// ═══════════════════════════════════════════
 function updateCountdown(){
   const el=document.getElementById("countdown");
   if(el){
@@ -503,7 +491,6 @@ function readinessCheckButton(key,label){
   return `<button class="check-btn ${val?'done':'notyet'}" onclick="setReadinessCheck('${key}',${!val})">${val?'✅':'⬜'} ${label}</button>`;
 }
 
-// ═══════════════════════════════════════════
 // HOME PAGE (single implementation; legacy duplicate removed)
 
 // Stable answer shuffling so the correct answer is not always first.
@@ -530,9 +517,6 @@ function getQuizChoices(q,index,filter){
   return seededShuffle(q[2], `${filter}-${index}-${q[1]}`);
 }
 
-// ═══════════════════════════════════════════
-// QUIZ PAGE
-// ═══════════════════════════════════════════
 function quizPage(){
   const qs=getQuizSet();
   const q=qs[qIndex%qs.length];
@@ -626,9 +610,6 @@ function weakSpotsHtml(){
   </div>`;
 }
 
-// ═══════════════════════════════════════════
-// FRQ PAGE
-// ═══════════════════════════════════════════
 
 function toggleRewrite(letter){visibleRewrite[letter]=!visibleRewrite[letter];render();}
 function rubricForPart(part){
@@ -952,9 +933,6 @@ function drillHtml(){
   </div>`;
 }
 
-// ═══════════════════════════════════════════
-// TERMS & UNITS PAGE
-// ═══════════════════════════════════════════
 function termsPage(){
   const u=units.find(x=>x.id===selectedUnit);
   const r=unitReviews[selectedUnit];
@@ -1127,9 +1105,6 @@ function adaptiveFlashcardsHtml(){
 }
 function flashcardsPage(){termView='flashcards';return termsPage();}
 
-// ═══════════════════════════════════════════
-// STUDY PLAN PAGE
-// ═══════════════════════════════════════════
 
 function normalizeExamItem(item){
   if(Array.isArray(item)) return {unit:Number(String(item[0]).replace(/\D/g,"")),q:item[1],choices:[...item[2]],answer:item[3],why:item[4],topic:item.topic,skill:item.skill,difficulty:Number(item.difficulty)||2,quality:item.quality||''};
@@ -1180,10 +1155,7 @@ function estimateApScore(mcqCorrect,frqEarned,frqPossible){const frqScaled=frqPo
 function examResultsHtml(exam){const mcqCorrect=exam.mcq.filter((q,i)=>examAnswers[i]===q.answer).length;const frqEarned=Object.values(examFrqFeedback).reduce((sum,f)=>sum+(f?f.score:0),0);const frqPossible=Object.values(examFrqFeedback).reduce((sum,f)=>sum+(f?f.total:0),0)||21;const est=estimateApScore(mcqCorrect,frqEarned,frqPossible);const missedByUnit={};exam.mcq.forEach((q,i)=>{if(examAnswers[i]!==q.answer)missedByUnit[q.unit]=(missedByUnit[q.unit]||0)+1;});const weak=Object.entries(missedByUnit).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([u,n])=>`Unit ${u}: ${n} missed`).join(' · ')||'No major MCQ weak spot.';return `<section class="card"><h2>📊 Exam Results</h2><div class="exam-result-grid"><div class="exam-result-tile"><b>${mcqCorrect}/60</b><span>MCQ</span></div><div class="exam-result-tile"><b>${frqEarned}/${frqPossible}</b><span>FRQ estimate</span></div><div class="exam-result-tile"><b>${est.composite}/120</b><span>composite estimate</span></div><div class="exam-result-tile"><div class="score-estimate">${est.ap}</div><span>AP score estimate</span></div></div><div class="box-yellow"><b>Score estimate note:</b> This uses an AP score-calculator style method: MCQ raw score out of 60 plus FRQ scaled to 60, then rough AP-style cutoffs. Actual College Board cut scores change each year.</div><div class="box-info"><b>Weak spots:</b> ${weak}</div></section>`;}
 function practiceExamsPage(){const exam=buildPracticeExam(activeExam+1);return `<main><section class="card"><h2>🧪 Full Practice Exams</h2><p>Each practice exam has 60 MCQs and 3 FRQs. Answers stay hidden until students submit.</p><div class="filter-row">${[1,2,3].map(n=>`<button class="filter-btn ${activeExam===n-1?'active':''}" onclick="selectExam(${n})">Practice Exam ${n}</button>`).join('')}</div><div class="exam-toolbar"><button class="btn-primary" onclick="submitExam()">Submit and grade exam</button><button class="btn-secondary" onclick="resetExam()">Reset this exam</button></div></section>${examSubmitted?examResultsHtml(exam):''}<section class="card"><h2>${exam.title}: Multiple Choice</h2><p>60 questions. Pick the best answer. Explanations appear after submitting.</p>${exam.mcq.map((q,i)=>`<div class="exam-question"><b>${i+1}. ${q.q}</b><div style="margin-top:8px">${q.choices.map(c=>`<button class="exam-choice ${examAnswers[i]===c?'selected':''} ${examSubmitted&&c===q.answer?'correct':''} ${examSubmitted&&examAnswers[i]===c&&c!==q.answer?'wrong':''}" onclick="setExamAnswer(${i},'${String(c).replace(/'/g,"\\'")}')">${c}</button>`).join('')}</div>${examSubmitted?`<div class="${examAnswers[i]===q.answer?'explain-good':'explain-bad'} explain-box"><b>${examAnswers[i]===q.answer?'Correct':'Correct answer: '+q.answer}</b><br>${q.why}</div>`:''}</div>`).join('')}</section><section class="card"><h2>${exam.title}: Free Response</h2><p>Write answers for all 3 FRQs. The grader checks for APHG vocabulary, task completion, and cause/effect language. It is a practice estimate, not an official AP Reader score.</p>${exam.frq.map((p,i)=>`<div class="exam-frq"><h3>FRQ ${i+1}: Unit ${p.unit} — ${p.title}</h3><div class="scenario-box"><b>Scenario</b><p>${p.scenario}</p></div><ol style="padding-left:22px">${p.parts.map(part=>`<li><b>${part[0]}. ${part[1]}:</b> ${part[2]}</li>`).join('')}</ol><textarea placeholder="Label your parts A through G..." oninput="setExamFrq(${i},this.value)">${htmlEscape(examFrqAnswers[i]||'')}</textarea>${examSubmitted&&examFrqFeedback[i]?`<div class="box-info" style="margin-top:10px"><b>Estimated FRQ score: ${examFrqFeedback[i].score}/${examFrqFeedback[i].total}</b>${examFrqFeedback[i].parts.map(r=>`<div class="part-result ${r.earned?'part-earned':'part-missing'}"><b>${r.earned?'✅':'⬜'} Part ${r.part}</b><br>${r.note}<div class="part-fix"><b>Strong rewrite/model:</b> ${r.fix}</div></div>`).join('')}</div>`:''}</div>`).join('')}</section></main>`;}
 
-// ═══════════════════════════════════════════
-// MODELS & MAPS PREVIEW
 // Teacher-created SVG diagrams + simplified public-domain-source map practice
-// ═══════════════════════════════════════════
 const modelBank=[
  {unit:2,name:"Demographic Transition Model",ced:"2.5",why:"Shows how birth rates, death rates, and population growth change as countries develop.",look:"Look for high/low birth and death rates across stages, especially rapid growth in Stage 2 and slowing growth in Stage 4/5.",frq:"Explain why a country in Stage 2 experiences rapid population growth.",sample:"A Stage 2 country grows rapidly because death rates fall due to better food, sanitation, and medicine while birth rates remain high.",svg:"dtm"},
  {unit:2,name:"Population Pyramid",ced:"2.3",why:"Shows age and sex structure, which helps predict growth, decline, dependency ratio, and service needs.",look:"Wide base = youthful/growing. More rectangular = stable. Narrow base/top-heavy = aging or shrinking.",frq:"Describe one economic challenge shown by an aging population pyramid.",sample:"An aging population creates pension and health-care pressure because fewer workers support more elderly dependents.",svg:"pyramid"},
@@ -1272,9 +1244,6 @@ function planPage(){
   </main>`;
 }
 
-// ═══════════════════════════════════════════
-// QUIZ LOGIC
-// ═══════════════════════════════════════════
 function chooseAnswer(c){
   if(selectedChoice)return;
   selectedChoice=c;
@@ -1297,9 +1266,6 @@ function logReason(reason){
   if(box) box.innerHTML=`<div class="box-good">Logged: "${reason}." Now read the explanation above and try writing the correct answer in your own words.</div>`;
 }
 
-// ═══════════════════════════════════════════
-// TIMER
-// ═══════════════════════════════════════════
 function startTimer(){
   timedMode=true;timerSeconds=300;
   if(timerInterval)clearInterval(timerInterval);
@@ -1315,9 +1281,6 @@ function stopTimer(){timedMode=false;if(timerInterval)clearInterval(timerInterva
 function timerText(){const m=Math.floor(timerSeconds/60),s=String(timerSeconds%60).padStart(2,"0");return `⏱ ${m}:${s}`;}
 
 
-// ═══════════════════════════════════════════
-// FULL AP SIMULATOR
-// ═══════════════════════════════════════════
 function simResetAll(){simPhase="intro";simMcqAnswers={};simFrqAnswers={};simFrqFeedback={};simSubmitted=false;simRemaining=0;if(simTimer)clearInterval(simTimer);render();}
 function simSelectExam(n){simExam=n;simResetAll();}
 function simStart(section){if(simTimer)clearInterval(simTimer);simPhase=section;simRemaining=section==="mcq"?3600:4500;simTimer=setInterval(()=>{simRemaining--;if(simRemaining<=0){clearInterval(simTimer);simRemaining=0;render();}else{const el=document.getElementById("simCountdown");if(el)el.textContent=simTimerText();}},1000);render();}
@@ -1340,11 +1303,8 @@ function simResultsPage(){const exam=buildSimulatorExam(simExam);return `<main>$
 function apSimulatorPage(){if(simPhase==="mcq")return simMcqPage();if(simPhase==="frq")return simFrqPage();if(simPhase==="results")return simResultsPage();return simIntroPage();}
 
 
-// ═══════════════════════════════════════════
-// REAL GIS MAP OVERRIDE
 // Uses embedded, actual public/government map images with attribution.
 // No iframes: school filters often block embedded Census/NASA map viewers.
-// ═══════════════════════════════════════════
 const actualMapPractice=[
   {
     scale:"Global Night Lights",
@@ -1405,9 +1365,7 @@ function modelsMapsPage(){
 
 function mapsPanel(sp){return `<section class="card"><h2>🌍 Real GIS + Scale of Analysis Practice</h2><p>Students practice with actual map stimuli, then answer AP-style identify/describe/explain questions. These are static in-app images; live tools open in a separate tab.</p><div class="filter-row">${actualMapPractice.map((x,i)=>`<button class="filter-btn ${selectedScale===i?"active":""}" onclick="selectedScale=${i};scaleAnswer='';scaleFeedback=null;render()">${x.scale}</button>`).join("")}</div><div class="scale-map-grid"><div class="map-practice-card"><h3>${sp.title}</h3><div class="diagram-wrap real-map-wrap">${actualMapMedia(sp)}</div><p class="source-note"><b>Attribution:</b> ${sp.source}</p>${sourceLinks(sp)}<div class="map-layer-note"><b>Layers/patterns to notice:</b> ${sp.layers.join(" + ")}</div></div><div class="map-practice-card"><h3>AP-style map question</h3><div class="map-question"><b>${sp.question}</b></div><div class="box-yellow" style="margin:10px 0"><b>Answer recipe</b><p>1. Identify exactly what the map shows. 2. Describe a spatial pattern using location words. 3. Explain why the pattern matters or what the scale hides/reveals.</p></div><textarea class="answer-textarea" style="min-height:150px" placeholder="A. The map shows... B. The spatial pattern is... C. This matters because..." oninput="scaleAnswer=this.value">${htmlEscape(scaleAnswer)}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn-primary" onclick="gradeScaleAnswer()">Check my answer</button><button class="btn-secondary" onclick="scaleAnswer='';scaleFeedback=null;render()">Reset</button></div>${scaleFeedback?`<div class="${scaleFeedback.ok?"box-good":"box-warn"}" style="margin-top:12px"><b>${scaleFeedback.ok?"Strong AP map answer":"Needs a more AP-style rewrite"}</b><p>${scaleFeedback.note}</p><p><b>Model answer:</b> ${sp.answer}</p><p><b>Rewrite move:</b> ${scaleFeedback.rewrite}</p></div>`:""}</div></div><section class="card" style="margin-top:18px"><h2>Teacher note</h2><p>This section avoids embedded iframes because they often fail on school devices. The original sources remain linked for transparency and attribution.</p><div class="callout"><b>Best sentence frame</b><p>At the ___ scale, the map shows ____. This pattern is important because ____. A different scale would reveal/hide ____.</p></div></section></section>`}
 
-// ═══════════════════════════════════════════
 // AP MASTERY TOOL: visual pyramid drills + mixed map/model FRQs + pathway
-// ═══════════════════════════════════════════
 const modelExamples={
  "Demographic Transition Model":{example:"Niger as a Stage 2 example; Germany or Japan as Stage 4/5 examples.",why:"Niger has high birth rates and falling death rates, while Germany/Japan have low fertility and aging populations.",limit:"The DTM assumes countries move through stages in a similar order, but war, policy, migration, and disease can change the pattern."},
  "Population Pyramid":{example:"Niger/Uganda = youthful rapid growth; United States/France = slow growth; Japan/Germany/Italy = aging; Russia/Bulgaria = decline; Syria/Ukraine can show irregular cohorts from conflict or migration.",why:"The shape shows age structure: a wide base signals high birth rates, while a narrow base and larger older cohorts show aging or decline.",limit:"A pyramid does not directly show causes; students must connect shape to fertility, mortality, migration, or historical events."},
@@ -1480,9 +1438,7 @@ function gradeMixedFrq(){mixedFeedback=true;render();}
 function renderMixedPartFeedback(part,ans){const t=(ans||'').toLowerCase();const hits=part.must.filter(k=>t.includes(k)).length;const ok=hits>=1 && (part.task!=='Explain'||/(because|therefore|this leads|as a result)/.test(t));return `<div class="${ok?'box-good':'box-warn'}" style="margin-top:8px"><b>${ok?'✅ Earned the point':'⬜ Not yet'}</b><p>${ok?'Your answer includes the required idea.':'To earn the point, include the key concept and show cause/effect when asked to explain.'}</p><p><b>Show me how to rewrite:</b> ${part.model}</p></div>`;}
 
 
-// ═══════════════════════════════════════════
 // FINAL POLISH OVERRIDES: clearer paths, map analysis, model labels, bug alias
-// ═══════════════════════════════════════════
 function startAdaptiveQuiz(){ return startAdaptivePractice(); }
 function startTwentyMinuteSession(){
   active='mastery'; masteryView='dashboard'; render();
@@ -1574,9 +1530,6 @@ function pyramidDrillsPage(){
  return `<main><section class="card"><div class="mastery-mini-nav"><button class="btn-secondary btn-sm" onclick="masteryView='dashboard';render()">← Mastery Dashboard</button><button class="btn-secondary btn-sm" onclick="pyramidSelected='';pyramidFeedback=null;pyramidDrillIndex=(pyramidDrillIndex+1)%pyramidDrills.length;render()">Next pyramid</button></div><h2>📊 Population Pyramid Drill</h2><p>Goal: identify the shape quickly, then describe and explain it in AP language.</p><div class="student-rule"><b>Fast rule:</b> Look at the base first. Wide base = youthful/rapid growth. Narrow base = aging or decline. Uneven gaps = migration, war, disease, or major historical events.</div><div class="pyramid-practice-layout"><div class="pyramid-visual">${pyramidSvg(p.type)}<div class="box-info"><b>Possible locations:</b> ${p.places}</div></div><div><h3>A. Identify the pyramid type</h3>${p.choices.map(c=>`<button class="mastery-choice ${pyramidSelected===c?'selected':''} ${pyramidFeedback&&(c===p.answer?'correct':pyramidSelected===c&&c!==p.answer?'wrong':'')}" onclick="selectPyramidAnswer('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('')}<h3>B. Describe one feature</h3><div class="box-yellow">Use: “The pyramid has ___, which shows ___.”</div><h3>C. Explain one consequence</h3><div class="box-yellow">Use: “This creates ___ because ___.”</div>${pyramidFeedback?`<div class="${pyramidFeedback.ok?'box-good':'box-warn'}" style="margin-top:12px"><b>${pyramidFeedback.ok?'Correct':'Not quite'}</b><p>${pyramidFeedback.note}</p><p><b>Describe:</b> ${p.describe}</p><p><b>Explain:</b> ${p.explain}</p><p><b>AP use:</b> ${p.ap}</p></div>`:''}</div></div></section></main>`;
 }
 
-// ═══════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════
 function render(){
   renderNav();
   const app=document.getElementById("app");

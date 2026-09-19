@@ -72,12 +72,19 @@
  ];
  const existing=new Set(quiz.map(q=>q[1]));
  const skillFor=t=>/\.3$|\.4$|\.6$|\.9$/.test(t)?'data':'concept';
+ const reasoningStems=[
+   'Which interpretation uses the evidence most accurately?',
+   'Which explanation identifies both the geographic concept and its mechanism?',
+   'Which claim would be most defensible in an AP Human Geography response?',
+   'Which conclusion best connects the example to a geographic process?'
+ ];
  specs.forEach((s,idx)=>{
    const [topic,concept,def,scenario,why,distr,mis]=s,unit=Number(topic.split('.')[0]),base=['Unit '+unit];
+   const reasonAnswer=`This illustrates ${concept} because ${why.charAt(0).toLowerCase()+why.slice(1)}`;
    const forms=[
      Object.assign([...base,`Which term best matches this definition: ${def}?`,[concept,...distr],concept,why],{topic,skill:'concept',difficulty:1,misconception:mis}),
      Object.assign([...base,`${scenario} Which concept best explains the situation?`,[concept,...distr],concept,why],{topic,skill:skillFor(topic),difficulty:2,misconception:mis}),
-     Object.assign([...base,`A student says this example should be labeled “${distr[0]}.” Which correction is strongest?`,[`${concept} is better because ${why.charAt(0).toLowerCase()+why.slice(1)}`,`${distr[0]} is correct because the terms are interchangeable`,`No geographic concept can be applied`,`The answer depends only on map projection`],`${concept} is better because ${why.charAt(0).toLowerCase()+why.slice(1)}`,`The key distinction is ${concept}: ${def}.`,],{topic,skill:'reasoning',difficulty:3,misconception:mis})
+     Object.assign([...base,`${scenario} ${reasoningStems[idx%reasoningStems.length]}`,[reasonAnswer,`This illustrates ${distr[0]} because the terms describe the same process`,`No geographic concept can be supported without a map`,`The pattern is explained only by the scale of analysis`],reasonAnswer,`${concept} fits the evidence because ${why.charAt(0).toLowerCase()+why.slice(1)} The defining relationship is ${def}; ${distr[0]} does not account for that relationship.`,],{topic,skill:'reasoning',difficulty:3,misconception:mis})
    ];
    forms.forEach(q=>{if(!existing.has(q[1])){quiz.push(q);existing.add(q[1]);}});
  });

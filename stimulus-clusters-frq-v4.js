@@ -37,7 +37,7 @@
  sets.forEach(s=>{
    const more=extra[s.id]||[];
    more.forEach((q,i)=>{
-    const item={id:`authv4-${s.id}-${i+1}`,unit:s.unit,topic:s.topic,prompt:q[0],choices:q[1],answer:q[2],explain:q[3],skill:q[4],misconception:q[5],difficulty:3,stimulus:s.stimulus,stimulusTitle:s.title,setId:s.id,setIndex:(s.qs||[]).length+i,setSize:(s.qs||[]).length+more.length,authentic:true,sourceBased:true,cluster:true};
+    const item={id:`authv4-${s.id}-${i+1}`,unit:s.unit,topic:s.topic,prompt:q[0],choices:q[1],answer:q[2],explain:(window.APHG_DEEPEN_EXPLANATION||((a,e)=>e))(q[2],q[3]),skill:q[4],misconception:q[5],difficulty:3,stimulus:s.stimulus,stimulusTitle:s.title,setId:s.id,setIndex:(s.qs||[]).length+i,setSize:(s.qs||[]).length+more.length,authentic:true,sourceBased:true,cluster:true};
     added.push(item);
    });
  });
