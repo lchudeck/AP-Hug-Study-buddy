@@ -71,3 +71,7 @@
   .visual-card-button{padding:14px}
   .map-activity-head{display:block}
 }
+.quiz-stimulus{margin:12px 0 18px;overflow-x:auto}
+.quiz-stimulus svg{display:block;width:100%;height:auto;max-height:360px;margin:auto}
+.quiz-stimulus table{width:100%;min-width:460px}
+@media(max-width:640px){.quiz-stimulus{padding:10px}.quiz-stimulus svg{max-height:260px}.quiz-stimulus table{min-width:420px;font-size:.88rem}}

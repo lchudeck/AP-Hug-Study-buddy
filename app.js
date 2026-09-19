@@ -542,7 +542,7 @@ function quizPage(){
   <div class="grid2">
   <section class="card">
     <h2>📝 Practice Quiz</h2>
-    <p>35 questions covering all 7 units. Choose <b>Adaptive</b> to automatically target weak units and adjust difficulty.</p>
+    <p>Practice across all 7 units. Choose <b>Adaptive</b> to target weak units and adjust difficulty automatically. Some questions include maps, charts, tables, or other geographic evidence.</p>
     ${qFilter==='Adaptive'?`<div class="box-info"><b>Adaptive mode:</b> ${recommendedDifficulty().label} <span class="difficulty-chip">${recommendedDifficulty().desc}</span></div>`:''}
     <div class="quiz-meta">
       <span class="score-badge">Score: ${stats.correct}/${stats.total}${stats.total?` (${pct}%)`:''}</span>
@@ -556,6 +556,7 @@ function quizPage(){
 
     <div class="quiz-question">
       <span class="pill" style="background:#e0e7ff;color:#3730a3;margin-bottom:10px;display:inline-block">${q[0]}</span>
+      ${q.stimulus?`<div class="box-info quiz-stimulus" aria-label="Question stimulus">${q.stimulus}</div>`:''}
       <h3>${q[1]}</h3>
       ${quizChoices.map(c=>`
         <button class="choice-btn ${selectedChoice?(c===q[3]?'correct':selectedChoice===c?'wrong':''):''}"
