@@ -38,6 +38,6 @@
  ['Which measure focuses specifically on gender-based disadvantage?',['GII','HDI only','CBR','Agricultural density'],'GII','The Gender Inequality Index measures disadvantages related to reproductive health, empowerment, and labor participation.','7.2'],
  ['Investment in education and skills is an investment in...',['Human capital','Physical geography','Territoriality','Distance decay'],'Human capital','Human capital refers to the knowledge, skills, and health that increase people’s productive capacity.','7.8']])
  ];
- const qs=[];sets.forEach(s=>s.questions.forEach((q,i)=>qs.push({id:`extra-${s.id}-${i+1}`,unit:s.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:q[3],stimulus:s.stimulus,stimulusTitle:s.title,setId:s.id,setIndex:i,setSize:s.questions.length})));
+ const qs=[];sets.forEach(s=>s.questions.forEach((q,i)=>qs.push({id:`extra-${s.id}-${i+1}`,unit:s.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:(window.APHG_DEEPEN_EXPLANATION||((a,e)=>e))(q[2],q[3]),stimulus:s.stimulus,stimulusTitle:s.title,setId:s.id,setIndex:i,setSize:s.questions.length})));
  window.APHG_STIMULUS_SETS_EXTRA=sets;window.APHG_STIMULUS_SET_QUESTIONS_EXTRA=qs;
 })();

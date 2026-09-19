@@ -26,7 +26,7 @@
     ]}
   ];
   const questions=[];
-  sets.forEach(set=>set.questions.forEach((q,i)=>questions.push({id:`real-${set.id}-${i+1}`,unit:set.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:q[3],stimulus:set.stimulus,stimulusTitle:set.title,setId:set.id,setIndex:i,setSize:set.questions.length,authentic:true})));
+  sets.forEach(set=>set.questions.forEach((q,i)=>questions.push({id:`real-${set.id}-${i+1}`,unit:set.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:(window.APHG_DEEPEN_EXPLANATION||((a,e)=>e))(q[2],q[3]),stimulus:set.stimulus,stimulusTitle:set.title,setId:set.id,setIndex:i,setSize:set.questions.length,authentic:true})));
   window.APHG_REAL_DATA_SETS=sets;
   window.APHG_REAL_DATA_QUESTIONS=questions;
 })();

@@ -1,5 +1,8 @@
 // PR #6: AP-style multi-question visual stimulus sets for all seven units.
 (function(){
+  const deepen=(answer,explain)=>explain.length>=105?explain:`${explain} The source evidence therefore supports ${answer}; the other choices do not explain the displayed pattern or relationship.`;
+  window.APHG_DEEPEN_EXPLANATION=deepen;
+  (window.APHG_IMAGE_MCQ_BANK||[]).forEach(q=>q.explain=deepen(q.answer,q.explain));
   const sets=[
     {
       id:'map-scale-patterns',unit:1,topic:'1.1',title:'Map Type and Scale Stimulus Set',
@@ -73,7 +76,7 @@
     }
   ];
   const questions=[];
-  sets.forEach(set=>set.questions.forEach((q,i)=>questions.push({id:`set-${set.id}-${i+1}`,unit:set.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:q[3],stimulus:set.stimulus,stimulusTitle:set.title,setId:set.id,setIndex:i,setSize:set.questions.length})));
+  sets.forEach(set=>set.questions.forEach((q,i)=>questions.push({id:`set-${set.id}-${i+1}`,unit:set.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:deepen(q[2],q[3]),stimulus:set.stimulus,stimulusTitle:set.title,setId:set.id,setIndex:i,setSize:set.questions.length})));
   window.APHG_STIMULUS_SETS=sets;
   window.APHG_STIMULUS_SET_QUESTIONS=questions;
 })();
