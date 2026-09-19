@@ -36,16 +36,23 @@
       const stop=new Set('which what best most following according based would could does this that these those from with about into when where why how one two three example illustrates described statement pattern process likely directly'.split(' ')),clean=s=>String(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim(),terms=s=>clean(s).split(' ').filter(w=>w.length>3&&!stop.has(w)),exactKey=q=>clean(q.q)+'|'+clean(q.answer),conceptKey=q=>[...new Set([...terms(q.q),...terms(q.answer)])].sort().join(' '),similarity=(a,b)=>{const A=new Set(terms(a.q)),B=new Set(terms(b.q));if(!A.size||!B.size)return 0;let hit=0;A.forEach(x=>{if(B.has(x))hit++;});return hit/Math.min(A.size,B.size);},conceptualDuplicate=(a,b)=>exactKey(a)===exactKey(b)||similarity(a,b)>=.72||(clean(a.answer)===clean(b.answer)&&similarity(a,b)>=.45);
       function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
       function shuffledChoices(q,seed){const choices=[...q.choices];choices.sort((a,b)=>hash(seed+'|'+a)-hash(seed+'|'+b));return {...q,choices};}
-      function rebalanceStimulus(chosen,candidates){let count=chosen.filter(q=>q.stimulus).length,guard=0;while((count<18||count>24)&&guard++<120){const need=count<18;let swapped=false;for(let i=0;i<chosen.length;i++){if(Boolean(chosen[i].stimulus)===need)continue;const unit=Number(chosen[i].unit),replacement=candidates.find(q=>Number(q.unit)===unit&&Boolean(q.stimulus)===need&&!chosen.some((x,j)=>j!==i&&exactKey(x)===exactKey(q))&&!chosen.some((x,j)=>j!==i&&conceptualDuplicate(x,q)));if(replacement){chosen[i]=replacement;count+=need?1:-1;swapped=true;break;}}if(!swapped)break;}return count>=18&&count<=24;}
+      function rebalanceStimulus(chosen,candidates){let count=chosen.filter(q=>q.stimulus).length,guard=0;while((count<18||count>24)&&guard++<120){const need=count<18;let swapped=false;for(let i=0;i<chosen.length;i++){if(chosen[i].quality==='unified-v1'||Boolean(chosen[i].stimulus)===need)continue;const unit=Number(chosen[i].unit),replacement=candidates.find(q=>Number(q.unit)===unit&&Boolean(q.stimulus)===need&&!chosen.some((x,j)=>j!==i&&exactKey(x)===exactKey(q))&&!chosen.some((x,j)=>j!==i&&conceptualDuplicate(x,q)));if(replacement){chosen[i]=replacement;count+=need?1:-1;swapped=true;break;}}if(!swapped)break;}return count>=18&&count<=24;}
       function buildCache(){
         const originals=[1,2,3].map(n=>baseBuild(n)),raw=[...originals.flatMap(e=>e.mcq)];
         try{if(typeof quiz!=='undefined'&&typeof normalizeExamItem==='function')raw.push(...quiz.map(normalizeExamItem));}catch(e){}
-        try{if(typeof AP_SIMULATOR_EXTENSION!=='undefined'&&typeof normalizeExamItem==='function')raw.push(...AP_SIMULATOR_EXTENSION.map(normalizeExamItem));}catch(e){}
         try{if(typeof validatedStimulusBank==='function')raw.push(...validatedStimulusBank());}catch(e){}
-        const byExact=new Map();raw.filter(q=>q&&q.q&&Array.isArray(q.choices)&&q.choices.length===4&&q.choices.includes(q.answer)&&Number(q.unit)>=1&&Number(q.unit)<=7).forEach(q=>{if(!byExact.has(exactKey(q)))byExact.set(exactKey(q),q);});
+        const definitionStem=q=>/^Which term best matches this definition|^.+ is called\.\.\.$/i.test(String(q.q||'').trim());
+        const byExact=new Map();raw.filter(q=>q&&q.q&&Array.isArray(q.choices)&&q.choices.length===4&&q.choices.includes(q.answer)&&Number(q.unit)>=1&&Number(q.unit)<=7&&!definitionStem(q)).forEach(q=>{if(!byExact.has(exactKey(q)))byExact.set(exactKey(q),q);});
         const pool=[...byExact.values()],usage=new Map(),selected=[],targets={1:8,2:9,3:8,4:8,5:9,6:9,7:9};
         for(let examNum=1;examNum<=3;examNum++){
           const chosen=[],candidates=[...pool].sort((a,b)=>{const ua=usage.get(exactKey(a))||0,ub=usage.get(exactKey(b))||0;return ua-ub||hash('exam'+examNum+'|'+conceptKey(a))-hash('exam'+examNum+'|'+conceptKey(b));});
+          // Rotate one original application item per unit through each exam. Across the
+          // three versions, students see all 21 without forcing high exam-to-exam overlap.
+          for(let unit=1;unit<=7;unit++){
+            const curated=pool.filter(q=>Number(q.unit)===unit&&q.quality==='unified-v1').sort((a,b)=>String(a.id||a.q).localeCompare(String(b.id||b.q)));
+            if(curated.length<3)throw new Error(`Study Buddy needs three curated application questions for Unit ${unit}.`);
+            chosen.push(curated[(examNum-1)%curated.length]);
+          }
           for(let unit=1;unit<=7;unit++)for(const q of candidates){if(chosen.filter(x=>Number(x.unit)===unit).length>=targets[unit])break;if(Number(q.unit)!==unit||chosen.some(x=>exactKey(x)===exactKey(q))||chosen.some(x=>conceptualDuplicate(x,q)))continue;chosen.push(q);}
           for(const q of candidates){if(chosen.length>=60)break;if(chosen.some(x=>exactKey(x)===exactKey(q))||chosen.some(x=>conceptualDuplicate(x,q)))continue;chosen.push(q);}
           for(const q of candidates){if(chosen.length>=60)break;if(chosen.some(x=>exactKey(x)===exactKey(q)))continue;chosen.push(q);}

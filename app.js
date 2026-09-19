@@ -1131,19 +1131,10 @@ function flashcardsPage(){termView='flashcards';return termsPage();}
 // STUDY PLAN PAGE
 // ═══════════════════════════════════════════
 
-const AP_SIMULATOR_EXTENSION=[
-  {unit:1,q:"A geographer compares the same income data by census tract and by state. Why might the mapped patterns differ?",choices:["Aggregation at different scales can reveal or conceal local variation","Latitude changes when boundaries change","Qualitative data cannot be mapped","State maps always show individual households"],answer:"Aggregation at different scales can reveal or conceal local variation",why:"Scale of analysis affects the patterns visible in spatial data; larger units can hide local differences."},
-  {unit:2,q:"A country has falling death rates, persistently high birth rates, and rapid natural increase. Which DTM stage best matches these conditions?",choices:["Stage 2","Stage 1","Stage 4","Stage 5"],answer:"Stage 2",why:"In DTM Stage 2, death rates fall while birth rates remain high, producing rapid natural increase."},
-  {unit:3,q:"A global restaurant chain changes its menu to match local religious dietary rules. Which process does this best illustrate?",choices:["Stimulus diffusion","Contagious diffusion","Relocation diffusion","Assimilation"],answer:"Stimulus diffusion",why:"Stimulus diffusion occurs when an underlying idea spreads but is modified to fit local culture."},
-  {unit:4,q:"A minority nation seeks greater control over education and taxation while remaining within its current state. Which process is most directly illustrated?",choices:["Devolution","Supranationalism","Colonialism","Gerrymandering"],answer:"Devolution",why:"Devolution transfers political authority from a central government to regional governments."},
-  {unit:5,q:"According to the Von Thünen model, why are dairy farming and market gardening located near the market?",choices:["Their products are perishable and costly to transport","They require the least expensive land","They depend on extensive grazing land","Their products have no transportation costs"],answer:"Their products are perishable and costly to transport",why:"Perishability and high transport costs raise the value of locations close to the market."},
-  {unit:6,q:"Which change is most characteristic of gentrification in an inner-city neighborhood?",choices:["Reinvestment accompanied by rising rents and possible displacement","Declining land values caused only by suburbanization","Annexation of rural land by a state","A shift from a primate-city pattern to rank-size"],answer:"Reinvestment accompanied by rising rents and possible displacement",why:"Gentrification brings investment and higher property values but can displace lower-income residents."},
-  {unit:7,q:"A firm designs a product in one country, manufactures components in several others, and assembles it near a major port. Which concept best describes this arrangement?",choices:["Global commodity chain","Central place hierarchy","Subsistence agriculture","Demographic transition"],answer:"Global commodity chain",why:"A global commodity chain links production stages across multiple places through transportation and trade networks."}
-];
 function normalizeExamItem(item){
-  if(Array.isArray(item)) return {unit:Number(String(item[0]).replace(/\D/g,"")),q:item[1],choices:[...item[2]],answer:item[3],why:item[4]};
+  if(Array.isArray(item)) return {unit:Number(String(item[0]).replace(/\D/g,"")),q:item[1],choices:[...item[2]],answer:item[3],why:item[4],topic:item.topic,skill:item.skill,difficulty:Number(item.difficulty)||2,quality:item.quality||''};
   const visual=item.visual||item.stimulus;
-  return {unit:Number(item.unit),q:item.prompt||item.q,choices:[...item.choices],answer:item.answer,why:item.explain||item.why,topic:item.topic,stimulus:visual?{html:`<div class="sim-stimulus"><b>Stimulus${item.stimulusTitle?": "+item.stimulusTitle:""}</b><div class="diagram-wrap">${visual}</div></div>`}:null};
+  return {unit:Number(item.unit),q:item.prompt||item.q,choices:[...item.choices],answer:item.answer,why:item.explain||item.why,topic:item.topic,skill:item.skill,difficulty:Number(item.difficulty)||2,quality:item.quality||'',stimulus:visual?{html:`<div class="sim-stimulus"><b>Stimulus${item.stimulusTitle?": "+item.stimulusTitle:""}</b><div class="diagram-wrap">${visual}</div></div>`}:null};
 }
 function validatedStimulusBank(){
   return [
@@ -1154,7 +1145,16 @@ function validatedStimulusBank(){
   ].map(normalizeExamItem).filter(q=>q.q&&q.choices.length===4&&q.choices.includes(q.answer)&&q.stimulus);
 }
 function buildPracticeExam(examNum){
-  const foundational=quiz.slice(0,35).map(normalizeExamItem);
+  const unified=(window.APHG_UNIFIED_AP_BANK||[]).map(normalizeExamItem);
+  const legacy=quiz.map(normalizeExamItem).filter(q=>q.q&&q.choices.length===4&&q.choices.includes(q.answer)&&!q.stimulus&&!/^Which term best matches this definition|^.+ is called\.\.\.$/i.test(q.q));
+  const foundational=[];
+  for(let unit=1;unit<=7;unit++){
+    const originals=seededShuffle(unified.filter(q=>q.unit===unit),`ced-simulator-${examNum}-unified-${unit}`).slice(0,3);
+    const used=new Set(originals.map(q=>q.q.trim().toLowerCase()));
+    const established=seededShuffle(legacy.filter(q=>q.unit===unit&&!used.has(q.q.trim().toLowerCase())),`ced-simulator-${examNum}-established-${unit}`).slice(0,3);
+    if(originals.length<3||established.length<3)throw new Error(`AP simulator needs six validated non-stimulus questions for Unit ${unit}.`);
+    foundational.push(...originals,...established);
+  }
   const stimulusBank=validatedStimulusBank();
   const selectedStimuli=[];
   for(let unit=2;unit<=7;unit++){
@@ -1163,7 +1163,7 @@ function buildPracticeExam(examNum){
     const rotated=seededShuffle(unitItems,`ced-sim-${examNum}-unit-${unit}`);
     selectedStimuli.push(...rotated.slice(0,3));
   }
-  const mcq=[...foundational,...AP_SIMULATOR_EXTENSION.map(normalizeExamItem),...selectedStimuli];
+  const mcq=[...foundational,...selectedStimuli];
   const unique=[];const seen=new Set();
   seededShuffle(mcq,`ced-simulator-${examNum}`).forEach(q=>{const key=q.q.trim().toLowerCase();if(!seen.has(key)){seen.add(key);unique.push(q);}});
   if(unique.length!==60) throw new Error(`AP simulator expected 60 unique validated questions; received ${unique.length}.`);

@@ -11,7 +11,7 @@
   // but is intentionally NOT served because some stems reveal the answer by name.
   const setQuestions=[...(window.APHG_STIMULUS_SET_QUESTIONS||[]),...(window.APHG_STIMULUS_SET_QUESTIONS_EXTRA||[]),...(window.APHG_REAL_DATA_QUESTIONS||[])];
   const cedBase=(typeof quiz!=='undefined'?quiz:[]).map((q,i)=>({id:`pm-ced-${i+1}`,unit:Number(String(q[0]||'').match(/\d+/)?.[0]||0),topic:String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion(q)||''),prompt:q[1],choices:q[2],answer:q[3],explain:q[4],skill:q.skill,difficulty:q.difficulty,misconception:q.misconception})).filter(q=>q.unit&&q.topic&&q.prompt&&q.choices?.length===4&&q.answer);
-  const unique=new Map();[...core,...(window.APHG_IMAGE_MCQ_BANK||[]),...cedBase].forEach(q=>{if(!unique.has(q.prompt))unique.set(q.prompt,q);});
+  const unique=new Map();[...core,...(window.APHG_UNIFIED_AP_BANK||[]),...(window.APHG_IMAGE_MCQ_BANK||[]),...cedBase].forEach(q=>{if(!unique.has(q.prompt))unique.set(q.prompt,q);});
   const nonSetBase=[...unique.values()];
   // Each served question now has a genuinely distinct stem. Prefixing the same stem with
   // generic AP wording created cosmetic duplicates and could reward memorization.
@@ -28,11 +28,15 @@
   function setToQuestions(set){return set.questions.map((q,i)=>{const saved=setQuestions.find(x=>x.setId===set.id&&x.setIndex===i);return {id:saved?.id||`set-${set.id}-${i+1}`,unit:set.unit,topic:q[4],prompt:q[0],choices:q[1],answer:q[2],explain:q[3],stimulus:set.stimulus,stimulusTitle:set.title,setId:set.id,setIndex:i,setSize:set.questions.length,authentic:/^real-/.test(set.id)};});}
   function chooseSets(mode,unit){let candidates=allSets;if(mode==='unit'||mode==='quick')candidates=allSets.filter(s=>s.unit===unit);if(!candidates.length)return [];return shuffle(candidates).slice(0,mode==='cumulative'?2:1);}
   function buildDeck(mode,unit){
-    if(mode==='missed'){const p=load(),ids=new Set(Object.values(p).flatMap(x=>x.missed||[]));return shuffle(bank.filter(q=>ids.has(q.id))).slice(0,30).map(q=>({...q,choices:shuffle(q.choices)}));}
+    if(mode==='missed'){const p=load(),ids=new Set(Object.values(p).flatMap(x=>x.missed||[]));return shuffle(bank.filter(q=>ids.has(q.id)&&(!unit||Number(q.unit)===Number(unit)))).slice(0,30).map(q=>({...q,choices:shuffle(q.choices)}));}
     let pool=variants;if(mode==='unit'||mode==='quick')pool=variants.filter(q=>q.unit===unit);
     const count=mode==='quick'?5:mode==='unit'?25:30,seen=loadSeen(),k=keyFor(mode,unit),recent=new Set(seen[k]||[]);let fresh=pool.filter(q=>!recent.has(q.id));if(fresh.length<count)fresh=pool;
     const selectedSets=chooseSets(mode,unit);const grouped=selectedSets.flatMap(setToQuestions);const fillCount=Math.max(0,count-grouped.length);
-    const filler=shuffle(fresh).slice(0,fillCount);let picked=[...grouped,...filler].map(q=>({...q,choices:shuffle(q.choices)}));
+    const challenge=fresh.filter(q=>q.quality==='unified-v1'||Number(q.difficulty)>=3),foundation=fresh.filter(q=>!challenge.includes(q));
+    const challengeTarget=Math.min(challenge.length,Math.ceil(fillCount*.55));
+    const filler=[...shuffle(challenge).slice(0,challengeTarget),...shuffle(foundation).slice(0,fillCount-challengeTarget)];
+    if(filler.length<fillCount)filler.push(...shuffle(fresh.filter(q=>!filler.includes(q))).slice(0,fillCount-filler.length));
+    let picked=[...grouped,...filler].map(q=>({...q,choices:shuffle(q.choices)}));
     // Keep each stimulus set together, but move the set block to a different place each session.
     if(grouped.length&&filler.length){const block=grouped.map(q=>({...q,choices:shuffle(q.choices)}));const rest=picked.slice(grouped.length);const insertAt=Math.floor(Math.random()*(rest.length+1));picked=[...rest.slice(0,insertAt),...block,...rest.slice(insertAt)];}
     seen[k]=picked.filter(q=>!q.setId).map(q=>q.id).slice(-80);saveSeen(seen);return picked;
@@ -43,11 +47,11 @@
   function page(){return `<main class="wrap">${state.mode==='dashboard'?dash():state.mode==='session'?session():results()}</main>`;}
   function topicStatus(s){if(!s)return 'Not practiced yet';if(s.mastered)return 'Ready ✓';if(s.attempts<5)return `Keep practicing · ${5-s.attempts} more attempt${5-s.attempts===1?'':'s'} needed`;if(s.pct>=80&&s.days<2)return 'Come back another day to prove it';return s.pct>=80?'Almost ready — get two correct in a row':'Keep practicing';}
   function dash(){
-    const topics=[...new Set(bank.filter(q=>Number(q.unit)===state.unit&&String(q.topic).startsWith(state.unit+'.')).map(q=>q.topic))],stats=topics.map(t=>[t,score(t)]),attempted=stats.filter(x=>x[1]),mastered=stats.filter(x=>x[1]?.mastered),p=load(),missed=Object.values(p).reduce((n,x)=>n+(x.missed||[]).length,0);
-    const next=missed?`<button class="btn-primary" onclick="pmStart('missed')">Review My Mistakes</button>`:`<button class="btn-primary" onclick="pmStart('quick',${state.unit})">Start 5-Minute Practice</button>`;
+    const topics=[...new Set(bank.filter(q=>Number(q.unit)===state.unit&&String(q.topic).startsWith(state.unit+'.')).map(q=>q.topic))],stats=topics.map(t=>[t,score(t)]),attempted=stats.filter(x=>x[1]),mastered=stats.filter(x=>x[1]?.mastered),p=load(),allMissed=Object.values(p).reduce((n,x)=>n+(x.missed||[]).length,0),missed=Object.entries(p).filter(([topic])=>String(topic).startsWith(state.unit+'.')).reduce((n,[,x])=>n+(x.missed||[]).length,0);
+    const next=missed?`<button class="btn-primary" onclick="pmStart('missed',${state.unit})">Review Unit ${state.unit} Mistakes</button>`:`<button class="btn-primary" onclick="pmStart('quick',${state.unit})">Start 5-Minute Practice</button>`;
     return `<section class="card"><h2>🎯 What should I do next?</h2><p>${missed?'Start with questions you missed. Read the explanation, then try each idea again.':'Choose the unit you are learning and complete five questions. We will show you what to review next.'}</p><div class="button-row">${next}<label class="pill">Unit <select onchange="pmSetUnit(this.value)">${[1,2,3,4,5,6,7].map(u=>`<option value="${u}" ${u===state.unit?'selected':''}>${u}</option>`).join('')}</select></label></div></section>
     <section class="card"><h2>Your Progress</h2><p>Progress is saved on this device. “Ready” means at least 80% correct after five or more attempts.</p><div class="readiness-grid"><div class="readiness-tile"><b>${mastered.length}/${topics.length}</b><span>ready</span></div><div class="readiness-tile"><b>${attempted.length}</b><span>practiced</span></div><div class="readiness-tile"><b>${missed}</b><span>mistakes to review</span></div></div></section>
-    <section class="card"><h3>More Practice</h3><p>Use these when you want a longer challenge.</p><div class="button-row">${[1,2,3,4,5,6,7].map(u=>`<button class="btn-secondary" onclick="pmStart('unit',${u})">Unit ${u} Check · 25</button>`).join('')}<button class="btn-secondary" onclick="pmStart('cumulative')">Mixed Exam Practice · 30</button><button class="btn-secondary" onclick="pmStart('missed')" ${missed?'':'disabled'}>Review My Mistakes</button><button class="btn-secondary" onclick="pmReset()">Reset Progress</button></div></section>
+    <section class="card"><h3>More Practice</h3><p>Use these when you want a longer challenge.</p><div class="button-row">${[1,2,3,4,5,6,7].map(u=>`<button class="btn-secondary" onclick="pmStart('unit',${u})">Unit ${u} Check · 25</button>`).join('')}<button class="btn-secondary" onclick="pmStart('cumulative')">Mixed Exam Practice · 30</button><button class="btn-secondary" onclick="pmStart('missed')" ${allMissed?'':'disabled'}>Review All Mistakes</button><button class="btn-secondary" onclick="pmReset()">Reset Progress</button></div></section>
     <section class="card"><h3>Progress by Topic</h3><div class="readiness-grid">${stats.map(([t,s])=>`<div class="readiness-tile"><b>${s?s.pct+'%':'—'}</b><span>Topic ${t} · ${topicStatus(s)}</span></div>`).join('')}</div></section>`;
   }
   function session(){
