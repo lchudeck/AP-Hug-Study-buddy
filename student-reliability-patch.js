@@ -1,5 +1,3 @@
-// Focused reliability patch from the September 2026 independent audit.
-// Loaded last so it can correct legacy student-facing data without redesigning existing screens.
 (function(){
   if(window.__studentReliabilityPatchInstalled) return;
   window.__studentReliabilityPatchInstalled=true;
@@ -42,12 +40,11 @@
         try{if(typeof quiz!=='undefined'&&typeof normalizeExamItem==='function')raw.push(...quiz.map(normalizeExamItem));}catch(e){}
         try{if(typeof validatedStimulusBank==='function')raw.push(...validatedStimulusBank());}catch(e){}
         const definitionStem=q=>/^Which term best matches this definition|^.+ is called\.\.\.$/i.test(String(q.q||'').trim());
-        const byExact=new Map();raw.filter(q=>q&&q.q&&Array.isArray(q.choices)&&q.choices.length===4&&q.choices.includes(q.answer)&&Number(q.unit)>=1&&Number(q.unit)<=7&&!definitionStem(q)).forEach(q=>{if(!byExact.has(exactKey(q)))byExact.set(exactKey(q),q);});
-        const pool=[...byExact.values()],usage=new Map(),selected=[],targets={1:8,2:9,3:8,4:8,5:9,6:9,7:9};
+        const weakChoice=c=>/No geographic concept can be supported without a map|terms describe the same process|explained only by the scale of analysis/i.test(String(c||''))||/(?:^[A-Z][A-Za-z -]{2,28}\s+only$|^Only\s+[A-Z][A-Za-z -]{2,28}$)/i.test(String(c||'').trim());
+        const byExact=new Map();raw.filter(q=>q&&q.q&&Array.isArray(q.choices)&&q.choices.length===4&&q.choices.includes(q.answer)&&Number(q.unit)>=1&&Number(q.unit)<=7&&!definitionStem(q)&&!q.choices.some(weakChoice)).forEach(q=>{if(!byExact.has(exactKey(q)))byExact.set(exactKey(q),q);});
+        const pool=[...byExact.values()],usage=new Map(),selected=[],targets={1:6,2:9,3:9,4:9,5:9,6:9,7:9};
         for(let examNum=1;examNum<=3;examNum++){
           const chosen=[],candidates=[...pool].sort((a,b)=>{const ua=usage.get(exactKey(a))||0,ub=usage.get(exactKey(b))||0;return ua-ub||hash('exam'+examNum+'|'+conceptKey(a))-hash('exam'+examNum+'|'+conceptKey(b));});
-          // Rotate one original application item per unit through each exam. Across the
-          // three versions, students see all 21 without forcing high exam-to-exam overlap.
           for(let unit=1;unit<=7;unit++){
             const curated=pool.filter(q=>Number(q.unit)===unit&&q.quality==='unified-v1').sort((a,b)=>String(a.id||a.q).localeCompare(String(b.id||b.q)));
             if(curated.length<3)throw new Error(`Study Buddy needs three curated application questions for Unit ${unit}.`);

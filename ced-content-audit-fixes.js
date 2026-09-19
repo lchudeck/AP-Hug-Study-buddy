@@ -1,10 +1,7 @@
-// Full CED content audit corrections.
-// Loaded last so it can repair legacy wording/tags without changing the original question-bank APIs.
 (function(){
   if(window.__cedContentAuditFixesInstalled)return;
   window.__cedContentAuditFixesInstalled=true;
 
-  // ---- Unit 7 terminology: world-systems theory and outsourcing/offshoring ----
   try{
     if(Array.isArray(units)&&units[6]){
       units[6].save='Rostow = stage-based development. World-systems theory = unequal core–periphery relationships in a global economy.';
@@ -19,8 +16,6 @@
     }
   }catch(e){}
 
-  // ---- Make the seven main FRQs use official APHG task verbs only ----
-  // Public APHG CED task verbs: Compare, Define, Describe, Explain, Identify.
   try{
     const rewrites={
       1:{F:['Explain','Explain how a geographer could use one GIS layer to study inequality in this city.'],G:['Explain','Explain one planning decision that could improve access for residents in underserved neighborhoods.']},
@@ -45,7 +40,6 @@
     }
   }catch(e){}
 
-  // ---- Correct the core flashcard distinction between outsourcing and offshoring ----
   try{
     if(Array.isArray(flashcards)){
       const outsourcing=flashcards.find(c=>String(c.term).toLowerCase()==='outsourcing');
@@ -57,8 +51,6 @@
     }
   }catch(e){}
 
-  // ---- Exact CED tagging for older/untagged question inventory ----
-  // This is deliberately conservative: explicit modern tags are preserved unless a known legacy mapping is identified.
   const byAnswer={
     'Choropleth map':'1.1','Dot-density map':'1.1','Cartogram':'1.1','Reference map':'1.1','Isoline':'1.1',
     'Remote sensing':'1.2','GIS':'1.3','Time-space compression':'1.4','Possibilism':'1.5','Functional region':'1.7','Formal region':'1.7','Perceptual region':'1.7','Distance decay':'1.4','Scale of analysis':'1.6',
@@ -85,18 +77,15 @@
   }
 
   try{
-    // Untagged legacy questions get exact topic metadata. Explicit modern tags remain unless corrected below.
     (quiz||[]).forEach(q=>{if(!q.topic){const t=infer(q);if(t)q.topic=t;}});
 
     const knownBanks=['APHG_IMAGE_MCQ_BANK','APHG_STIMULUS_SET_QUESTIONS','APHG_STIMULUS_SET_QUESTIONS_EXTRA','APHG_REAL_DATA_QUESTIONS','APHG_AUTHENTIC_STIMULUS_QUESTIONS','APHG_AUTHENTIC_CLUSTER_QUESTIONS','APHG_ADAPTIVE_V2_QUESTIONS'];
     knownBanks.forEach(name=>(window[name]||[]).forEach(q=>{
       const next=infer(q);
-      // Correct known legacy topic numbering where the current public CED moved the concept.
       if(next && (!q.topic || (q.unit===7&&['7.2','7.3','7.4'].includes(String(q.topic))) || (q.unit===6&&String(q.topic)==='6.11'&&/gentrif|displacement/i.test(q.prompt||'')) || (q.unit===5&&String(q.topic)==='5.4'&&/intensive|extensive/i.test(q.prompt||'')) || (q.unit===3&&String(q.topic)==='3.2'&&/diffusion/i.test(q.prompt||'')))) q.topic=next;
     }));
   }catch(e){}
 
-  // ---- Correct the forced-displacement stimulus classification ----
   try{
     const set=(window.APHG_AUTHENTIC_STIMULUS_SETS||[]).find(s=>s.id==='u4-refugees');
     if(set){set.unit=2;set.topic='2.11';set.title='Forced Displacement and Migration Status';}
@@ -107,7 +96,6 @@
     (window.APHG_STIMULUS_FRQ_SETS||[]).filter(f=>f.id==='frq-u4-culture').forEach(f=>{f.unit=2;f.title='Displacement, Culture & Political Geography';f.topics=['2.11','3.7','4.5'];});
   }catch(e){}
 
-  // ---- Replace non-CED 'Evaluate' task verbs in stimulus FRQ coaching ----
   try{
     (window.APHG_STIMULUS_FRQ_SETS||[]).forEach(f=>(f.parts||[]).forEach(p=>{
       if(p[1]==='Evaluate'){
@@ -117,7 +105,6 @@
     }));
   }catch(e){}
 
-  // ---- Make the visual pyramid claim only what the stimulus directly supports ----
   try{
     (window.APHG_IMAGE_MCQ_BANK||[]).filter(q=>q.id==='im1').forEach(q=>{
       const old='High fertility and rapid natural increase',next='High fertility and a youthful population';
@@ -126,7 +113,6 @@
     });
   }catch(e){}
 
-  // ---- Give the adaptive engine the corrected current-CED classifier ----
   try{
     if(window.APHGTopicSkillMastery){window.APHGTopicSkillMastery.topicFromQuestion=infer;}
   }catch(e){}

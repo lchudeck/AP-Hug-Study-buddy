@@ -1,12 +1,7 @@
-// Final runtime corrections from the full AP Human Geography CED content audit.
-// Loaded after legacy modules so student-facing mastery and FRQ coaching match the current CED.
 (function(){
   if(window.__cedFinalAuditPatchInstalled)return;
   window.__cedFinalAuditPatchInstalled=true;
 
-  // Current CED Unit 7 sequence: 7.1 Industrial Revolution; 7.2 Economic Sectors and Patterns;
-  // 7.3 Measures of Development; 7.4 Women and Economic Development; 7.5 Theories of Development;
-  // 7.6 Trade and the World Economy; 7.7 Changes as a Result of the World Economy; 7.8 Sustainable Development.
   try{
     const D=window.__upperMasteryData;
     if(D&&D[7]){
@@ -22,7 +17,6 @@
       ];
     }
 
-    // Mastery coaching should use the APHG FRQ task-verb family when presented as AP-style practice.
     if(D){
       Object.values(D).forEach(unit=>{
         (unit.topics||[]).forEach(t=>{
@@ -37,8 +31,6 @@
     }
   }catch(e){}
 
-  // Preserve strict nonsense rejection while making clear that local keyword matching is a coaching aid,
-  // not an official College Board score. Multiple valid APHG examples can earn a point.
   try{
     const base=window.__gradeFrqPart;
     if(typeof base==='function'){

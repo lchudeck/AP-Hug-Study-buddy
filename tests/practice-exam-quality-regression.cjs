@@ -31,6 +31,9 @@ assert.ok(report,'exam quality report was not created');
 
 for(const [i,exam] of exams.entries()){
   assert.equal(exam.mcq.length,60,`Exam ${i+1} must contain 60 MCQs`);
+  const unitCounts=exam.mcq.reduce((counts,q)=>{counts[q.unit]=(counts[q.unit]||0)+1;return counts;},{});
+  assert.equal(unitCounts[1],6,`Exam ${i+1} must keep Unit 1 at 10% of the section`);
+  for(let unit=2;unit<=7;unit++)assert.equal(unitCounts[unit],9,`Exam ${i+1}, Unit ${unit} must comprise 15% of the section`);
   const stimulus=exam.mcq.filter(q=>q.stimulus).length;
   assert.ok(stimulus>=18&&stimulus<=24,`Exam ${i+1} stimulus count ${stimulus} is outside 18–24`);
   const exact=new Set(exam.mcq.map(q=>`${String(q.q).trim().toLowerCase()}|${String(q.answer).trim().toLowerCase()}`));
@@ -40,6 +43,10 @@ for(const [i,exam] of exams.entries()){
   }
   const answerPositions=new Set(exam.mcq.map(q=>q.choices.indexOf(q.answer)));
   assert.ok(answerPositions.size>=3,`Exam ${i+1} answer positions are not sufficiently mixed`);
+  const choiceText=exam.mcq.flatMap(q=>q.choices).join('\n');
+  assert.doesNotMatch(choiceText,/No geographic concept can be supported without a map|terms describe the same process|explained only by the scale of analysis|related feature is present even though its defining mechanism is not shown|outcome alone is enough to identify that process|concepts at the same scale describe the same relationship/i,`Exam ${i+1} contains a generic non-content distractor`);
+  assert.doesNotMatch(choiceText,/(?:^|\n)(?:[A-Z][A-Za-z -]{2,28}\s+only|Only\s+[A-Z][A-Za-z -]{2,28})(?:\n|$)/i,`Exam ${i+1} contains a terse “only” distractor`);
+  assert.doesNotMatch([choiceText,...exam.mcq.map(q=>q.why)].join('\n'),/\bhDI\b/,`Exam ${i+1} contains a lowercased acronym`);
 }
 
 for(const pair of report.overlaps){
