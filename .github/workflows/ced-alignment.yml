@@ -42,7 +42,7 @@ jobs:
           guide = Path('ced-guide.js').read_text(encoding='utf-8')
           practice = Path('ced-practice.js').read_text(encoding='utf-8')
           assert re.search(r'<script src="app\.js(?:\?[^\"]*)?"></script>', index)
-          assert '<script src="ced-practice.js"></script>' in index
+          assert re.search(r'<script src="ced-practice\.js(?:\?[^\"]*)?"></script>', index)
           assert '<script src="ced-guide.js"></script>' in index
           ids = re.findall(r"\['([1-7]\.\d+)'", guide)
           expected_counts = {'1':7,'2':12,'3':8,'4':10,'5':12,'6':11,'7':8}
