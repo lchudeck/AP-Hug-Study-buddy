@@ -40,7 +40,7 @@ jobs:
           assert 'May 5, 2026' not in index + js
           assert 'Grade my answer with AI' not in js
           assert js.count('function homePage(){') == 1
-          assert 'localStorage.setItem("aphgUnitStats"' in js
+          assert 'APHGSafeStorage.setItem("aphgUnitStats"' in js
           assert "if(!s.attempted) return null;" in js
           assert '2026–27 Study Plan' in js
           assert 'Date TBA' in js

@@ -16,15 +16,15 @@
 
  function hasEvidence(){
    try{
-     const a=JSON.parse(localStorage.getItem('aphgTopicSkillMasteryV1')||'{"topics":{}}');
+     const a=JSON.parse(window.APHGSafeStorage.getItem('aphgTopicSkillMasteryV1')||'{"topics":{}}');
      if(Object.values(a.topics||{}).some(x=>x&&x.attempts>0))return true;
    }catch(e){}
    try{
-     const a=JSON.parse(localStorage.getItem('aphgAdaptiveCoachV2')||'{"topics":{}}');
+     const a=JSON.parse(window.APHGSafeStorage.getItem('aphgAdaptiveCoachV2')||'{"topics":{}}');
      if(Object.values(a.topics||{}).some(x=>x&&x.attempts>0))return true;
    }catch(e){}
    try{
-     const a=JSON.parse(localStorage.getItem('aphgPracticeMasteryV4')||'{}');
+     const a=JSON.parse(window.APHGSafeStorage.getItem('aphgPracticeMasteryV4')||'{}');
      if(Object.values(a||{}).some(x=>x&&x.total>0))return true;
    }catch(e){}
    return false;

@@ -314,3 +314,8 @@ footer{text-align:center;color:#94a3b8;font-size:13px;padding:24px}
 @media(max-width:800px){.scale-view-card,.scale-question-grid{grid-template-columns:1fr}}
 
 @media(max-width:900px){.home-cta-grid,.ap-recipe,.model-checklist{grid-template-columns:1fr 1fr}}@media(max-width:620px){.home-cta-grid,.ap-recipe,.model-checklist,.mini-label-grid{grid-template-columns:1fr}}
+
+/* Reliability fallback: visible only when storage or a required asset fails. */
+#aphg-reliability-notice{position:fixed;left:16px;right:16px;bottom:16px;z-index:20000;display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:760px;margin:auto;padding:14px 16px;border:2px solid #92400e;border-radius:14px;background:#fffbeb;color:#451a03;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+#aphg-reliability-notice div:first-child{display:grid;gap:3px}#aphg-reliability-notice span{font-size:14px;line-height:1.35}.aphg-reliability-actions{display:flex;gap:8px;flex-wrap:wrap}.aphg-reliability-actions button{min-height:44px;padding:8px 12px;border:1px solid #92400e;border-radius:9px;background:#fff;font-weight:700;cursor:pointer}
+@media(max-width:600px){#aphg-reliability-notice{align-items:stretch;flex-direction:column}.aphg-reliability-actions button{flex:1}}

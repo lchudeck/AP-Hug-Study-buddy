@@ -28,6 +28,7 @@ jobs:
           const elements={};
           global.window={};
           global.localStorage={data:{},getItem(k){return this.data[k]??null},setItem(k,v){this.data[k]=String(v)},clear(){this.data={}}};
+          window.APHGSafeStorage=global.localStorage;
           global.document={
             body:{appendChild(x){if(x.id)elements[x.id]=x}},
             getElementById(id){return elements[id]||null},

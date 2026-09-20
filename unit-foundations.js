@@ -34,8 +34,8 @@
 
   const progressKey='aphgFoundationProgressV1';
   let progress={responses:{},completed:{}};
-  try{progress={...progress,...JSON.parse(localStorage.getItem(progressKey)||'{}')}}catch(e){}
-  function saveProgress(){localStorage.setItem(progressKey,JSON.stringify(progress));}
+  try{progress={...progress,...JSON.parse(window.APHGSafeStorage.getItem(progressKey)||'{}')}}catch(e){}
+  function saveProgress(){window.APHGSafeStorage.setItem(progressKey,JSON.stringify(progress));}
   function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
   let unit=1,topic='1.1',mode='learn';
   const oldRender=render;

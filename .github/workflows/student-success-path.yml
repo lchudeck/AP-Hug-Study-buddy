@@ -32,7 +32,7 @@ jobs:
           if(!/\[10,0,'10 questions'/.test(success)||!/\[15,900,'15 questions'/.test(success)||!/\[30,1800,'30 questions'/.test(success)||!/\[60,3600,'60 questions'/.test(success))problems.push('The gradual practice ladder is incomplete');
           if(!/I know this/.test(success)||!/I’m unsure/.test(success)||!/I’m guessing/.test(success))problems.push('Confidence calibration choices are incomplete');
           if(!/quiz\.slice\(0,35\)/.test(success)||!/APHG_STIMULUS_SET_QUESTIONS/.test(success))problems.push('Cumulative practice is not restricted to reviewed banks');
-          if(/name|email|birthday|school id|location|tracking/i.test(success.match(/localStorage[\s\S]{0,220}/g)?.join(' ')||''))problems.push('Student success storage may include identity data');
+          if(/name|email|birthday|school id|location|tracking/i.test(success.match(/APHGSafeStorage[\s\S]{0,220}/g)?.join(' ')||''))problems.push('Student success storage may include identity data');
           if(!/Nothing here uses your name or leaves this device/.test(success))problems.push('The plan does not explain local-only privacy');
           if(!/APHGCEDGuide=\{allTopics:allCedTopics/.test(ced))problems.push('Teach Me This is not connected to the CED guide');
           if(!/focus=weak\?\.unit===s\.unit\?weak\.topic:t\.id/.test(success))problems.push('Daily lesson can drift away from the current class unit');
