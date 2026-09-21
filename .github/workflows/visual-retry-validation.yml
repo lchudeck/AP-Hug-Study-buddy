@@ -112,7 +112,7 @@ jobs:
                 await page.locator('[data-close-map]').click();
               }
 
-              for(let i=0;i<6;i++){
+              for(let i=0;i<7;i++){
                 const answers=page.locator('[data-map-answer]');
                 if(await answers.count()!==4)throw new Error(device.name+': Map Detective question '+(i+1)+' lacks four choices');
                 await answers.nth(i%4).click();
