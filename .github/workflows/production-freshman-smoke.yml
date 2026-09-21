@@ -33,20 +33,20 @@ jobs:
             const res=await page.goto(url,{waitUntil:'networkidle',timeout:60000});
             if(!res||!res.ok())problems.push('Homepage did not return OK');
             const body=await page.locator('body').innerText();
-            for(const phrase of ['Study Buddy','What do you want to do today?'])if(!body.includes(phrase))problems.push('Homepage missing '+phrase);
-            const navButtons=page.locator('#nav button');
+            for(const phrase of ['Study Buddy','What do you need help with?'])if(!body.includes(phrase))problems.push('Homepage missing '+phrase);
+            const navButtons=page.locator('#nav button:visible');
             const navCount=await navButtons.count();
             if(navCount<5)problems.push('Too few nav buttons: '+navCount);
 
             // Maps & Visual Practice must be visible and clickable on production.
-            const visual=page.getByRole('button',{name:/Maps & Visual Practice/i});
-            if(await visual.count()===0)problems.push('Maps & Visual Practice tab missing');
+            const visual=page.getByRole('button',{name:/Maps & Visuals/i});
+            if(await visual.count()===0)problems.push('Maps & Visuals tab missing');
             else{
               await visual.first().click();
               await page.waitForTimeout(300);
               const txt=await page.locator('#app').innerText();
-              if(!/Maps & Visual Practice/i.test(txt))problems.push('Visual tab click did not open page');
-              for(const label of ['Unit 1 Maps','Spatial Concepts','Unit 2 Population']){
+              if(!/Maps & Visuals/i.test(txt))problems.push('Visual tab click did not open page');
+              for(const label of ['Map Types','Spatial Concepts','Unit 2 Population']){
                 const b=page.getByRole('button',{name:new RegExp(label,'i')});
                 if(await b.count()===0)problems.push('Visual section missing: '+label);
                 else {await b.first().click(); await page.waitForTimeout(150);}
@@ -57,14 +57,14 @@ jobs:
             const labels=[];
             for(let i=0;i<navCount;i++)labels.push((await navButtons.nth(i).innerText()).trim());
             for(const label of labels){
-              const b=page.locator('#nav button').filter({hasText:label}).first();
+              const b=page.locator('#nav button:visible').filter({hasText:label}).first();
               await b.click(); await page.waitForTimeout(120);
               const appText=(await page.locator('#app').innerText()).trim();
               if(appText.length<20)problems.push('Likely blank student page: '+label);
             }
 
             // Unit Review starts and advances after an answer.
-            const unitTab=page.locator('#nav button').filter({hasText:/Unit Review/i}).first();
+            const unitTab=page.locator('#nav button:visible').filter({hasText:/Unit Review/i}).first();
             if(await unitTab.count()){
               await unitTab.click(); await page.waitForTimeout(200);
               const start=page.getByRole('button',{name:/Standard practice test/i}).first();
@@ -76,7 +76,7 @@ jobs:
             }
 
             // FRQ nonsense should not earn credit.
-            const frqTab=page.locator('#nav button').filter({hasText:/FRQ Coach/i}).first();
+            const frqTab=page.locator('#nav button:visible').filter({hasText:/FRQ Coach/i}).first();
             if(await frqTab.count()){
               await frqTab.click(); await page.waitForTimeout(250);
               const ta=page.locator('#mainAnswer');
