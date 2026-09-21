@@ -2,11 +2,17 @@ name: Accessibility Inclusive Audit
 on:
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   accessibility:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Validate accessibility layer
         run: |
           node --check accessibility-inclusive-v3.js

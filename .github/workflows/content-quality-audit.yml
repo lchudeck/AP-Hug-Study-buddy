@@ -2,11 +2,17 @@ name: Content Quality Audit
 on:
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Audit APHG question structure and missed-question retries
         run: |
           node <<'NODE'

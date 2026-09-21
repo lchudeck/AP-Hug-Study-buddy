@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - run: npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
       - name: Student answer-box rubric and navigation audit
         run: |
@@ -109,7 +111,7 @@ jobs:
               if(!btn(/Visual FRQ/i))problems.push('Units 3–7 visual FRQ practice is not reachable');
             }
 
-            const report=d.querySelector('#aphg-report-btn');if(!report)problems.push('Report button missing');else{report.click();await sleep(2);const modal=d.querySelector('#aphg-report-modal');if(!modal)problems.push('Report modal missing');else{const m=modal.textContent;if(/Create email report|email app should open/i.test(m))problems.push('Old email-app reporting still visible');if(!/Send Report/i.test(m))problems.push('Send Report missing');if(!/email \(optional\)/i.test(m))problems.push('Optional return email unclear');}}
+            const report=d.querySelector('#aphg-report-btn');if(!report)problems.push('Report button missing');else{report.click();await sleep(2);const modal=d.querySelector('#aphg-report-modal');if(!modal)problems.push('Report modal missing');else{const m=modal.textContent;if(/Create email report|email app should open/i.test(m))problems.push('Old email-app reporting still visible');if(!/Send Report/i.test(m))problems.push('Send Report missing');if(modal.querySelector('input[type="email"],input[name*="email"]'))problems.push('Report form must not collect student email');if(!/Do not include your name, email, school ID, or other personal information/i.test(m))problems.push('Report privacy warning missing');}}
 
             if(runtime.length)problems.push('Runtime exceptions: '+runtime.slice(0,3).join(' | '));
             console.log(`Clicked ${clickCount} rendered buttons; exercised ${fieldCount} field entries; inspected ${rubricNodes.length} rubric boxes.`);

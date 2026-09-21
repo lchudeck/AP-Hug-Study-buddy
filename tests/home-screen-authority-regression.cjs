@@ -24,7 +24,7 @@ assert.match(routeLayer,/closest\('\[data-student-route\]'\)/,'home cards must u
 assert.match(polish,/window\.openMapsVisuals=renderVisualPractice/,'the chosen maps screen must expose one public entry point');
 assert.match(fs.readFileSync('visual-learning.js','utf8'),/window\.openMapsVisuals/,'the older visual route must delegate to the chosen maps screen');
 assert.match(routeLayer,/p==='maps'\)typeof window\.openMapsVisuals/,'the maps card must use the authoritative maps screen');
-assert.match(routeLayer,/localStorage\.getItem\('aphgStudentSuccessV1'\)/,'student routes must follow the saved current unit');
+assert.match(routeLayer,/getItem\('aphgStudentSuccessV1'\)/,'student routes must follow the saved current unit through the safe-storage wrapper');
 assert.doesNotMatch(css,/#app[^}]*min-height|pointer-events|z-index/,'mobile home CSS must not rely on stacking or forced-height patches');
 assert.match(polish,/function polishNav\(refresh=true\)/,'navigation polish must distinguish rendering from DOM-only updates');
 assert.match(polish,/MutationObserver\(\(\)=>\{polishNav\(false\)/,'the observer must not rebuild navigation and trigger itself');
