@@ -224,7 +224,7 @@ let flashFrqAnswer="", flashFrqFeedback=null;
 let termView="terms"; // "terms" or "flashcards"
 let flashMode="need"; // "need", "new", "got", "all"
 let flashProgress={};
-try{flashProgress=JSON.parse(localStorage.getItem("aphgFlashProgress")||"{}");}catch(e){flashProgress={};}
+try{flashProgress=JSON.parse(window.APStudyReliability.storage.getItem("aphgFlashProgress")||"{}");}catch(e){flashProgress={};}
 let activeExam=0, examAnswers={}, examSubmitted=false, examFrqAnswers={}, examFrqFeedback={};
 let modelMapView="models", selectedModel=0, selectedScale=0, modelAnswer="", modelFeedback=null, scaleAnswer="", scaleFeedback=null;
 let interactiveScaleLevel="global";
@@ -232,7 +232,7 @@ let simExam=1, simPhase="intro", simMcqAnswers={}, simFrqAnswers={}, simFrqFeedb
 let readinessChecks={frqLabels:false,explainBecause:false,vocabTerm:false,mcqConfidence:false};
 let adaptiveLevel=1; // 1=support, 2=developing, 3=AP challenge
 let unitStats={};
-try{unitStats=JSON.parse(localStorage.getItem("aphgUnitStats")||"{}");}catch(e){unitStats={};}
+try{unitStats=JSON.parse(window.APStudyReliability.storage.getItem("aphgUnitStats")||"{}");}catch(e){unitStats={};}
 let adaptiveMode=false;
 let masteryView="dashboard"; // dashboard, pyramids, mixed, exams
 let pyramidDrillIndex=0, pyramidSelected="", pyramidFeedback=null;
@@ -1042,8 +1042,8 @@ function unitHtml(u,r){
 function htmlEscape(str){return String(str||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
 function flashKey(card){return `u${card.unit}-${card.term}`.toLowerCase().replace(/[^a-z0-9]+/g,"-");}
 function getFlashStatus(card){return flashProgress[flashKey(card)]||"new";}
-function setFlashStatus(status){const card=currentFlashCard();flashProgress[flashKey(card)]=status;localStorage.setItem("aphgFlashProgress",JSON.stringify(flashProgress));flashIndex=(flashIndex+1)%Math.max(1,currentFlashDeck().length);flashFlipped=false;flashFrqAnswer='';flashFrqFeedback=null;render();}
-function resetFlashProgress(){if(confirm("Reset all flashcard progress?")){flashProgress={};localStorage.removeItem("aphgFlashProgress");flashIndex=0;flashFlipped=false;render();}}
+function setFlashStatus(status){const card=currentFlashCard();flashProgress[flashKey(card)]=status;window.APStudyReliability.storage.setItem("aphgFlashProgress",JSON.stringify(flashProgress));flashIndex=(flashIndex+1)%Math.max(1,currentFlashDeck().length);flashFlipped=false;flashFrqAnswer='';flashFrqFeedback=null;render();}
+function resetFlashProgress(){if(confirm("Reset all flashcard progress?")){flashProgress={};window.APStudyReliability.storage.removeItem("aphgFlashProgress");flashIndex=0;flashFlipped=false;render();}}
 function currentFlashDeck(){
   let cards=flashUnit==="All"?flashcards:flashcards.filter(c=>c.unit===Number(flashUnit));
   if(flashMode==="need") cards=cards.filter(c=>getFlashStatus(c)!=="got");
@@ -1255,7 +1255,7 @@ function chooseAnswer(c){
   unitStats[unitLabel].attempted++;
   if(c===q[3]){ stats.correct++; unitStats[unitLabel].correct++; }
   else{missedUnits[unitLabel]=(missedUnits[unitLabel]||0)+1;lastMissed=q;}
-  localStorage.setItem("aphgUnitStats",JSON.stringify(unitStats));
+  window.APStudyReliability.storage.setItem("aphgUnitStats",JSON.stringify(unitStats));
   render();
 }
 
