@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - run: npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
       - name: Validate feedback flow and trust pages
         run: |
@@ -28,7 +30,7 @@ jobs:
             const b=d.querySelector('#aphg-feedback-btn'); if(!b)throw new Error('Quick feedback button missing'); b.click(); await sleep(10);
             const modal=d.querySelector('#aphg-feedback-modal'); if(!modal)throw new Error('Feedback modal missing');
             const text=modal.textContent;
-            for(const phrase of ['30-second feedback','Was this part helpful?','What, if anything, was confusing?','No name or email is requested.'])if(!text.includes(phrase))throw new Error('Missing feedback copy: '+phrase);
+            for(const phrase of ['30-second feedback','Was this part helpful?','What, if anything, was confusing?','Do not include your name, email, school ID, or other personal information.'])if(!text.includes(phrase))throw new Error('Missing feedback copy: '+phrase);
             if(!modal.querySelector('input[name="helpful"][value="Yes"]'))throw new Error('Helpful Yes option missing');
             const about=await (await fetch('http://127.0.0.1:8765/about.html')).text();
             for(const phrase of ['What teachers can expect','How quality is reviewed','Privacy commitments'])if(!about.includes(phrase))throw new Error('About missing '+phrase);

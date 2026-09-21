@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - run: npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
       - name: Student answer-box rubric and navigation audit
         run: |

@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - run: npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
       - name: Validate navigation hierarchy and progress payoff
         run: |
