@@ -54,8 +54,12 @@ jobs:
           for(let u=1;u<=7;u++)if(!visualUnits.has(u))problems.push('Visual practice does not cover Unit '+u);
           if(visualQuestions.length<17)problems.push('Visual question banks did not fully load');
           const allSource=scripts.map(f=>fs.readFileSync(f,'utf8')).join('\n')+'\n'+html;
-          if(/keep(?:s|ing)? poor countries poor on purpose|(?:global )?system is designed to keep|designed the system to keep/i.test(allSource))problems.push('Development theory is framed as deliberate intent instead of structural unequal exchange');
-          if(/Outsourcing means[^\n]{0,200}Moving work to another company or location/i.test(allSource))problems.push('Outsourcing is conflated with offshoring');
+          if(/rich countries keep poor countries poor|keep(?:s|ing)? poor countries poor on purpose|(?:global )?system is designed to keep|designed the system to keep/i.test(allSource))problems.push('Development theory is framed as deliberate intent instead of structural unequal exchange');
+          if(/Outsourcing means[^\n]{0,200}Moving work to another company or location|['\"]Outsourcing['\"][^\n]{0,180}moves? manufacturing to a lower-wage country/i.test(allSource))problems.push('Outsourcing is conflated with offshoring');
+          const mastery=fs.readFileSync('unit-mastery-3-7.js','utf8');
+          const unit7Topics=[...mastery.matchAll(/\['(7\.\d+)'\s*,\s*'([^']+)'/g)].map(m=>m[1]+' '+m[2]);
+          const expectedUnit7=['7.1 The Industrial Revolution','7.2 Economic Sectors and Patterns','7.3 Measures of Development','7.4 Women and Economic Development','7.5 Theories of Development','7.6 Trade and the World Economy','7.7 Changes as a Result of the World Economy','7.8 Sustainable Development'];
+          if(JSON.stringify(unit7Topics)!==JSON.stringify(expectedUnit7))problems.push('Unit Mastery Unit 7 topics do not match the current CED: '+unit7Topics.join(', '));
           const ur=fs.readFileSync('unit-review.js','utf8');
           if(/Choose the best answer\. \$\{p\}|Use AP Human Geography reasoning\. \$\{p\}|Apply what you know to this situation\. \$\{p\}/.test(ur))problems.push('Unit Review still creates cosmetic same-stem variants');
           if(!/retryFor\(q\)/.test(ur)||!/different stem\/scenario/.test(ur))problems.push('Unit Review does not enforce alternate-question retry');
