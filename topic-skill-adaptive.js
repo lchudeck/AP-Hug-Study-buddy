@@ -25,10 +25,10 @@
   };
 
   function load(){
-    try{return JSON.parse(localStorage.getItem(STORE)||'{"topics":{},"skills":{}}');}
+    try{return JSON.parse(window.APStudyReliability.storage.getItem(STORE)||'{"topics":{},"skills":{}}');}
     catch(e){return {topics:{},skills:{}};}
   }
-  function save(s){localStorage.setItem(STORE,JSON.stringify(s));}
+  function save(s){window.APStudyReliability.storage.setItem(STORE,JSON.stringify(s));}
   function emptyStat(){return {attempts:0,correct:0,recent:[],lastSeen:0,streak:0,nextReview:0};}
   function normStat(x){return Object.assign(emptyStat(),x||{});}
 
@@ -81,7 +81,7 @@
 
   function legacyTopicStat(topic){
     try{
-      const legacy=JSON.parse(localStorage.getItem(LEGACY_TOPIC_STORE)||'{}')[topic];
+      const legacy=JSON.parse(window.APStudyReliability.storage.getItem(LEGACY_TOPIC_STORE)||'{}')[topic];
       if(!legacy||!legacy.total) return null;
       return {attempts:legacy.total,correct:legacy.right||0,recent:(legacy.recent||[]).slice(-10),lastSeen:0,nextReview:0,streak:0};
     }catch(e){return null;}
@@ -112,7 +112,7 @@
 
   function topicEvidence(){
     const topics=new Set(Object.keys(TOPIC_LABELS));
-    try{Object.keys(JSON.parse(localStorage.getItem(LEGACY_TOPIC_STORE)||'{}')).forEach(t=>topics.add(t));}catch(e){}
+    try{Object.keys(JSON.parse(window.APStudyReliability.storage.getItem(LEGACY_TOPIC_STORE)||'{}')).forEach(t=>topics.add(t));}catch(e){}
     Object.keys(load().topics||{}).forEach(t=>topics.add(t));
     return [...topics].map(topic=>{
       const stat=combinedTopicStat(topic),m=mastery(stat),unit=Number(topic.split('.')[0]);
