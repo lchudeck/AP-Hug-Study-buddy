@@ -22,6 +22,7 @@
     removeItem(key){const name=String(key);memory.delete(name);if(!storage){storageFailure('remove');return false}try{storage.removeItem(name);return true}catch(error){storageFailure('remove');return false}},
     isPersistent(){return storageAvailable},diagnostics(){return diagnostics.map(item=>({...item}))}
   };
+  window.APStudyReliability={storage:window.APHGSafeStorage};
   function requiredAsset(target){
     if(!target?.matches?.('script[src],link[rel="stylesheet"][href]'))return false;
     const value=target.src||target.href;
