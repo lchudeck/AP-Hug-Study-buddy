@@ -1,0 +1,38 @@
+name: Reliability foundation
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'reliability-core.js'
+      - '*.js'
+      - 'tests/reliability-*.cjs'
+      - '.github/workflows/reliability-foundation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'reliability-core.js'
+      - '*.js'
+      - 'tests/reliability-*.cjs'
+      - '.github/workflows/reliability-foundation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reliability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate JavaScript syntax and safe-storage coverage
+        run: |
+          find . -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check
+          node tests/reliability-source-regression.cjs
+      - name: Exercise core journeys and browser failure modes
+        run: |
+          npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1
+          node tests/reliability-browser-regression.cjs

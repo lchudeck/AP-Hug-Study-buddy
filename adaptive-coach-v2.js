@@ -22,8 +22,8 @@
     [/hdi|gdp|gni/i,'7.3','gdp-hdi'],[/rostow|wallerstein|world-systems/i,'7.5','rostow-wallerstein'],[/outsourc|offshor/i,'7.6','outsourcing-offshoring']
   ];
 
-  function load(){try{return JSON.parse(localStorage.getItem(STORE)||'{"topics":{},"misconceptions":{},"frq":{}}')}catch(e){return {topics:{},misconceptions:{},frq:{}}}}
-  function save(s){localStorage.setItem(STORE,JSON.stringify(s));}
+  function load(){try{return JSON.parse((window.APStudyReliability?.storage||localStorage).getItem(STORE)||'{"topics":{},"misconceptions":{},"frq":{}}')}catch(e){return {topics:{},misconceptions:{},frq:{}}}}
+  function save(s){(window.APStudyReliability?.storage||localStorage).setItem(STORE,JSON.stringify(s));}
   function dayKey(ts=Date.now()){const d=new Date(ts);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
   function questionText(q){return q&&q.prompt?`${q.prompt} ${(q.choices||[]).join(' ')}`:`${q?.[1]||''} ${(q?.[2]||[]).join(' ')}`;}
   function infer(q){
@@ -109,7 +109,7 @@
     const mis=topMisconceptions(1)[0];if(mis)return mis.topic;
     const s=load(),rows=Object.keys(s.topics).map(t=>[t,topicProof(t)]).filter(x=>x[1]).sort((a,b)=>(a[1].mastered?1:0)-(b[1].mastered?1:0)||a[1].pct-b[1].pct);if(rows[0])return rows[0][0];
     try{const weak=window.APHGTopicSkillMastery?.weakTopics(1)?.[0];if(weak?.topic)return weak.topic;}catch(e){}
-    try{const ts=JSON.parse(localStorage.getItem(TOPIC_STORE)||'{}').topics||{};const k=Object.keys(ts)[0];if(k)return k;}catch(e){}
+    try{const ts=JSON.parse((window.APStudyReliability?.storage||localStorage).getItem(TOPIC_STORE)||'{}').topics||{};const k=Object.keys(ts)[0];if(k)return k;}catch(e){}
     return '2.5';
   }
   function chooseFrq(){const topic=targetTopic();return frqBank.find(x=>x.topic===topic)||frqBank.find(x=>x.unit===Number(topic.split('.')[0]))||frqBank[0];}

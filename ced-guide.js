@@ -103,10 +103,10 @@
   let cedNeedsWork=false;
   let cedMode='topics';
 
-  function cedState(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'{}')}catch(e){return {}}}
-  function saveCedState(s){localStorage.setItem(STORE_KEY,JSON.stringify(s));}
+  function cedState(){try{return JSON.parse((window.APStudyReliability?.storage||localStorage).getItem(STORE_KEY)||'{}')}catch(e){return {}}}
+  function saveCedState(s){(window.APStudyReliability?.storage||localStorage).setItem(STORE_KEY,JSON.stringify(s));}
   function toggleCed(id){const s=cedState();s[id]=!s[id];saveCedState(s);render();}
-  function resetCed(){if(confirm('Clear your CED confidence checkmarks?')){localStorage.removeItem(STORE_KEY);render();}}
+  function resetCed(){if(confirm('Clear your CED confidence checkmarks?')){(window.APStudyReliability?.storage||localStorage).removeItem(STORE_KEY);render();}}
   function setCedUnit(v){cedUnit=v;render();}
   function setCedQuery(v){cedQuery=String(v);render();}
   function setCedNeeds(v){cedNeedsWork=v;render();}

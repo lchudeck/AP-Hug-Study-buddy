@@ -36,11 +36,11 @@
     getMasterySnapshot=function(){
       const snap=oldSnapshot()||{attempted:0,accuracy:0,weak:null,flashNeed:0};
       try{
-        const legacy=JSON.parse(localStorage.getItem('aphgPracticeMasteryV4')||'{}');
+        const legacy=JSON.parse((window.APStudyReliability?.storage||localStorage).getItem('aphgPracticeMasteryV4')||'{}');
         const legacyRows=Object.values(legacy||{}).filter(x=>x&&x.total);
         const legacyAttempted=legacyRows.reduce((n,x)=>n+(x.total||0),0);
         const legacyCorrect=legacyRows.reduce((n,x)=>n+(x.right||0),0);
-        const review=JSON.parse(localStorage.getItem('aphgUnitReviewProgressV1')||'{"attempted":0,"correct":0}');
+        const review=JSON.parse((window.APStudyReliability?.storage||localStorage).getItem('aphgUnitReviewProgressV1')||'{"attempted":0,"correct":0}');
         const originalAttempted=snap.attempted||0,originalCorrect=Math.round(originalAttempted*(snap.accuracy||0)/100);
         snap.attempted=originalAttempted+legacyAttempted+(review.attempted||0);
         const totalCorrect=originalCorrect+legacyCorrect+(review.correct||0);
