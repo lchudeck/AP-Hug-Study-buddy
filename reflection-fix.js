@@ -8,7 +8,7 @@
     'Guessed':'🎯 Use the explanation above to identify the clue you should look for next time.'
   };
   function apply(reason,button){
-    try{localStorage.setItem(STORE,reason);}catch(e){}
+    try{window.APStudyReliability.storage.setItem(STORE,reason);}catch(e){}
     const reflection=(button&&button.closest('.reflection'))||document.querySelector('.reflection');
     if(!reflection) return;
     reflection.querySelectorAll('.why-btn').forEach(btn=>{
