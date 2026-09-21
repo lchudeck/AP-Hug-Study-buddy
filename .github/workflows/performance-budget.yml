@@ -28,11 +28,11 @@ jobs:
           print(f'Initial scripts: {len(local_scripts)}')
           print(f'Initial JavaScript bytes: {total_bytes:,}')
 
-          # Baseline guardrails after removing the obsolete PR6 navigation layer. Tighten as further consolidation reduces startup cost.
+          # Temporary ceiling while Maps 2.0 adds local map rendering/data logic. Sprint 1 reliability will consolidate startup scripts and tighten this budget again.
           if len(local_scripts) > 48:
               raise SystemExit('Performance regression: index.html loads more than 48 JavaScript files.')
-          if total_bytes > 965_000:
-              raise SystemExit('Performance regression: initial JavaScript exceeds 965,000 bytes.')
+          if total_bytes > 1_000_000:
+              raise SystemExit('Performance regression: initial JavaScript exceeds 1,000,000 bytes.')
           PY
 
       - name: Verify static asset caching

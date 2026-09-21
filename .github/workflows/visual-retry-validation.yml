@@ -3,7 +3,11 @@ name: Maps visual and retry variant validation
 on:
   pull_request:
     paths:
+      - 'index.html'
       - 'final-freshman-polish.js'
+      - 'final-freshman-polish.css'
+      - 'data/us-state-map-2020.json'
+      - 'data/world-political-map-110m.json'
       - '.github/workflows/visual-retry-validation.yml'
 
 permissions:
@@ -55,4 +59,107 @@ jobs:
             console.log('Maps visual and retry variant validation passed.');
             dom.window.close();process.exit(0);
           })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+
+ 
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser test dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Test authentic maps and every practice click
+        run: |
+          python3 -m http.server 8765 >/tmp/aphg-map-browser.log 2>&1 &
+          SERVER=$!; trap 'kill $SERVER' EXIT
+          node <<'NODE'
+          const {chromium}=require('playwright');
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const devices=[
+              {name:'iPhone',viewport:{width:390,height:844},isMobile:true,hasTouch:true},
+              {name:'Chromebook',viewport:{width:1366,height:768},isMobile:false,hasTouch:false},
+              {name:'Desktop',viewport:{width:1440,height:900},isMobile:false,hasTouch:false}
+            ];
+
+            for(const device of devices){
+              const context=await browser.newContext({
+                viewport:device.viewport,
+                isMobile:device.isMobile,
+                hasTouch:device.hasTouch
+              });
+              const page=await context.newPage();
+              const pageErrors=[];
+              page.on('pageerror',error=>pageErrors.push(error.message));
+
+              await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'networkidle'});
+              const mapsNav=page.locator('#nav button').filter({hasText:'Maps & Visuals'});
+              if(await mapsNav.count()!==1)throw new Error(device.name+': Maps & Visuals navigation missing');
+              await mapsNav.click();
+
+              await page.waitForFunction(()=>document.querySelectorAll('.authentic-us-map path').length>=51);
+              await page.waitForFunction(()=>document.querySelectorAll('.authentic-world-map path').length>=170);
+
+              const mapCards=page.locator('[data-map-detail]');
+              if(await mapCards.count()!==7)throw new Error(device.name+': expected seven map-type cards');
+              for(let i=0;i<7;i++){
+                await mapCards.nth(i).click();
+                const panel=page.locator('[data-map-panel]');
+                if(await panel.count()!==1||!await panel.isVisible())throw new Error(device.name+': map card '+(i+1)+' did not open');
+                await page.locator('[data-close-map]').click();
+              }
+
+              for(let i=0;i<7;i++){
+                const answers=page.locator('[data-map-answer]');
+                if(await answers.count()!==4)throw new Error(device.name+': Map Detective question '+(i+1)+' lacks four choices');
+                await answers.nth(i%4).click();
+                const next=page.locator('[data-map-next]');
+                if(await next.count()!==1)throw new Error(device.name+': Map Detective question '+(i+1)+' lacks Next');
+                await next.click();
+              }
+              if(!/Map Detective complete/i.test(await page.locator('#app').innerText()))throw new Error(device.name+': Map Detective did not complete');
+
+              await page.getByRole('button',{name:'Scale of Analysis'}).click();
+              await page.waitForFunction(()=>document.querySelectorAll('.authentic-world-map path').length>=170);
+              const scaleText=await page.locator('#app').innerText();
+              for(const label of ['Global analysis','National analysis','Regional analysis','State analysis']){
+                if(!scaleText.includes(label))throw new Error(device.name+': missing '+label);
+              }
+              if(!scaleText.includes('Map scale')||!scaleText.includes('Scale of analysis'))throw new Error(device.name+': map scale distinction missing');
+
+              for(let i=0;i<7;i++){
+                const answers=page.locator('[data-scale-answer]');
+                if(await answers.count()!==4)throw new Error(device.name+': Scale Challenge question '+(i+1)+' lacks four choices');
+                await answers.nth(i%4).click();
+                const next=page.locator('[data-scale-next]');
+                if(await next.count()!==1)throw new Error(device.name+': Scale Challenge question '+(i+1)+' lacks Next');
+                await next.click();
+              }
+              if(!/Scale challenge complete/i.test(await page.locator('#app').innerText()))throw new Error(device.name+': Scale Challenge did not complete');
+
+              const layout=await page.evaluate(()=>({
+                viewport:window.innerWidth,
+                scrollWidth:document.documentElement.scrollWidth,
+                enabledVisible:[...document.querySelectorAll('#app button:not([disabled])')].filter(button=>{
+                  const r=button.getBoundingClientRect(),style=getComputedStyle(button);
+                  return r.width>0&&r.height>0&&style.visibility!=='hidden'&&style.display!=='none';
+                }).length,
+                blockingOverlays:[...document.querySelectorAll('body *')].filter(el=>{
+                  const r=el.getBoundingClientRect(),style=getComputedStyle(el);
+                  return style.position==='fixed'&&style.pointerEvents!=='none'&&r.width>window.innerWidth*.8&&r.height>window.innerHeight*.8;
+                }).length
+              }));
+              if(layout.scrollWidth>layout.viewport+1)throw new Error(device.name+': horizontal overflow '+layout.scrollWidth+'/'+layout.viewport);
+              if(layout.enabledVisible<1)throw new Error(device.name+': no visible enabled controls remain');
+              if(layout.blockingOverlays)throw new Error(device.name+': full-screen overlay blocks taps');
+              if(pageErrors.length)throw new Error(device.name+': JavaScript errors: '+pageErrors.join(' | '));
+
+              console.log(device.name+' passed: maps loaded, 13 practice questions completed, no overflow or blocking overlay.');
+              await context.close();
+            }
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
           NODE
