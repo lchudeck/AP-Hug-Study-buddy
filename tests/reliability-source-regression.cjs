@@ -13,5 +13,6 @@ for(const file of files){
 }
 const core=fs.readFileSync(path.join(root,'reliability-core.js'),'utf8');
 assert.match(core,/memory\.set\(name,text\)/,'failed persistence retains session progress');
+assert.match(core,/APStudyReliability=\{storage:window\.APHGSafeStorage\}/,'reliability storage contract must be exposed');
 assert.ok(!/event\.message|error\.message|event\.reason/.test(core),'diagnostics must not retain messages or rejection reasons');
 console.log(`Reliability source regression passed across ${files.length} application scripts.`);
