@@ -17,8 +17,8 @@
     {verb:'Compare',rule:'Use the same criterion to state a meaningful similarity or difference.',prompt:'Compare formal and functional regions.',keys:['formal','functional','shared','node'],model:'A formal region is defined by a shared measurable trait, whereas a functional region is organized around a node and its connections.'}
   ];
   let view='dashboard',teachTopic='',verbIndex=0,verbAnswer='',verbFeedback=null,session=null,timer=null;
-  function load(){try{return Object.assign({unit:1,topic:'1.1',minutes:20,testDate:'',skills:{},confidence:{},ladder:{}},JSON.parse(localStorage.getItem(STORE)||'{}'))}catch(e){return{unit:1,topic:'1.1',minutes:20,testDate:'',skills:{},confidence:{},ladder:{}}}}
-  function save(s){localStorage.setItem(STORE,JSON.stringify(s));}
+  function load(){try{return Object.assign({unit:1,topic:'1.1',minutes:20,testDate:'',skills:{},confidence:{},ladder:{}},JSON.parse(window.APStudyReliability.storage.getItem(STORE)||'{}'))}catch(e){return{unit:1,topic:'1.1',minutes:20,testDate:'',skills:{},confidence:{},ladder:{}}}}
+  function save(s){window.APStudyReliability.storage.setItem(STORE,JSON.stringify(s));}
   function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function topics(){return window.APHGCEDGuide?.allTopics?.()||window.APHGTopicSkillMastery?.topicEvidence?.().map(x=>({id:x.topic,title:x.label,unit:x.unit,summary:'Use this CED topic to interpret geographic patterns and processes.',must:[]}))||[];}
   function topic(id){return topics().find(t=>t.id===id)||topics()[0]||{id:'1.1',unit:1,title:'Introduction to Maps',summary:'Interpret maps and spatial evidence.',must:[]};}
