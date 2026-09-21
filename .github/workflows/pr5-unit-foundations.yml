@@ -77,7 +77,7 @@ jobs:
           assert 'cdn.jsdelivr.net' not in route+visual
           assert len(json.loads(mapdata)['states']) == 51
           assert len(json.loads(worlddata)['countries']) >= 170
-          assert 'instructional schematic' in visual.lower()
+          assert 'instructional schematic' not in visual.lower(), 'Maps 2.0 should not fall back to generic schematic labeling'
           for practice_label in ['Map Type Interpretation','Spatial Pattern','Population Pyramid','Demographic Transition Model','Visual Map Analysis','Scale and GIS','Population Pyramid Analysis','DTM Interpretation','Visual MCQ','Visual FRQ']:
               assert practice_label in practice, practice_label
           print('PR5 full seven-unit mastery + flashcards + visuals validation passed')
