@@ -18,8 +18,8 @@
     idk:'Start here: read the short explanation once, then explain the big idea to yourself in one sentence before trying the new question.'
   };
 
-  function load(){try{return JSON.parse(window.APStudyReliability.storage.getItem(STORE)||'{"topics":{},"diagnoses":{},"history":[]}')}catch(e){return {topics:{},diagnoses:{},history:[]}}}
-  function save(s){window.APStudyReliability.storage.setItem(STORE,JSON.stringify(s));}
+  function load(){try{return JSON.parse((window.APStudyReliability?.storage||localStorage).getItem(STORE)||'{"topics":{},"diagnoses":{},"history":[]}')}catch(e){return {topics:{},diagnoses:{},history:[]}}}
+  function save(s){(window.APStudyReliability?.storage||localStorage).setItem(STORE,JSON.stringify(s));}
   function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function currentQuestion(){try{const qs=getQuizSet();return qs[qIndex%qs.length]}catch(e){return null}}
   function unitOf(q){return Number(q?.unit||String(q?.[0]||'').match(/\d+/)?.[0]||String(q?.topic||'').split('.')[0]||0)}
@@ -42,10 +42,10 @@
     const s=load(),t=s.topics[topic]||{misses:0,rescues:0,checks:0,correct:0,last:0};
     t.checks++;if(correct){t.correct++;t.rescues=Math.min(t.misses,t.rescues+1);}t.last=Date.now();s.topics[topic]=t;save(s);
     try{
-      const a=JSON.parse(window.APStudyReliability.storage.getItem(ADAPTIVE)||'{"topics":{},"misconceptions":{},"frq":{}}');
+      const a=JSON.parse((window.APStudyReliability?.storage||localStorage).getItem(ADAPTIVE)||'{"topics":{},"misconceptions":{},"frq":{}}');
       const x=a.topics[topic]||{attempts:0,correct:0,days:[],last:0,next:0,streak:0};x.attempts++;if(correct)x.correct++;x.streak=correct?(x.streak||0)+1:0;x.last=Date.now();
       const d=new Date(),dk=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;if(!x.days.includes(dk))x.days.push(dk);x.days=x.days.slice(-12);x.next=Date.now()+(correct?DAY:0);
-      a.topics[topic]=x;window.APStudyReliability.storage.setItem(ADAPTIVE,JSON.stringify(a));
+      a.topics[topic]=x;(window.APStudyReliability?.storage||localStorage).setItem(ADAPTIVE,JSON.stringify(a));
     }catch(e){}
   }
   function weakestTopic(unit){
