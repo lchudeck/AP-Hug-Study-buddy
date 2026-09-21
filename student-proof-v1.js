@@ -5,7 +5,7 @@
 
   const G=r=>{if(typeof go==='function')go(r)};
   const currentUnit=()=>{
-    try{return Number(JSON.parse(localStorage.getItem('aphgStudentSuccessV1')||'{}').unit)||1;}catch(e){return 1;}
+    try{return Number(JSON.parse(window.APStudyReliability.storage.getItem('aphgStudentSuccessV1')||'{}').unit)||1;}catch(e){return 1;}
   };
   window.studentProofRoute=p=>{
     if(p==='test')G('unitReview');
