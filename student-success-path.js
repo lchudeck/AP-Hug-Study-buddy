@@ -24,7 +24,7 @@
   function topic(id){return topics().find(t=>t.id===id)||topics()[0]||{id:'1.1',unit:1,title:'Introduction to Maps',summary:'Interpret maps and spatial evidence.',must:[]};}
   function topicOf(q){return String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion?.(q)||'');}
   function norm(q){if(Array.isArray(q))return{unit:Number(String(q[0]).replace(/\D/g,'')),topic:topicOf(q),prompt:q[1],choices:[...q[2]],answer:q[3],explain:q[4],stimulus:q.stimulus||q.visual||'',stimulusTitle:q.stimulusTitle||''};return{unit:Number(q.unit),topic:String(q.topic||''),prompt:q.prompt||q.q,choices:[...(q.choices||[])],answer:q.answer,explain:q.explain||q.why,stimulus:q.stimulus||q.visual||'',stimulusTitle:q.stimulusTitle||''};}
-  function bank(){const rows=[...quiz.slice(0,35),...(window.APHG_IMAGE_MCQ_BANK||[]),...(window.APHG_STIMULUS_SET_QUESTIONS||[]),...(window.APHG_STIMULUS_SET_QUESTIONS_EXTRA||[]),...(window.APHG_REAL_DATA_QUESTIONS||[])].map(norm).filter(q=>q.prompt&&q.choices.length===4&&new Set(q.choices).size===4&&q.choices.includes(q.answer)&&q.explain);const seen=new Set();return rows.filter(q=>{const k=q.prompt.trim().toLowerCase();if(seen.has(k))return false;seen.add(k);return true;});}
+  function bank(){return window.APHGStudentQuestionPool().map(q=>({...q,choices:window.APHGShuffleChoices(q.choices,q.prompt)}));}
   function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}
   function weakest(){return window.APHGTopicSkillMastery?.weakTopics?.(1)?.[0]||null;}
   function route(v){if(v!=='spiral'&&timer){clearInterval(timer);timer=null;}view=v;active='studentSuccess';render();window.scrollTo({top:0,behavior:'smooth'});}

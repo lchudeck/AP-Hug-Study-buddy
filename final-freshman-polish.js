@@ -193,6 +193,10 @@
     {view:'washington',q:'To investigate differences hidden inside Washington, what should a geographer do next?',choices:['Switch to a world map','Remove the legend','Use county- or neighborhood-level data','Replace population data with a political boundary only'],answer:2,why:'A finer local scale can reveal variation that a statewide total hides.'}
   ];
 
+  function shuffledActivity(a){const correct=a.choices[a.answer],choices=window.APHGShuffleChoices(a.choices,a.q);return {...a,choices,answer:choices.indexOf(correct)};}
+  mapActivities.splice(0,mapActivities.length,...window.APHGSessionShuffle(mapActivities.map(shuffledActivity)));
+  scaleActivities.splice(0,scaleActivities.length,...window.APHGSessionShuffle(scaleActivities.map(shuffledActivity)));
+
   function mapCard(key){const m=mapInfo[key];return `<button type="button" class="visual-card visual-card-button" data-map-detail="${key}" aria-expanded="false"><span class="visual-card-title">${m.title}</span><span class="visual-card-sub">${m.notice}</span>${mapSvg(key)}<span class="visual-card-cta">Click to learn how to read it →</span></button>`;}
   function mapDetail(key){const m=mapInfo[key];return `<div class="map-detail-panel" data-map-panel="${key}"><div><span class="pill">Map skill</span><h4>${m.title}</h4></div><div class="map-detail-grid"><div><b>Best for</b><p>${m.use}</p></div><div><b>Limitation</b><p>${m.limit}</p></div><div><b>AP move</b><p>${m.ap}</p></div></div><button type="button" class="btn-secondary" data-close-map>Close</button></div>`;}
 

@@ -24,6 +24,8 @@
       ['Which statement best describes the DTM?',['It is a model that summarizes a common demographic pattern, not a universal law','It predicts migration perfectly','It measures density directly','It assumes every country changes at the same speed'],'It is a model that summarizes a common demographic pattern, not a universal law','Countries can follow different paths and timelines.']]}
   ];
 
+  const shuffleQuestion=q=>[q[0],window.APHGShuffleChoices(q[1],q[0]),q[2],q[3]];
+  sets.forEach(set=>{if(set.qs)set.qs=window.APHGSessionShuffle(set.qs.map(shuffleQuestion));else if(set.q)set.q=shuffleQuestion(set.q);});
   const frqs=[
     {unit:1,title:'Visual Map Analysis',stimulus:`<svg viewBox="0 0 520 280" role="img" aria-label="Instructional proportional symbol map schematic" class="vp-svg"><rect x="35" y="35" width="450" height="190" rx="16" class="vp-land"/><circle cx="120" cy="125" r="18" class="vp-symbol"/><circle cx="260" cy="95" r="42" class="vp-symbol"/><circle cx="395" cy="160" r="28" class="vp-symbol"/><text x="65" y="255">Larger circles = larger city population</text></svg>`,parts:[
       ['A','Identify','the map type shown.','A proportional-symbol (graduated-symbol) map.'],

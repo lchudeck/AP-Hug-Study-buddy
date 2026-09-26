@@ -61,16 +61,14 @@
   }
   function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}
   function buildExam(){
-    const sources=[...seedExam];
-    try{if(typeof quiz!=='undefined') sources.push(...quiz);}catch(e){}
-    ['APHG_IMAGE_MCQ_BANK','APHG_STIMULUS_SET_QUESTIONS','APHG_STIMULUS_SET_QUESTIONS_EXTRA','APHG_REAL_DATA_QUESTIONS','APHG_AUTHENTIC_STIMULUS_QUESTIONS'].forEach(k=>{try{if(Array.isArray(window[k]))sources.push(...window[k]);}catch(e){}});
-    const seen=new Set(),valid=sources.map(norm).filter(q=>q&&q.prompt&&q.choices.length===4&&q.answer&&q.choices.includes(q.answer)).filter(q=>{const k=q.prompt.trim().toLowerCase();if(seen.has(k))return false;seen.add(k);return true;});
+    const seen=new Set();
+    const valid=[...window.APHGStudentQuestionPool(),...seedExam].filter(q=>{const key=q.prompt.trim().toLowerCase();if(seen.has(key))return false;seen.add(key);return true;});
     const buckets={1:[],2:[],3:[],4:[],5:[],6:[],7:[],0:[]};shuffle(valid).forEach(q=>(buckets[q.unit]||buckets[0]).push(q));
     const out=[];let moved=true;while(out.length<60&&moved){moved=false;for(let u=1;u<=7&&out.length<60;u++){if(buckets[u].length){out.push(buckets[u].shift());moved=true;}}if(out.length<60&&buckets[0].length){out.push(buckets[0].shift());moved=true;}}
-    while(out.length<60){out.push(seedExam[out.length%seedExam.length]);}
-    return out.slice(0,60);
+    return out.slice(0,60).map(q=>({...q,choices:window.APHGShuffleChoices(q.choices,q.prompt)}));
   }
 
+  const mapDeck=window.APHGSessionShuffle(maps);
   let mi=0,mc=null,vi=0,vc=null,examQs=[],stage='intro',qi=0,fi=0,answers={},frqAnswers=['','',''],mcqStart=0,frqStart=0,submitWarn=false;
   const old=render;
   render=function(){
@@ -81,7 +79,7 @@
   };
 
   window.mapPick=n=>{if(mc===null){mc=Number(n);render();}};
-  window.mapNext=()=>{mi=(mi+1)%maps.length;mc=null;render();};
+  window.mapNext=()=>{mi=(mi+1)%mapDeck.length;mc=null;render();};
   window.vocabPick=n=>{if(vc===null){vc=Number(n);render();}};
   window.vocabNext=()=>{vi=(vi+1)%vocab.length;vc=null;render();};
   window.finalStart=()=>{examQs=buildExam();stage='mcq';qi=0;fi=0;answers={};frqAnswers=['','',''];mcqStart=Date.now();frqStart=0;submitWarn=false;render();window.scrollTo(0,0);};
@@ -93,8 +91,8 @@
   window.finalFrqMove=d=>{fi=Math.max(0,Math.min(2,fi+d));render();window.scrollTo(0,0);};
   window.finalFinish=()=>{stage='results';render();window.scrollTo(0,0);};
 
-  function practiceCard(q,choice,pick,next,label,visual){const ok=choice!==null&&q.c[choice]===q.a;return `<section class="card"><b>${label}</b>${visual?`<div class="box-info" style="margin-top:10px">${visual}</div>`:''}<h3>${q.q}</h3><div class="quiz-options">${q.c.map((o,i)=>`<button class="quiz-option ${choice!==null&&o===q.a?'correct':choice===i&&o!==q.a?'wrong':''}" onclick="${pick}(${i})" ${choice!==null?'disabled':''}>${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>${choice!==null?`<div class="${ok?'box-good':'box-warn'}"><b>${ok?'Correct':'Review the evidence.'}</b><p>${q.e}</p></div><button class="btn-primary" onclick="${next}()">Next →</button>`:''}</section>`;}
-  function mapPage(){const q=maps[mi];return `<main class="wrap"><section class="card"><h2>🗺️ Map & Visual Literacy Lab</h2><p>Practice the map-reading decisions that appear throughout AP Human Geography: map type, legend, units, totals versus rates, projection distortion, map scale, and scale of analysis.</p><div class="box-info"><b>Use this routine every time:</b> Title → legend → units → scale → strongest pattern → limitation.</div></section>${practiceCard(q,mc,'mapPick','mapNext',`Question ${mi+1} of ${maps.length}`,q.v)}</main>`;}
+  function practiceCard(q,choice,pick,next,label,visual){q={...q,c:window.APHGShuffleChoices(q.c,q.q)};const ok=choice!==null&&q.c[choice]===q.a;return `<section class="card"><b>${label}</b>${visual?`<div class="box-info" style="margin-top:10px">${visual}</div>`:''}<h3>${q.q}</h3><div class="quiz-options">${q.c.map((o,i)=>`<button class="quiz-option ${choice!==null&&o===q.a?'correct':choice===i&&o!==q.a?'wrong':''}" onclick="${pick}(${i})" ${choice!==null?'disabled':''}>${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>${choice!==null?`<div class="${ok?'box-good':'box-warn'}"><b>${ok?'Correct':'Review the evidence.'}</b><p>${q.e}</p></div><button class="btn-primary" onclick="${next}()">Next →</button>`:''}</section>`;}
+  function mapPage(){const q=mapDeck[mi];return `<main class="wrap"><section class="card"><h2>🗺️ Map & Visual Literacy Lab</h2><p>Practice the map-reading decisions that appear throughout AP Human Geography: map type, legend, units, totals versus rates, projection distortion, map scale, and scale of analysis.</p><div class="box-info"><b>Use this routine every time:</b> Title → legend → units → scale → strongest pattern → limitation.</div></section>${practiceCard(q,mc,'mapPick','mapNext',`Question ${mi+1} of ${mapDeck.length}`,q.v)}</main>`;}
   function vocabPage(){const x=vocab[vi],q={q:x[0],c:x[1],a:x[2],e:x[3]};return `<main class="wrap"><section class="card"><h2>🧠 Use the Vocab</h2><p>This comes after flashcards. Instead of reciting a definition, recognize the concept inside an AP-style geographic situation.</p><div class="box-good"><b>Goal:</b> “I can use the word,” not just “I have seen the word.”</div></section>${practiceCard(q,vc,'vocabPick','vocabNext',`Application ${vi+1} of ${vocab.length}`,'')}</main>`;}
 
   function intro(){return `<main class="wrap"><section class="card"><h2>🎓 Final AP Mode</h2><div class="box-warn"><b>No training wheels:</b> no hints, no instant correctness, and no explanations while you work.</div><h3>2027-style full simulation</h3><p><b>Section I:</b> 60 multiple-choice questions · 60 minutes.</p><p><b>Section II:</b> 3 free-response questions · 75 minutes.</p><p>The questions are original Study Buddy practice, not released College Board exam questions. Your MCQ score is a readiness measure, not an official AP 1–5 prediction.</p><button class="btn-primary" onclick="finalStart()">Begin full simulation</button></section></main>`;}

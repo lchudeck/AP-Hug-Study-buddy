@@ -4,6 +4,12 @@ const fs=require('node:fs');
 const data=JSON.parse(fs.readFileSync('data/us-state-map-2020.json','utf8'));
 const route=fs.readFileSync('visual-learning.js','utf8');
 const maps=fs.readFileSync('final-freshman-polish.js','utf8');
+const stimulus=fs.readFileSync('real-data-stimulus.js','utf8');
+assert.ok(fs.existsSync('data/census-urban-2020.png'),'Census map must be bundled');
+for(const file of ['real-data-stimulus.js','final-freshman-polish.js','visual-learning.js']){
+  assert.doesNotMatch(fs.readFileSync(file,'utf8'),/<img\b[^>]*\bsrc=[\"']https?:\/\//i,`${file} must not render a remote image`);
+}
+assert.match(stimulus,/data\/census-urban-2020\.png/);
 
 assert.equal(data.states.length,51,'map must include 50 states plus District of Columbia');
 assert.equal(data.states.reduce((sum,state)=>sum+state.population,0),331449281,'population snapshot must match the official 2020 U.S. resident total');

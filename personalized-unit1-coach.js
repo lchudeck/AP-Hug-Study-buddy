@@ -103,7 +103,7 @@
     if(/\bgis\b|geographic information system|remote sensing|satellite navigation|online mapping|survey|interview|census|qualitative|quantitative|satellite imagery|field observation|landscape analysis|photographic interpretation/i.test(t))return '1.2';
     return '1.1';
   }
-  function choicesOf(q){return q?.choices||q?.[2]||[]}
+  function choicesOf(q){const choices=q?.choices||q?.[2]||[];return window.APHGShuffleChoices(choices,q?.q||q?.prompt||q?.[1]||'');}
   function answerOf(q){return q?.answer||q?.[3]}
   function keyFor(q){return (q?.id||q?.prompt||q?.q||q?.[1]||'unknown').toString().slice(0,180)}
 
@@ -156,7 +156,7 @@
       root.innerHTML=shell(`<h2 style="margin:8px 0">Teach Me: ${esc(L.title)}</h2><div style="background:#f2f4f8;border-radius:12px;padding:12px;margin-bottom:10px"><b>Your strategy</b><p style="margin-bottom:0">${esc(help)}</p></div><div style="background:#eef7ff;border-radius:12px;padding:14px"><b>The idea</b><p style="margin-bottom:0">${esc(L.teach)}</p></div><div style="background:#fff8dc;border-radius:12px;padding:14px;margin-top:10px"><b>Quick example</b><p style="margin-bottom:0">${esc(L.example)}</p></div><button class="btn-primary" style="width:100%;margin-top:14px" onclick="window.APHGPersonalCoach.goCheck()">Try a new question</button>`);return;
     }
     const c=L.checks[state.checkIndex%L.checks.length];
-    root.innerHTML=shell(`<h2 style="margin:8px 0">Prove it with a new question</h2><p><b>${esc(c.q)}</b></p><div style="display:grid;gap:8px">${c.choices.map(x=>`<button class="btn-secondary" ${state.feedback?'disabled':''} onclick="window.APHGPersonalCoach.check(${JSON.stringify(x).replace(/"/g,'&quot;')})">${esc(x)}</button>`).join('')}</div>${state.feedback?`<div style="margin-top:12px;padding:14px;border-radius:12px;background:${state.feedback.ok?'#edf9f0':'#fff4e5'}"><b>${state.feedback.ok?'Yes — that is the idea.':'Not yet — use the explanation, then try a different check.'}</b><p>${esc(state.feedback.why)}</p><p><b>What should I study next?</b> ${esc(nextStepText())}</p>${state.feedback.ok?`<button class="btn-primary" onclick="window.APHGPersonalCoach.close()">Return to practice</button>`:`<button class="btn-primary" onclick="window.APHGPersonalCoach.tryAnother()">Try another new question</button>`}</div>`:''}`);
+    root.innerHTML=shell(`<h2 style="margin:8px 0">Prove it with a new question</h2><p><b>${esc(c.q)}</b></p><div style="display:grid;gap:8px">${window.APHGShuffleChoices(c.choices,c.q).map(x=>`<button class="btn-secondary" ${state.feedback?'disabled':''} onclick="window.APHGPersonalCoach.check(${JSON.stringify(x).replace(/"/g,'&quot;')})">${esc(x)}</button>`).join('')}</div>${state.feedback?`<div style="margin-top:12px;padding:14px;border-radius:12px;background:${state.feedback.ok?'#edf9f0':'#fff4e5'}"><b>${state.feedback.ok?'Yes — that is the idea.':'Not yet — use the explanation, then try a different check.'}</b><p>${esc(state.feedback.why)}</p><p><b>What should I study next?</b> ${esc(nextStepText())}</p>${state.feedback.ok?`<button class="btn-primary" onclick="window.APHGPersonalCoach.close()">Return to practice</button>`:`<button class="btn-primary" onclick="window.APHGPersonalCoach.tryAnother()">Try another new question</button>`}</div>`:''}`);
   }
 
   window.APHGPersonalCoach={close,reason:chooseReason,goCheck,check,tryAnother,openFor,nextStep:nextStepText,weakestTopic};
