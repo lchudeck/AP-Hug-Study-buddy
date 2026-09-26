@@ -12,7 +12,7 @@
   function seen(){try{return JSON.parse((window.APStudyReliability?.storage||localStorage).getItem(seenKey)||'{}')}catch(e){return {}}} function saveSeen(v){(window.APStudyReliability?.storage||localStorage).setItem(seenKey,JSON.stringify(v));}
   function baseFor(unit){
     const rows=quiz.filter(q=>Number(String(q[0]).replace(/\D/g,''))===unit),topics=TOPICS[unit];
-    const base=rows.map((q,i)=>({id:`ur-base-${unit}-${i+1}`,unit,topic:String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion(q)||topics[i%topics.length]),prompt:q[1],choices:q[2],answer:q[3],explain:q[4]}));
+    const base=rows.map((q,i)=>({id:`ur-base-${unit}-${i+1}`,unit,topic:String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion(q)||topics[i%topics.length]),prompt:q[1],choices:q[2],answer:q[3],explain:q[4],stimulus:q.stimulus||q.visual||''}));
     const extras=[...(window.APHG_IMAGE_MCQ_BANK||[]),...(window.APHG_STIMULUS_SET_QUESTIONS||[]),...(window.APHG_STIMULUS_SET_QUESTIONS_EXTRA||[]),...(window.APHG_REAL_DATA_QUESTIONS||[])].filter(q=>q.unit===unit).map((q,i)=>({id:q.id||`ur-extra-${unit}-${i}`,unit,topic:q.topic||topics[i%topics.length],prompt:q.prompt||q.q,choices:q.choices,answer:q.answer,explain:q.explain,stimulus:q.stimulus||q.visual,setId:q.setId}));
     return base.concat(extras);
   }
