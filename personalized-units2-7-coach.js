@@ -28,7 +28,7 @@
     try{const t=String(window.APHGTopicSkillMastery?.topicFromQuestion?.(q)||'');if(lessons[t])return t}catch(e){}
     const u=unitOf(q);return unitTopics[u]?.[0]||null;
   }
-  function choicesOf(q){const choices=q?.choices||q?.[2]||[];return window.APHGShuffleChoices(choices,q?.q||q?.prompt||q?.[1]||'');}
+  function choicesOf(q){const choices=q?.choices||q?.[2]||[];return window.APHGShuffleChoices?.(choices,q?.q||q?.prompt||q?.[1]||'')||choices;}
   function answerOf(q){return q?.answer??q?.a??q?.[3]}
   function keyFor(q){return (q?.id||q?.prompt||q?.q||q?.[1]||'unknown').toString().slice(0,180)}
 
@@ -84,7 +84,7 @@
       root.innerHTML=shell(`<h2 style="margin:8px 0">Teach Me: ${esc(L.title)}</h2><div style="background:#f3f0ff;border-radius:12px;padding:14px"><b>Your strategy</b><p style="margin-bottom:0">${esc(guidance)}</p></div><div style="background:#eef7ff;border-radius:12px;padding:14px;margin-top:10px"><b>The idea</b><p style="margin-bottom:0">${esc(L.teach)}</p></div><div style="background:#fff8dc;border-radius:12px;padding:14px;margin-top:10px"><b>Quick example</b><p style="margin-bottom:0">${esc(L.example)}</p></div><button class="btn-primary" style="width:100%;margin-top:14px" onclick="window.APHGPersonalCoach27.goCheck()">Try a new question</button>`);return;
     }
     const c=L.checks[state.checkIndex%L.checks.length];
-    root.innerHTML=shell(`<h2 style="margin:8px 0">Prove it with a new question</h2><p><b>${esc(c.q)}</b></p><div style="display:grid;gap:8px">${window.APHGShuffleChoices(c.choices,c.q).map(x=>`<button class="btn-secondary" ${state.feedback?'disabled':''} onclick="window.APHGPersonalCoach27.check(${JSON.stringify(x).replace(/"/g,'&quot;')})">${esc(x)}</button>`).join('')}</div>${state.feedback?`<div style="margin-top:12px;padding:14px;border-radius:12px;background:${state.feedback.ok?'#edf9f0':'#fff4e5'}"><b>${state.feedback.ok?'Yes — that is the idea.':'Not yet — use the explanation, then try a different check.'}</b><p>${esc(state.feedback.why)}</p><p><b>What should I study next?</b> ${esc(nextStepText(state.topic))}</p>${state.feedback.ok?`<button class="btn-primary" onclick="window.APHGPersonalCoach27.close()">Return to practice</button>`:`<button class="btn-primary" onclick="window.APHGPersonalCoach27.tryAnother()">Try another new question</button>`}</div>`:''}`);
+    root.innerHTML=shell(`<h2 style="margin:8px 0">Prove it with a new question</h2><p><b>${esc(c.q)}</b></p><div style="display:grid;gap:8px">${(window.APHGShuffleChoices?.(c.choices,c.q)||c.choices).map(x=>`<button class="btn-secondary" ${state.feedback?'disabled':''} onclick="window.APHGPersonalCoach27.check(${JSON.stringify(x).replace(/"/g,'&quot;')})">${esc(x)}</button>`).join('')}</div>${state.feedback?`<div style="margin-top:12px;padding:14px;border-radius:12px;background:${state.feedback.ok?'#edf9f0':'#fff4e5'}"><b>${state.feedback.ok?'Yes — that is the idea.':'Not yet — use the explanation, then try a different check.'}</b><p>${esc(state.feedback.why)}</p><p><b>What should I study next?</b> ${esc(nextStepText(state.topic))}</p>${state.feedback.ok?`<button class="btn-primary" onclick="window.APHGPersonalCoach27.close()">Return to practice</button>`:`<button class="btn-primary" onclick="window.APHGPersonalCoach27.tryAnother()">Try another new question</button>`}</div>`:''}`);
   }
 
   window.APHGPersonalCoach27={close,reason:chooseReason,goCheck,check,tryAnother,openFor,nextStep:nextStepText,weakestTopic,_lessonsForValidation:lessons,_topicNamesForValidation:topicNames};

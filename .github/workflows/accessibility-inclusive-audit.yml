@@ -21,6 +21,7 @@ jobs:
           const fs=require('fs');
           const css=fs.readFileSync('accessibility-inclusive.css','utf8');
           const js=fs.readFileSync('accessibility-inclusive-v3.js','utf8');
+          const index=fs.readFileSync('index.html','utf8');
           const loader=fs.readFileSync('flashcard-nav-fix.js','utf8');
           const problems=[];
           const need=(text,re,msg)=>{if(!re.test(text))problems.push(msg)};
@@ -39,9 +40,9 @@ jobs:
           need(js,/Correct:/,'Correct answers lack non-color cue');
           need(js,/Incorrect:/,'Incorrect answers lack non-color cue');
           need(js,/labelField/,'Form controls lack fallback accessible labeling');
-          need(loader,/accessibility-inclusive\.css/,'Accessibility CSS is not loaded');
-          need(loader,/accessibility-inclusive-v3\.js/,'Accessibility JS is not loaded');
-          need(loader,/loadUnits27CedFixes[\s\S]*loadAccessibility/,'Accessibility layer must load after personalized coach correction layer');
+          need(index,/accessibility-inclusive\.css\?v=/,'Accessibility CSS is not loaded directly');
+          need(index,/script defer src="accessibility-inclusive-v3\.js\?v=/,'Accessibility JS is not loaded directly');
+          need(loader,/loadUnits27CedFixes/,'Personalized coach correction layer is missing');
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
           console.log('Accessibility audit passed: focus, target size, motion, forced colors, skip link, live regions, dialog keyboard/focus handling, flashcards, form labels, dynamic feedback, and non-color cues.');
           NODE
