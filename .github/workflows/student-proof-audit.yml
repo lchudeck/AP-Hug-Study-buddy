@@ -41,7 +41,7 @@ jobs:
           set -euo pipefail
           grep -Fq "G('unitReview')" student-proof-v1.js
           grep -Fq "G('practiceMastery')" student-proof-v1.js
-          grep -Fq "G('apSim')" student-proof-v1.js
+          grep -Fq "startFullExam():G('simulator')" student-proof-v1.js
           grep -Fq "route('teach')" student-success-path.js
           grep -Fq "route('verbs')" student-success-path.js
       - name: Preserve exam and nonrepeat guardrails

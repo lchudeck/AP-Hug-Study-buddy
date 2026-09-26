@@ -101,16 +101,19 @@
   '7.5':['countries follow one internal sequence toward mass consumption','transport costs organize farming around one market','settlements form a threshold-and-range hierarchy'],
   '7.6':['countries produce for their own households','governments transfer production authority to regions','each production site is proportionally smaller']
  };
+ const vettedReasoningTopics=new Set(['3.4','3.6','4.4','4.6']);
  const lowerLead=text=>/^[A-Z]{2,}\b/.test(text)?text:text.charAt(0).toLowerCase()+text.slice(1);
  specs.forEach((s,idx)=>{
    const [topic,concept,def,scenario,why,distr,mis]=s,unit=Number(topic.split('.')[0]),base=['Unit '+unit];
    const reasonAnswer=`This illustrates ${concept} because ${lowerLead(why)}`;
-   const reasonDistractors=(reasoningDistractors[topic]||['a related feature is mistaken for the defining mechanism','the outcome is mistaken for evidence of the process','similar scale is mistaken for the same relationship']).map((reason,i)=>`This illustrates ${distr[i]} because ${reason}.`);
+   const reasonDistractors=(reasoningDistractors[topic]||[]).map((reason,i)=>`This illustrates ${distr[i]} because ${reason}.`);
    const forms=[
      Object.assign([...base,`Which term best matches this definition: ${def}?`,[concept,...distr],concept,why],{topic,skill:'concept',difficulty:1,misconception:mis}),
-     Object.assign([...base,`${scenario} Which concept best explains the situation?`,[concept,...distr],concept,why],{topic,skill:skillFor(topic),difficulty:2,misconception:mis}),
-     Object.assign([...base,`${scenario} ${reasoningStems[idx%reasoningStems.length]}`,[reasonAnswer,...reasonDistractors],reasonAnswer,`${concept} fits the evidence because ${lowerLead(why)} The defining relationship is ${def}; ${distr[0]} does not account for that relationship.`,],{topic,skill:'reasoning',difficulty:3,misconception:mis})
+     Object.assign([...base,`${scenario} Which concept best explains the situation?`,[concept,...distr],concept,why],{topic,skill:skillFor(topic),difficulty:2,misconception:mis})
    ];
+   if(reasonDistractors.length===3 && vettedReasoningTopics.has(topic))forms.push(
+     Object.assign([...base,`${scenario} ${reasoningStems[idx%reasoningStems.length]}`,[reasonAnswer,...reasonDistractors],reasonAnswer,`${concept} fits the evidence because ${lowerLead(why)} The defining relationship is ${def}; ${distr[0]} does not account for that relationship.`,],{topic,skill:'reasoning',difficulty:3,misconception:mis})
+   );
    forms.forEach(q=>{if(!existing.has(q[1])){quiz.push(q);existing.add(q[1]);}});
  });
  window.units27DepthV3=specs;

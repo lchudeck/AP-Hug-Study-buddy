@@ -68,7 +68,7 @@ jobs:
             if(!ta)problems.push('FRQ main answer box missing');else{
               ta.value='A. qwrty\nB. nonsense\nC. because because\nD. random\nE. blah\nF. zzz\nG. qqq';ta.dispatchEvent(new w.Event('input',{bubbles:true}));btn(/Check my answer/i)?.click();await sleep(350);
               const score=d.querySelector('.score-circle')?.textContent.trim()||'';if(!/^0\s*\//.test(score))problems.push('Nonsense FRQ not 0 points: '+score);
-              text=d.body.textContent;if(!/(0\/1|Needs self-check)/i.test(text))problems.push('FRQ parts show neither a verified 0/1 result nor a self-check status');if(!/Strong rewrite\/model/i.test(text))problems.push('FRQ strong model missing');if(!/(How to improve|missing|needs|why)/i.test(text))problems.push('FRQ improvement explanation missing');
+              text=d.body.textContent;if(!/(0\/1|Could earn the point|Too brief)/i.test(text))problems.push('FRQ parts show neither a verified 0/1 result nor a self-check status');if(!/Strong rewrite\/model/i.test(text))problems.push('FRQ strong model missing');if(!/(How to improve|missing|needs|why|compare your wording|add a specific example)/i.test(text))problems.push('FRQ improvement explanation missing');
               const blanks=[...d.querySelectorAll('.part-fix')].filter(x=>/Strong rewrite\/model:\s*$/.test(x.textContent.trim()));if(blanks.length)problems.push('Blank strong rewrite/model found');
             }
 

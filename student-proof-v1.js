@@ -20,7 +20,7 @@
       }
       G('frq');
     }
-    else if(p==='ap')G('apSim');
+    else if(p==='ap')typeof startFullExam==='function'?startFullExam():G('simulator');
     else if(p==='unsure')typeof sspGo==='function'?sspGo('plan'):G('studentSuccess');
     else G('home');
   };

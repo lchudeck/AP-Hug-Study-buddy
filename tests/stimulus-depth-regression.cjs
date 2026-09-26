@@ -28,10 +28,11 @@ for(const q of sourceQuestions){
 
 const quiz=vm.runInContext('quiz',sandbox);
 const reasoning=quiz.filter(q=>q.difficulty===3&&/^This illustrates /.test(q[3]||''));
-assert.ok(reasoning.length>=59,'the Units 2–7 reasoning bank must load its upgraded application items');
+assert.ok(reasoning.length>=4&&reasoning.length<20,'only vetted topic-specific reasoning items should remain');
 assert.ok(reasoning.every(q=>!/A student says|Which correction is strongest/i.test(q[1])),'repetitive correction stems must be removed');
-assert.ok(new Set(reasoning.map(q=>q[1].split('?').at(-2)?.split('. ').at(-1))).size>=4,'reasoning prompts must rotate multiple AP-style frames');
-assert.ok(reasoning.every(q=>String(q[4]).length>=120),'reasoning items need concept, evidence, and distractor feedback');
+assert.ok(new Set(reasoning.map(q=>q[1].split('?').at(-2)?.split('. ').at(-1))).size>=2,'remaining reasoning prompts must use varied AP-style frames');
+assert.ok(reasoning.every(q=>String(q[4]).length>=120),'remaining reasoning items need concept, evidence, and distractor feedback');
+assert.doesNotMatch(quiz.flatMap(q=>q[2]||[]).join('\n'),/a related feature is mistaken for the defining mechanism|the outcome is mistaken for evidence of the process|similar scale is mistaken for the same relationship/i);
 
 for(const bankName of ['APHG_IMAGE_MCQ_BANK','APHG_STIMULUS_SET_QUESTIONS','APHG_STIMULUS_SET_QUESTIONS_EXTRA','APHG_REAL_DATA_QUESTIONS']){
   const bank=Array.from(sandbox[bankName]||[]);

@@ -1,5 +1,3 @@
-// Shared FRQ coaching verifier — exactly 1 possible point per labeled part.
-// This is intentionally conservative: uncertain wording is sent to rubric/self-check instead of being scored as wrong.
 (function(){
   if(window.__frqPartScoringInstalled) return;
   window.__frqPartScoringInstalled=true;
@@ -68,13 +66,15 @@
       return {letter,verb,earned:true,status:'verified',feedback:`Part ${letter}: 1/1. Study Buddy found enough APHG content and task completion to verify this point. This is a coaching check—not an official AP score.`,fix:model};
     }
 
+    const tooBrief=verb==='Explain'?(wc<12||!hasCausalRelationship(text)):wc<6;
+    const selfCheckLevel=tooBrief?'too-brief':'could-earn';
     const reasons=[];
     if(verb==='Explain'&&!hasCausalRelationship(text))reasons.push('make the cause-and-effect relationship explicit');
     if(wc<4)reasons.push('add enough detail to complete the task verb');
     if(!contentOK)reasons.push('compare the geographic idea/example with the rubric');
     return {
-      letter,verb,earned:false,status:'unverified',coachingOnly:true,
-      feedback:`Part ${letter}: Not automatically verified—compare with the rubric.${reasons.length?' '+reasons.join('; ')+'.':''} A legitimate synonym, alternate example, or clearly explained relationship may still earn the point.`,
+      letter,verb,earned:false,status:'unverified',coachingOnly:true,selfCheckLevel,
+      feedback:tooBrief?'Too brief to earn the point yet — add a specific example and explain the cause/effect.':'Could earn the point — compare your wording with the model answer.',
       fix:model
     };
   }
