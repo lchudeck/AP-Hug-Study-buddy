@@ -1,5 +1,3 @@
-// Shared FRQ coaching verifier — exactly 1 possible point per labeled part.
-// This is intentionally conservative: uncertain wording is sent to rubric/self-check instead of being scored as wrong.
 (function(){
   if(window.__frqPartScoringInstalled) return;
   window.__frqPartScoringInstalled=true;

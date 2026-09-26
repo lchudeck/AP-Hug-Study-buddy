@@ -111,7 +111,6 @@
      Object.assign([...base,`Which term best matches this definition: ${def}?`,[concept,...distr],concept,why],{topic,skill:'concept',difficulty:1,misconception:mis}),
      Object.assign([...base,`${scenario} Which concept best explains the situation?`,[concept,...distr],concept,why],{topic,skill:skillFor(topic),difficulty:2,misconception:mis})
    ];
-   // Only vetted concept-specific reasons can form a third question. Other specs keep both valid forms.
    if(reasonDistractors.length===3 && vettedReasoningTopics.has(topic))forms.push(
      Object.assign([...base,`${scenario} ${reasoningStems[idx%reasoningStems.length]}`,[reasonAnswer,...reasonDistractors],reasonAnswer,`${concept} fits the evidence because ${lowerLead(why)} The defining relationship is ${def}; ${distr[0]} does not account for that relationship.`,],{topic,skill:'reasoning',difficulty:3,misconception:mis})
    );
