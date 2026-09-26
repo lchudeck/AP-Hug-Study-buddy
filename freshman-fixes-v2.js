@@ -24,7 +24,6 @@
     frqPage=function(){
       return oldFrqPage()
         .replace(/<div class="box-yellow">[\s\S]*?<\/div>\s*\$?/,'<div class="box-yellow"><b>Quick FRQ reminder</b><p>Label each part, answer the task verb directly, and use specific APHG evidence. Explain parts need a clear cause-and-effect connection; no particular connector word is required.</p></div>')
-        .replace(/<h3>What you are answering<\/h3>[\s\S]*?(<h3 style="margin-top:18px">Build your answer — one point at a time<\/h3>)/,'$1')
         .replace(/Use because for explain parts\./g,'Clearly connect cause and effect in explain parts.')
         .replace(/Use because, therefore, due to, or this leads to\./g,'Clearly connect the cause to its effect.')
         .replace(/Did I use because\/therefore for explain parts\?/g,'Did I clearly connect cause and effect in explain parts?');
