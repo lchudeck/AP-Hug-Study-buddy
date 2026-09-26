@@ -30,11 +30,21 @@
 
   try{
     if(typeof buildPracticeExam==='function'){
-      const baseBuild=buildPracticeExam;let cache=null;
+      const baseBuild=buildPracticeExam;let cache=null,buildFailure=null;
       const stop=new Set('which what best most following according based would could does this that these those from with about into when where why how one two three example illustrates described statement pattern process likely directly'.split(' ')),clean=s=>String(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim(),terms=s=>clean(s).split(' ').filter(w=>w.length>3&&!stop.has(w)),exactKey=q=>clean(q.q)+'|'+clean(q.answer),conceptKey=q=>[...new Set([...terms(q.q),...terms(q.answer)])].sort().join(' '),similarity=(a,b)=>{const A=new Set(terms(a.q)),B=new Set(terms(b.q));if(!A.size||!B.size)return 0;let hit=0;A.forEach(x=>{if(B.has(x))hit++;});return hit/Math.min(A.size,B.size);},conceptualDuplicate=(a,b)=>exactKey(a)===exactKey(b)||similarity(a,b)>=.72||(clean(a.answer)===clean(b.answer)&&similarity(a,b)>=.45);
       function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
       function shuffledChoices(q,seed){const choices=[...q.choices];choices.sort((a,b)=>hash(seed+'|'+a)-hash(seed+'|'+b));return {...q,choices};}
-      function rebalanceStimulus(chosen,candidates){let count=chosen.filter(q=>q.stimulus).length,guard=0;while((count<18||count>24)&&guard++<120){const need=count<18;let swapped=false;for(let i=0;i<chosen.length;i++){if(chosen[i].quality==='unified-v1'||Boolean(chosen[i].stimulus)===need)continue;const unit=Number(chosen[i].unit),replacement=candidates.find(q=>Number(q.unit)===unit&&Boolean(q.stimulus)===need&&!chosen.some((x,j)=>j!==i&&exactKey(x)===exactKey(q))&&!chosen.some((x,j)=>j!==i&&conceptualDuplicate(x,q)));if(replacement){chosen[i]=replacement;count+=need?1:-1;swapped=true;break;}}if(!swapped)break;}return count>=18&&count<=24;}
+      const stimulusFamilies={
+        scale:['map-scale-patterns','v2-u1-scale','u1-census-scale'],
+        pyramid:['pop-pyramid-youthful','v2-u2-pyramid'],
+        diffusion:['diffusion-network','v2-u3-diffusion'],
+        boundaries:['gerrymander-district','u4-districting','v2-u4-boundaries'],
+        market:['von-thunen-rings','v2-u5-market'],
+        'urban-model':['urban-sector','v2-u6-urban']
+      };
+      function family(q){const id=String(q.setId||q.stimulusId||q.id||'');return Object.keys(stimulusFamilies).find(k=>stimulusFamilies[k].some(v=>id.includes(v)))||null;}
+      function familyConflict(chosen,q,except=-1){const f=family(q);return f&&chosen.some((x,i)=>i!==except&&family(x)===f);}
+      function rebalanceStimulus(chosen,candidates){let count=chosen.filter(q=>q.stimulus).length,guard=0;while((count<18||count>24)&&guard++<120){const need=count<18;let swapped=false;for(let i=0;i<chosen.length;i++){if(chosen[i].quality==='unified-v1'||Boolean(chosen[i].stimulus)===need)continue;const unit=Number(chosen[i].unit),replacement=candidates.find(q=>Number(q.unit)===unit&&Boolean(q.stimulus)===need&&!chosen.some((x,j)=>j!==i&&exactKey(x)===exactKey(q))&&!chosen.some((x,j)=>j!==i&&conceptualDuplicate(x,q))&&!familyConflict(chosen,q,i));if(replacement){chosen[i]=replacement;count+=need?1:-1;swapped=true;break;}}if(!swapped)break;}return count>=18&&count<=24;}
       function buildCache(){
         const originals=[1,2,3].map(n=>baseBuild(n)),raw=[...originals.flatMap(e=>e.mcq)];
         try{if(typeof quiz!=='undefined'&&typeof normalizeExamItem==='function')raw.push(...quiz.map(normalizeExamItem));}catch(e){}
@@ -48,19 +58,19 @@
           for(let unit=1;unit<=7;unit++){
             const curated=pool.filter(q=>Number(q.unit)===unit&&q.quality==='unified-v1').sort((a,b)=>String(a.id||a.q).localeCompare(String(b.id||b.q)));
             if(curated.length<3)throw new Error(`Study Buddy needs three curated application questions for Unit ${unit}.`);
-            chosen.push(curated[(examNum-1)%curated.length]);
+            const selectedCurated=curated.find((q,i)=>i>=(examNum-1)%curated.length&&!familyConflict(chosen,q))||curated.find(q=>!familyConflict(chosen,q));if(!selectedCurated)throw new Error(`No unique stimulus family for Unit ${unit}.`);chosen.push(selectedCurated);
           }
-          for(let unit=1;unit<=7;unit++)for(const q of candidates){if(chosen.filter(x=>Number(x.unit)===unit).length>=targets[unit])break;if(Number(q.unit)!==unit||chosen.some(x=>exactKey(x)===exactKey(q))||chosen.some(x=>conceptualDuplicate(x,q)))continue;chosen.push(q);}
-          for(const q of candidates){if(chosen.length>=60)break;if(chosen.some(x=>exactKey(x)===exactKey(q))||chosen.some(x=>conceptualDuplicate(x,q)))continue;chosen.push(q);}
-          for(const q of candidates){if(chosen.length>=60)break;if(chosen.some(x=>exactKey(x)===exactKey(q)))continue;chosen.push(q);}
+          for(let unit=1;unit<=7;unit++)for(const q of candidates){if(chosen.filter(x=>Number(x.unit)===unit).length>=targets[unit])break;if(Number(q.unit)!==unit||chosen.some(x=>exactKey(x)===exactKey(q))||chosen.some(x=>conceptualDuplicate(x,q))||familyConflict(chosen,q))continue;chosen.push(q);}
+          for(const q of candidates){if(chosen.length>=60)break;if(chosen.some(x=>exactKey(x)===exactKey(q))||chosen.some(x=>conceptualDuplicate(x,q))||familyConflict(chosen,q))continue;chosen.push(q);}
+          for(const q of candidates){if(chosen.length>=60)break;if(chosen.some(x=>exactKey(x)===exactKey(q))||familyConflict(chosen,q))continue;chosen.push(q);}
           if(chosen.length!==60)throw new Error('Study Buddy could not assemble 60 validated questions without exact duplicates.');
           if(!rebalanceStimulus(chosen,candidates))throw new Error('Study Buddy could not preserve the validated 30–40% stimulus range for this exam.');
           chosen.forEach(q=>usage.set(exactKey(q),(usage.get(exactKey(q))||0)+1));selected.push({...originals[examNum-1],mcq:chosen.map((q,i)=>shuffledChoices(q,'practice-'+examNum+'-'+i))});
         }
         const overlaps=[];for(let a=0;a<3;a++)for(let b=a+1;b<3;b++){const A=new Set(selected[a].mcq.map(exactKey)),overlap=selected[b].mcq.filter(q=>A.has(exactKey(q))).length;overlaps.push({exams:`${a+1}-${b+1}`,overlap,rate:overlap/60});}
-        window.__examQualityReport={poolSize:pool.length,overlaps,conceptualDuplicate};return selected;
+        window.__examQualityReport={poolSize:pool.length,overlaps,conceptualDuplicate,family};return selected;
       }
-      buildPracticeExam=function(examNum){if(!cache)cache=buildCache();return cache[Math.max(1,Math.min(3,Number(examNum)||1))-1];};
+      buildPracticeExam=function(examNum){if(buildFailure)throw buildFailure;if(!cache){try{cache=buildCache()}catch(e){buildFailure=e;throw e}}return cache[Math.max(1,Math.min(3,Number(examNum)||1))-1];};
     }
     if(typeof practiceExamsPage==='function'){
       const basePage=practiceExamsPage;practiceExamsPage=function(){try{let html=basePage(),idx=0;html=html.replace(/<b>Estimated FRQ score: (\d+)\/(\d+)<\/b>/g,(m,s,t)=>{const f=(typeof examFrqFeedback!=='undefined'&&examFrqFeedback)?examFrqFeedback[idx++]:null;return f&&f.uncertain?`<b>Automatically verified: ${s}/${t} possible points · ${f.uncertain} need${f.uncertain===1?'s':''} rubric check</b>`:`<b>Automatically verified: ${s}/${t} possible points</b>`;});return html;}catch(e){console.error('Practice exam assembly failed',e);return `<main><section class="card"><h2>🧪 Practice Exam</h2><div class="box-warn"><b>We couldn’t assemble a trustworthy 60-question exam right now.</b><p>Your progress is safe. Please choose Unit Review, Practice & Mastery, or try this exam again after reloading. Study Buddy will not fill the exam with low-quality duplicate questions just to reach 60.</p></div></section></main>`;}};

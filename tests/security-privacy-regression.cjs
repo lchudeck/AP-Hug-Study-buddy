@@ -7,6 +7,8 @@ const html=read('index.html');
 const privacy=read('privacy.html');
 const analytics=read('analytics.js');
 const formScripts=['contact-report.js','student-feedback.js','session-rating.js'];
+assert.match(read('session-rating.js'),/s\.src=['\"]analytics\.js\?v=[^'\"]+['\"]/, 'analytics dynamic load must be versioned');
+assert.doesNotMatch(read('session-rating.js'),/s\.src=['\"]student-reliability-patch\.js['\"]/, 'do not inject an unversioned reliability patch');
 
 assert.doesNotMatch(html,/name=["']reply-email["']/i,'student-facing forms must not request an email address');
 assert.doesNotMatch(read('contact-report.js'),/report-reply|reply-email|type=["']email["']/i,'problem reports must not collect email addresses');

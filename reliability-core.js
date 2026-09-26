@@ -23,6 +23,26 @@
     isPersistent(){return storageAvailable},diagnostics(){return diagnostics.map(item=>({...item}))}
   };
   window.APStudyReliability={storage:window.APHGSafeStorage};
+  function aphgHash(value){let h=2166136261;for(const char of String(value)){h^=char.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0;}
+  // Prompt-seeded Fisher-Yates: repeatable for every render and independent of the current answer index.
+  window.APHGShuffleChoices=function(choices,seed){const out=[...choices];let state=aphgHash(seed);for(let i=out.length-1;i>0;i--){state^=state<<13;state^=state>>>17;state^=state<<5;const j=(state>>>0)%(i+1);[out[i],out[j]]=[out[j],out[i]];}return out;};
+  window.APHGSessionShuffle=function(items){const out=[...items];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;};
+  window.APHGStudentQuestionPool=function(){
+    const raw=[];if(typeof quiz!=='undefined'&&Array.isArray(quiz))raw.push(...quiz);
+    Object.keys(window).filter(k=>/^APHG_.*_(?:QUESTIONS|BANK)$/.test(k)&&Array.isArray(window[k])).forEach(k=>raw.push(...window[k]));
+    const seen=new Set();return raw.map(item=>{
+      if(!item)return null;
+      const array=Array.isArray(item),prompt=array?item[1]:item.prompt||item.q||item.question;
+      const choices=array?item[2]:item.choices||item.options;
+      const answer=array?item[3]:item.answer??item.correctAnswer??item.correct;
+      const unit=Number(array?String(item[0]||'').match(/\d+/)?.[0]:item.unit);
+      const topic=String(item.topic||''),explain=array?item[4]:item.explain||item.why||item.explanation;
+      const stimulus=array?item.stimulus||item.visual:item.stimulus||item.visual;
+      if(!Number.isInteger(unit)||unit<1||unit>7||typeof prompt!=='string'||!prompt.trim()||!Array.isArray(choices)||choices.length!==4||new Set(choices.map(x=>String(x).trim().toLowerCase())).size!==4||!choices.includes(answer))return null;
+      return {unit,topic,prompt,choices:[...choices],answer,explain:explain||'Review the evidence and the geographic concept.',stimulus:stimulus||'',stimulusTitle:item.stimulusTitle||''};
+    }).filter(q=>{if(!q)return false;const key=q.prompt.trim().toLowerCase().replace(/\s+/g,' ');if(seen.has(key))return false;seen.add(key);return true;});
+  };
+
   function requiredAsset(target){
     if(!target?.matches?.('script[src],link[rel="stylesheet"][href]'))return false;
     const value=target.src||target.href;

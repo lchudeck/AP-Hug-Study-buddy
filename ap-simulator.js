@@ -27,6 +27,8 @@
       ['Which measure would best complement the graph when evaluating human development?',['HDI','Only total land area','Only arithmetic density','Only number of states'],'HDI','HDI adds education, health, and income dimensions that sector shares alone cannot capture.']]}
   ];
 
+  const shuffleQuestion=q=>[q[0],window.APHGShuffleChoices(q[1],q[0]),q[2],q[3]];
+  stimuli.forEach(set=>{if(set.qs)set.qs=window.APHGSessionShuffle(set.qs.map(shuffleQuestion));else if(set.q)set.q=shuffleQuestion(set.q);});
   const mixed=[
     ['A rapidly growing city in a lower-income country expands into surrounding farmland while informal settlements appear on the edge. Which pair of concepts best explains the pattern?',['Urbanization and land-use change','Devolution and supranationalism','Malthusian theory and redistricting','Relocation diffusion and reapportionment'],'Urbanization and land-use change','Rapid rural-to-urban migration and metropolitan expansion can transform peripheral agricultural land and create informal housing.'],
     ['A migrant community opens restaurants that adapt traditional dishes to local tastes. Which two units are most directly connected?',['Population/migration and culture','Political geography and agriculture only','Cities and industrial location only','Scale and sovereignty only'],'Population/migration and culture','Migration relocates people while stimulus diffusion can adapt cultural traits in the destination.'],
@@ -37,6 +39,7 @@
     ['A country improves female secondary education, fertility falls, and its workforce later becomes more skilled. Which relationship is strongest?',['Human capital, demographic change, and development are linked','Education only changes political boundaries','Lower fertility always reduces development','Development is measured only by GDP'],'Human capital, demographic change, and development are linked','Education can influence fertility, labor-force opportunity, and long-term development.']
   ];
 
+  mixed.forEach((q,i)=>mixed[i]=shuffleQuestion(q));
   const simPool=[];
   stimuli.forEach(s=>s.qs.forEach(q=>simPool.push({unit:s.unit,stimulus:s.title,q}))); mixed.forEach(q=>simPool.push({unit:'Mixed',stimulus:'Mixed-unit synthesis',q}));
   let view='visual',stimIndex=0,qIndex=0,choice=null,simAnswers={},simSubmitted=false,simStart=0,simRunning=false,frqText='';
