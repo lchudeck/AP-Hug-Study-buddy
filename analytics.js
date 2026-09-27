@@ -69,6 +69,7 @@
   if(typeof window.go==='function'&&!window.go.__analyticsWrapped){
     const original=window.go;
     const wrapped=function(route){
+      if(route==='quiz') window.studyBuddyTrack('practice_started',{feature:'quiz'});
       if(route==='mapLab'||route==='visual'||route==='visualPractice'||route==='visualPractice37')
         window.studyBuddyTrack('map_lab_opened',{feature:'maps_data'});
       if(route==='frq') window.studyBuddyTrack('frq_coach_opened',{feature:'frq_coach'});
@@ -77,6 +78,27 @@
     };
     wrapped.__analyticsWrapped=true;
     window.go=wrapped;
+  }
+
+  // The timer starts the actual exam, after the introductory simulator screen.
+  if(typeof window.simStart==='function'&&!window.simStart.__analyticsWrapped){
+    const original=window.simStart;
+    const wrapped=function(section){
+      if(section==='mcq') window.studyBuddyTrack('final_ap_started',{feature:'final_ap'});
+      return original.apply(this,arguments);
+    };
+    wrapped.__analyticsWrapped=true;
+    window.simStart=wrapped;
+  }
+
+  if(typeof window.pmStart==='function'&&!window.pmStart.__analyticsWrapped){
+    const original=window.pmStart;
+    const wrapped=function(){
+      window.studyBuddyTrack('practice_started',{feature:'unit_practice'});
+      return original.apply(this,arguments);
+    };
+    wrapped.__analyticsWrapped=true;
+    window.pmStart=wrapped;
   }
 
   // Unit-only tracking from selectors/buttons; do not send topic names or question text.
@@ -98,8 +120,6 @@
     if(unit) window.studyBuddyTrack('unit_selected',{unit:Number(unit[1])});
 
     // Final AP Mode uses changing button labels across versions, so match only explicit start/finish language.
-    if(/start.*final ap|begin.*final ap|start.*exam|start.*simulation/.test(text))
-      window.studyBuddyTrack('final_ap_started',{feature:'final_ap'});
     if(/submit.*final|finish.*final|complete.*final|submit.*exam|finish.*exam|complete.*simulation|finish.*simulation/.test(text))
       window.studyBuddyTrack('final_ap_completed',{feature:'final_ap'});
   },true);
