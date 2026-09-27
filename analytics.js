@@ -91,6 +91,16 @@
     window.simStart=wrapped;
   }
 
+  if(typeof window.pmStart==='function'&&!window.pmStart.__analyticsWrapped){
+    const original=window.pmStart;
+    const wrapped=function(){
+      window.studyBuddyTrack('practice_started',{feature:'unit_practice'});
+      return original.apply(this,arguments);
+    };
+    wrapped.__analyticsWrapped=true;
+    window.pmStart=wrapped;
+  }
+
   // Unit-only tracking from selectors/buttons; do not send topic names or question text.
   document.addEventListener('change',function(e){
     const el=e.target;
