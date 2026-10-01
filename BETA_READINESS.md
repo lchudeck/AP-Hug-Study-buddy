@@ -11,7 +11,7 @@ Test date: October 1, 2026. Repository: lchudeck/AP-Hug-Study-buddy.
 - Production: https://www.apstudybuddy.com/ . The tested app, visual-practice scripts, real-data script, reliability patch, and bundled U.S./world geometry matched base-main bytes. This establishes parity of those assets, not a deployed release SHA. Production has not received this branch.
 - Production UI: remote Chrome, desktop. Unit 2 homepage → Unit Review → flashcards → maps/visual practice → FRQ Coach; correct and incorrect answers, concept retry, refresh, and returning home. The requested roughly 20-minute study itinerary was completed with testing interruptions; this was not a timed usability study with a student.
 - Local candidate: real headless Chromium 153, 1366×768 laptop and 390×844 phone viewport with touch emulation. A real Chromebook and physical phone were unavailable. Phone production qualification was not completed; phone results below are local, not production results.
-- Preview: no deployed preview used for this decision.
+- Preview: https://deploy-preview-62--aphugstudybuddy.netlify.app/ . Remote Chrome verified actual U.S./world boundaries and completed all three DTM questions through the new finish panel. Preview is not production. Tested code commit: `d6af38dca47a5a1130c77de7f4a4d1ebf9b5c5ec`; later report-only changes do not alter that code.
 
 ## Reproduced issues and targeted fixes
 
@@ -45,7 +45,7 @@ Automated checks cover references/answer keys in six exposed banks (136 attached
 | World reference | Same | Actual country boundaries render | Small countries need enlargement; not a border-dispute reference |
 | Choropleth | Same | U.S. map, shades and legend visible | Raw totals deliberately used to teach standardization limitation |
 | Proportional symbols | Same | U.S. geometry and graduated symbols visible | Illustrative classroom sizing |
-| Dot density | Same | U.S. geometry/dots/legend visible | Illustrative placement; dots do not locate individual people |
+| Dot density | Same | Dots and interpretation note visible | Rectangular classroom schematic; dots do not locate individual people |
 | Isolines | Same | Contours and values visible | Classroom schematic, not observed weather/topographic data |
 | Cartogram | Same | Resized regions and labels visible | Classroom schematic |
 | Global, national, state, county scale visuals | Scale of Analysis | All seven questions complete; boundaries and highlighted areas visible | Scale lesson rather than a current demographic dataset |
@@ -128,6 +128,8 @@ The following inventory deduplicates identical SVG/table/image content. “Pass�
 | exam-frq-globalChoro | Exam simulator FRQ | Pass | Illustrative GIS regions/data |
 | exam-frq-localFood | Exam simulator FRQ | Pass | Illustrative GIS regions/data |
 | v2-v2-u3-diffusion-4 | Unit 3; practice/exam stimulus banks | Pass | Classroom schematic/illustrative stimulus where labeled |
+
+PR: https://github.com/lchudeck/AP-Hug-Study-buddy/pull/62 — open, unmerged, not deployed to production. Netlify preview succeeded. GitHub performance-budget job failed as anticipated; other completed checks passed at the first status check and some checks were still running.
 
 ## Validation and release gates
 
