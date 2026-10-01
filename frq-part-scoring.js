@@ -46,6 +46,7 @@
   }
   function hasCausalRelationship(text){
     const t=norm(text);
+    if(/\b(increasing|decreasing|expanding|reducing|raising|rises?|rising|falls?|falling)\b/i.test(t))return true;
     return /(because|therefore|thus|hence|consequently|as a result|due to|leads? to|led to|results? in|resulted in|caus(?:e|es|ed|ing)|so that|which (?:raises?|reduces?|increases?|decreases?|creates?|allows?|prevents?)|\b(?:raises?|reduces?|increases?|decreases?|creates?|allows?|prevents?|encourages?|discourages?|limits?|expands?|shrinks?|pushes?|pulls?)\b)/i.test(t);
   }
   function gradePart(part,text){

@@ -21,6 +21,8 @@ for(const phrase of ['led to','resulted in','consequently','causing']){
   assert.equal(global.__frqHasCausalRelationship(`Improved roads ${phrase} greater market access.`),true,`causal phrase not recognized: ${phrase}`);
 }
 assert.equal(global.__frqHasCausalRelationship('Better roads reduce travel time and increase access to buyers.'),true,'direct causal relationship not recognized');
+assert.equal(global.__frqHasCausalRelationship('Working-age immigrants can fill vacant jobs, increasing the available labor force.'),true,'participial causal explanation not recognized');
+assert.equal(global.__frqHasCausalRelationship('If construction does not keep up with demand, rents rise and residents may oppose immigration.'),true,'rising-cost causal explanation not recognized');
 
 const blank=global.__gradeFrqPart(explain,'');
 assert.equal(blank.status,'incorrect');
