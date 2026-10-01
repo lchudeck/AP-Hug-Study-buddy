@@ -762,9 +762,8 @@ function updateScaffold(letter,value){scaffoldAnswers[letter]=value;}
 function buildFromScaffold(){
   const p=prompts[selectedPrompt];
   answer=p.parts.map(part=>{
-    const l=part[0],v=part[1],val=(scaffoldAnswers[l]||"").trim();
+    const l=part[0],val=(scaffoldAnswers[l]||"").trim();
     if(!val)return "";
-    if(v==="Explain"&&!/because|therefore|this leads to|as a result|due to/i.test(val)) return l+". "+val+" because ____.";
     return l+". "+val;
   }).filter(Boolean).join("\n");
   render();
