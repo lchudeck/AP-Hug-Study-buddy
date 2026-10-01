@@ -34,13 +34,29 @@ if(!process.env.APHG_BETA_TEST_CHILD){
       w.eval('active="visualPractice"');
       w.vpSet(3);
       assert.match(app.textContent,/Demographic Transition Model/);
-      for(let i=0;i<10;i++){
-        w.vpChoose(0);
-        assert.match(app.textContent,/Next visual question/);
-        w.vpNext();
-        await new Promise(resolve=>setTimeout(resolve,0));
-        assert.match(app.textContent,/Question 1 of 3|Question 2 of 3|Question 3 of 3/);
+      for(let pass=0;pass<3;pass++){
+        w.vpSet(3);
+        for(let i=0;i<3;i++){
+          w.vpChoose(0);
+          assert.match(app.textContent,/Next visual question/);
+          w.vpNext();
+          await new Promise(resolve=>setTimeout(resolve,0));
+        }
+        assert.match(app.textContent,/Demographic Transition Model complete/);
+        assert.doesNotMatch(app.textContent,/Question 1 of 3/,'completion must not silently cycle back');
+        w.vpRestart();
+        assert.match(app.textContent,/Question 1 of 3/);
       }
+      w.eval('active="visualPractice37"');w.v37Mode('frq');w.v37Frq(0);
+      w.v37Answer(0,'My geographic reasoning stays visible.');w.v37Reveal();
+      assert.equal(app.querySelector('textarea').value,'My geographic reasoning stays visible.');
+      w.v37Mode('mcq');w.v37Set(0);
+      for(let i=0;i<5;i++){w.v37Choose(0);w.v37Next();await new Promise(resolve=>setTimeout(resolve,0));}
+      assert.match(app.textContent,/Visual practice complete/);
+      w.v37Restart();assert.match(app.textContent,/Visual 1 of 5/);
+      assert.match(w.simFrqStimuliHtml({stimuli:['globalChoro']}),/Illustrative GIS Choropleth/);
+      assert.doesNotMatch(w.simFrqStimuliHtml({stimuli:['globalChoro']}),/Weber Least-Cost/);
+      w.eval('active="visualPractice"');w.vpMode('mcq');
       for(let i=0;i<3;i++){w.vpSet(i);assert.match(app.textContent,new RegExp(w.__visualPractice12.sets[i].title));}
 
       w.eval('active="home"');w.render();

@@ -54,6 +54,15 @@
     if(!clean) return {letter,verb,earned:false,status:'incorrect',feedback:`Part ${letter}: 0/1. This part is blank.`,fix:model};
     if(looksNonsense(text)) return {letter,verb,earned:false,status:'incorrect',feedback:`Part ${letter}: 0/1. The response does not contain a recognizable AP Human Geography idea that answers this part.`,fix:model};
 
+    // These Unit 2 tasks need the relationship, not shared demographic words.
+    // Unrecognized wording remains a rubric self-check, never an automatic zero.
+    let demographicCheck=null;
+    if(/indicator.*aging population/i.test(prompt)) demographicCheck=/(rising|increasing|higher|growing).*median age|median age.*(rises|increases)|(?:greater|higher|increasing|growing|larger).*\b(elderly|older|65|senior)|low.*(fertility|birth)/i.test(clean)&&!/(falling|decreasing|lower).*median age/.test(clean);
+    if(/define dependency ratio/i.test(prompt)) demographicCheck=/(dependent|children|elderly|older|under 15|over 64|over 65)/.test(clean)&&/(working.age|15.*64)/.test(clean)&&/(ratio|compar|relative|per |divid)/.test(clean);
+    if(/immigration.*shrinking workforce/i.test(prompt)) demographicCheck=/(labor|workforce|worker|job|employment)/.test(clean)&&/(fill|expand|increase|add|larger|grow|boost|supply|provide)/.test(clean)&&!/(no .*work|cannot work|shrinks? .*workforce|reduces? .*workforce)/.test(clean);
+    if(/demographic transition.*low birth rates and low death rates/i.test(prompt)) demographicCheck=/\bstage (4|5|iv|v)\b/.test(clean)&&!/\bstage (1|2|3|i|ii|iii)\b/.test(clean);
+    if(demographicCheck===false) return {letter,verb,earned:false,status:'unverified',coachingOnly:true,selfCheckLevel:'could-earn',feedback:'Not automatically verified — check the demographic relationship, direction of change, and definition against the model. Shared vocabulary alone does not establish an accurate answer.',fix:model};
+
     const ev=evidence(text,model);
     const requiredHits=verb==='Identify'?1:(ev.needed.length>=4?2:1);
     const contentOK=ev.hits.length>=requiredHits;

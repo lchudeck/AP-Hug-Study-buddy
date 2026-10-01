@@ -26,6 +26,17 @@ const blank=global.__gradeFrqPart(explain,'');
 assert.equal(blank.status,'incorrect');
 assert.match(blank.feedback,/0\/1/);
 
+const demographicCases=[
+ [['A','Identify','Identify one demographic indicator that shows an aging population.','A rising median age or increasing share of elderly people.'],'A rising median age.','A falling median age shows aging.'],
+ [['B','Define','Define dependency ratio.','Dependency ratio compares children and elderly people with the working-age population.'],'Dependency ratio compares people under 15 and over 64 with the working-age population.','Dependency ratio means the birth rate.'],
+ [['D','Explain','Explain how immigration could help address a shrinking workforce.','Working-age migrants fill labor shortages and expand the workforce.'],'Working-age immigrants expand the available labor force and fill vacant jobs.','Immigration shrinks the workforce because no newcomers can work.'],
+ [['F','Identify','Identify the Demographic Transition Model stage most likely associated with low birth rates and low death rates.','Stage 4, or sometimes Stage 5.'],'Stage 4.','Stage 1.']
+];
+for(const [part,valid,invalid] of demographicCases){
+ assert.equal(global.__gradeFrqPart(part,valid).status,'verified',part[0]+' valid paraphrase');
+ assert.equal(global.__gradeFrqPart(part,invalid).earned,false,part[0]+' inaccurate demographic relationship');
+}
+
 const unit1=['B','Explain','Explain why national and neighborhood maps can show different patterns.','Aggregated national statistics obscure small-area variation that disaggregated neighborhood evidence reveals.'];
 const developed=global.__gradeFrqPart(unit1,'When figures are combined across an entire country, distinct conditions within individual communities can disappear because a single summary smooths over their differences.');
 assert.equal(developed.status,'unverified');
