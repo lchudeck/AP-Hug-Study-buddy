@@ -198,7 +198,7 @@
   scaleActivities.splice(0,scaleActivities.length,...window.APHGSessionShuffle(scaleActivities.map(shuffledActivity)));
 
   function mapCard(key){const m=mapInfo[key];return `<button type="button" class="visual-card visual-card-button" data-map-detail="${key}" aria-expanded="false"><span class="visual-card-title">${m.title}</span><span class="visual-card-sub">${m.notice}</span>${mapSvg(key)}<span class="visual-card-cta">Click to learn how to read it →</span></button>`;}
-  function mapDetail(key){const m=mapInfo[key];return `<div class="map-detail-panel" data-map-panel="${key}"><div><span class="pill">Map skill</span><h4>${m.title}</h4></div><div class="map-detail-grid"><div><b>Best for</b><p>${m.use}</p></div><div><b>Limitation</b><p>${m.limit}</p></div><div><b>AP move</b><p>${m.ap}</p></div></div><button type="button" class="btn-secondary" data-close-map>Close</button></div>`;}
+  function mapDetail(key){const m=mapInfo[key];return `<div class="map-detail-panel" data-map-panel="${key}"><div><span class="pill">Map skill</span><h4>${m.title}</h4></div>${mapSvg(key)}<div class="map-detail-grid"><div><b>Best for</b><p>${m.use}</p></div><div><b>Limitation</b><p>${m.limit}</p></div><div><b>AP move</b><p>${m.ap}</p></div></div><button type="button" class="btn-secondary" data-close-map>Close</button></div>`;}
 
   function mapActivityHtml(){
     if(mapActivityIndex>=mapActivities.length)return `<section class="map-activity"><span class="pill">Map Detective complete</span><h4>${mapActivityScore} of ${mapActivities.length} correct</h4><p>${mapActivityScore>=4?'Strong map-reading start.':'Review the map cards above, then try once more.'}</p><button class="btn-primary" type="button" data-map-restart>Try again</button></section>`;
@@ -268,6 +268,41 @@
   // One public entry point keeps home cards and navigation on the same maps UI.
   window.openMapsVisuals=renderVisualPractice;
 
+  // Keep small legends and tables readable without leaving the question.
+  function addVisualEnlargement(){
+    app.querySelectorAll('svg,.box-info img,.sim-stimulus img,.box-info table,.sim-stimulus table').forEach(visual=>{
+      if(visual.closest('button')||visual.dataset.enlargeReady)return;
+      visual.dataset.enlargeReady='1';
+      const button=document.createElement('button');
+      button.type='button';button.className='btn-secondary visual-enlarge';
+      button.textContent='Enlarge visual';
+      button.addEventListener('click',()=>{
+        if(document.getElementById('study-visual-dialog'))return;
+        const dialog=document.createElement('div');
+        dialog.id='study-visual-dialog';dialog.className='study-visual-dialog';
+        dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
+        const panel=document.createElement('div');panel.className='study-visual-panel';
+        const title=document.createElement('h3');title.textContent=visual.getAttribute('aria-label')||visual.getAttribute('alt')||'Study visual';
+        const close=document.createElement('button');close.type='button';close.className='btn-secondary';
+        close.textContent='Return to question';close.setAttribute('aria-label','Close enlarged visual');
+        const viewport=document.createElement('div');viewport.className='study-visual-scroll';
+        const clone=(visual.closest('.box-info,.sim-stimulus,.diagram-wrap')||visual).cloneNode(true);clone.removeAttribute('id');
+        clone.querySelectorAll('.visual-enlarge').forEach(el=>el.remove());
+        clone.querySelectorAll('[id]').forEach(el=>{
+          const old=el.id,newId='enlarged-'+old;el.id=newId;
+          clone.querySelectorAll('*').forEach(node=>[...node.attributes].forEach(attr=>{
+            if(attr.value.includes('url(#'+old+')'))node.setAttribute(attr.name,attr.value.replaceAll('url(#'+old+')','url(#'+newId+')'));
+            if(attr.value==='#'+old)node.setAttribute(attr.name,'#'+newId);
+          }));
+        });
+        viewport.appendChild(clone);panel.append(title,close,viewport);dialog.appendChild(panel);
+        close.addEventListener('click',()=>{dialog.remove();button.focus();});
+        document.body.appendChild(dialog);close.focus();
+      });
+      visual.after(button);
+    });
+  }
+
   try{consolidateTabs();if(typeof renderNav==='function')renderNav();}catch(e){}
   nav.addEventListener('click',e=>{
     const b=e.target.closest('button');
@@ -326,7 +361,7 @@
   // mutation and can lock Safari in a self-triggering render loop. The app's
   // normal render path already rebuilds the navigation; observers only polish
   // the DOM that is present.
-  const observer=new MutationObserver(()=>{polishNav(false);addPayoff();syncExamBadge();});
+  const observer=new MutationObserver(()=>{polishNav(false);addPayoff();syncExamBadge();addVisualEnlargement();});
   observer.observe(document.body,{childList:true,subtree:true});
   polishNav();syncExamBadge();setInterval(syncExamBadge,30000);setTimeout(addPayoff,250);
 })();
