@@ -65,6 +65,13 @@ if(!process.env.APHG_BETA_TEST_CHILD){
       assert.match(app.textContent,/Part A —/);
       assert.match(app.textContent,/Build your answer — one point at a time/);
       assert.ok(app.querySelector('.frq-task-card')&&app.querySelector('.scaffold-box'));
+      const causalAnswer='Working-age immigrants can fill vacant jobs, increasing the available labor force.';
+      const field=app.querySelector('[placeholder="Write part D here..."]');
+      field.value=causalAnswer;field.dispatchEvent(new w.Event('input',{bubbles:true}));
+      [...app.querySelectorAll('button')].find(b=>b.textContent.includes('Build my full answer')).click();
+      assert.equal(app.querySelector('#mainAnswer').value,'D. '+causalAnswer,'composition preserves student wording without adding unfinished connector blanks');
+      [...app.querySelectorAll('button')].find(b=>b.textContent.includes('Show sample answer')).click();
+      assert.equal(app.querySelector('#mainAnswer').value,'D. '+causalAnswer,'model comparison preserves the composed draft');
 
       const quiz=w.eval('quiz'),original=quiz.slice();
       const tableQuestion=original.find(q=>/supported by the table/i.test(q[1])&&q.stimulus?.includes('<table'));
