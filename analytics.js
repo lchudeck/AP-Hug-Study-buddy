@@ -101,6 +101,31 @@
     window.pmStart=wrapped;
   }
 
+  // Count engagement once per activity attempt. Never inspect or forward answer arguments.
+  const started = new Set();
+  function startOnce(feature) {
+    if(started.has(feature)) return;
+    started.add(feature);
+    window.studyBuddyTrack(feature+'_started',{feature});
+  }
+  function wrapAction(name, action) {
+    const original=window[name];
+    if(typeof original!=='function') return;
+    window[name]=function(){
+      const result=original.apply(this,arguments);
+      action();
+      return result;
+    };
+  }
+  ['flashFlip','setFlashStatus'].forEach(name=>wrapAction(name,()=>startOnce('flashcards')));
+  wrapAction('updateScaffold',()=>startOnce('frq_practice'));
+  ['setExamAnswer','setExamFrq'].forEach(name=>wrapAction(name,()=>startOnce('practice_test')));
+  ['selectExam','resetExam'].forEach(name=>wrapAction(name,()=>started.delete('practice_test')));
+  wrapAction('go',()=>{started.delete('flashcards');started.delete('frq_practice');});
+  document.addEventListener('change',function(e){
+    if(e.target?.matches('.frq-select')) started.delete('frq_practice');
+  },true);
+
   // Unit-only tracking from selectors/buttons; do not send topic names or question text.
   document.addEventListener('change',function(e){
     const el=e.target;
