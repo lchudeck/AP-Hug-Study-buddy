@@ -30,6 +30,7 @@
   // Only allow a small, structured set of non-PII parameters.
   window.studyBuddyTrack=function(eventName,params){
     const safe={};
+    const allowed=['study_path','unit','feature','session_result','rating'];
     const values={
       study_path:['test_prep','need_explanation','repeated_misses','vocab_application','maps_data','frq_help','ap_readiness','next_step'],
       feature:['quiz','unit_practice','unit_review','cumulative_practice','maps_data','frq_coach','final_ap','teach_me','flashcards','frq_practice','practice_test'],
@@ -38,6 +39,7 @@
     const events=['study_path_selected','teach_me_used','practice_started','map_lab_opened','frq_coach_opened','final_ap_opened','final_ap_started','final_ap_completed','flashcards_started','frq_practice_started','practice_test_started','unit_selected','session_rating_submitted'];
     if(!events.includes(eventName)) return;
     Object.entries(params||{}).forEach(([k,v])=>{
+      if(!allowed.includes(k)) return;
       if(k==='unit' && Number.isInteger(v) && v>=1 && v<=7) safe[k]=v;
       else if(k==='rating' && Number.isInteger(v) && v>=1 && v<=5) safe[k]=v;
       else if(values[k]?.includes(v)) safe[k]=v;
