@@ -28,6 +28,9 @@ vm.createContext(sandbox);
 for(const f of scripts)vm.runInContext(fs.readFileSync(f,'utf8'),sandbox,{filename:f});
 
 assert.equal(vm.runInContext('typeof buildPracticeExam',sandbox),'function','buildPracticeExam did not load');
+const converted=vm.runInContext(`normalizeExamItem(Object.assign(['Unit 4','Read this dataset',['A','B','C','D'],'A','Explanation'],{stimulus:'<table><tr><td>82%</td></tr></table>',stimulusTitle:'Districting'}))`,sandbox);
+assert.match(converted.stimulus.html,/82%/,'Array-backed questions must preserve their stimulus');
+assert.match(converted.stimulus.html,/Districting/);
 const exams=[1,2,3].map(n=>vm.runInContext(`buildPracticeExam(${n})`,sandbox));
 const report=sandbox.__examQualityReport;
 assert.ok(report,'exam quality report was not created');

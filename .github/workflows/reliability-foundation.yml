@@ -34,6 +34,7 @@ jobs:
         run: |
           find . -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check
           node tests/reliability-source-regression.cjs
+          node tests/activity-analytics-regression.cjs
       - name: Exercise core journeys and browser failure modes
         run: |
           npm install --no-save --no-package-lock jsdom@26 >/dev/null 2>&1

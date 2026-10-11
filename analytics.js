@@ -30,9 +30,17 @@
   // Only allow a small, structured set of non-PII parameters.
   window.studyBuddyTrack=function(eventName,params){
     const safe={};
-    const allowed=['study_path','unit','feature','session_result','rating'];
+    const values={
+      study_path:['test_prep','need_explanation','repeated_misses','vocab_application','maps_data','frq_help','ap_readiness','next_step'],
+      feature:['quiz','unit_practice','unit_review','cumulative_practice','maps_data','frq_coach','final_ap','teach_me','flashcards','frq_practice','practice_test'],
+      session_result:['Helped me understand','Easy to use','Still stuck','Confusing to use','No selection']
+    };
+    const events=['study_path_selected','teach_me_used','practice_started','map_lab_opened','frq_coach_opened','final_ap_opened','final_ap_started','final_ap_completed','flashcards_started','frq_practice_started','practice_test_started','unit_selected','session_rating_submitted'];
+    if(!events.includes(eventName)) return;
     Object.entries(params||{}).forEach(([k,v])=>{
-      if(allowed.includes(k) && (typeof v==='string'||typeof v==='number')) safe[k]=v;
+      if(k==='unit' && Number.isInteger(v) && v>=1 && v<=7) safe[k]=v;
+      else if(k==='rating' && Number.isInteger(v) && v>=1 && v<=5) safe[k]=v;
+      else if(values[k]?.includes(v)) safe[k]=v;
     });
     window.gtag('event',eventName,safe);
   };
@@ -69,7 +77,6 @@
   if(typeof window.go==='function'&&!window.go.__analyticsWrapped){
     const original=window.go;
     const wrapped=function(route){
-      if(route==='quiz') window.studyBuddyTrack('practice_started',{feature:'quiz'});
       if(route==='mapLab'||route==='visual'||route==='visualPractice'||route==='visualPractice37')
         window.studyBuddyTrack('map_lab_opened',{feature:'maps_data'});
       if(route==='frq') window.studyBuddyTrack('frq_coach_opened',{feature:'frq_coach'});
@@ -113,10 +120,17 @@
     if(typeof original!=='function') return;
     window[name]=function(){
       const result=original.apply(this,arguments);
-      action();
+      action.apply(this,arguments);
       return result;
     };
   }
+  // Track actual session launches, rather than opening a practice menu.
+  wrapAction('urStart',function(mode,count){
+    window.studyBuddyTrack('practice_started',{feature:'unit_review'});
+    if(Number(count)>=35) window.studyBuddyTrack('practice_test_started',{feature:'unit_review'});
+  });
+  wrapAction('urWeak',()=>window.studyBuddyTrack('practice_started',{feature:'unit_review'}));
+  ['sspStart','sspStartTopic'].forEach(name=>wrapAction(name,()=>window.studyBuddyTrack('practice_started',{feature:'cumulative_practice'})));
   ['flashFlip','setFlashStatus'].forEach(name=>wrapAction(name,()=>startOnce('flashcards')));
   wrapAction('updateScaffold',()=>startOnce('frq_practice'));
   ['setExamAnswer','setExamFrq'].forEach(name=>wrapAction(name,()=>startOnce('practice_test')));
@@ -124,6 +138,11 @@
   wrapAction('go',()=>{started.delete('flashcards');started.delete('frq_practice');});
   document.addEventListener('change',function(e){
     if(e.target?.matches('.frq-select')) started.delete('frq_practice');
+  },true);
+
+  // Direct full-answer entry bypasses the scaffold; record engagement without reading its value.
+  document.addEventListener('input',function(e){
+    if(e.target?.matches('#mainAnswer')) startOnce('frq_practice');
   },true);
 
   // Unit-only tracking from selectors/buttons; do not send topic names or question text.
