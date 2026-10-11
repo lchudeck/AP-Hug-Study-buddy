@@ -27,7 +27,7 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     beforeParse(window){
       window.alert=()=>{};window.confirm=()=>false;window.scrollTo=()=>{};
       window.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});
-      window.requestAnimationFrame=callback=>setTimeout(callback,0);
+      window.requestAnimationFrame=callback=>window.setTimeout(callback,0);
       window.fetch=async()=>({ok:true,status:200,json:async()=>({}),text:async()=>''});
     }
   });
@@ -45,6 +45,25 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     button.click();await sleep(60);
     assert.ok((document.querySelector('#app')?.textContent||'').trim().length>30,`${label} opens nonblank content`);
   }
+
+  // Exercise the complete script stack: rating must not race the authoritative analytics installation.
+  assert.equal(document.querySelectorAll('script[src^="analytics.js"]').length,1,'analytics loads exactly once');
+  assert.equal(window.dataLayer.filter(x=>x[0]==='config').length,1,'GA4 is configured once');
+  const eventCount=name=>window.dataLayer.filter(x=>x[0]==='event'&&x[1]===name).length;
+  window.go('unitReview');
+  const unit=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Unit 2');
+  unit.click();assert.equal(eventCount('unit_selected'),1);
+  window.urStart('quick',10);assert.equal(eventCount('practice_started'),1);
+  window.go('terms');window.flashFlip();window.flashFlip();assert.equal(eventCount('flashcards_started'),1);
+  window.go('frq');const response=document.getElementById('mainAnswer');
+  response.value='PRIVATE ANALYTICS RESPONSE';
+  response.dispatchEvent(new window.Event('input',{bubbles:true}));
+  response.dispatchEvent(new window.Event('input',{bubbles:true}));
+  assert.equal(eventCount('frq_practice_started'),1);
+  window.go('exams');window.setExamAnswer(0,1);window.setExamAnswer(1,2);
+  assert.equal(eventCount('practice_test_started'),1);
+  window.go('apSim');window.simStart('mcq');assert.equal(eventCount('final_ap_started'),1);
+  assert.ok(!JSON.stringify(window.dataLayer).includes('PRIVATE ANALYTICS RESPONSE'),'analytics excludes student work');
 
   const storagePrototype=Object.getPrototypeOf(window.localStorage);
   const originalSet=storagePrototype.setItem;
