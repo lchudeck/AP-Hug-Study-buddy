@@ -49,6 +49,7 @@
     [2,'2.4','Total Fertility Rate (TFR)','Average number of children a woman is expected to have.','A TFR near 2.1 is around replacement in many populations.'],
     [2,'2.4','Replacement-Level Fertility','Fertility needed to replace a population without migration.','About 2.1 in many populations.'],
     [2,'2.4','Population Momentum','Continued growth after fertility falls because many people are entering reproductive ages.','A youthful population keeps growing.'],
+    [2,'2.5','Epidemiological Transition Model','Changes in causes of death and disease burden over time.','Sanitation and vaccination can reduce infectious mortality; longer survival can increase the relative importance of chronic disease.'],
     [2,'2.5','Stage 1','High birth and death rates with little long-term growth.','Historical preindustrial pattern.'],
     [2,'2.5','Stage 2','High birth rates and falling death rates with rapid growth.','Sanitation lowers mortality.'],
     [2,'2.5','Stage 3','Falling birth rates and low death rates with slowing growth.','Urbanization and education lower fertility.'],
@@ -78,6 +79,9 @@
     [2,'2.12','Remittance','Money migrants send to people in their home community.','Workers send earnings to family abroad.']
   ];
   core12.forEach(x=>add(...x));
+  const epidemiology=flashcards.find(c=>c.unit===2&&c.term==='Epidemiological Transition Model');
+  if(epidemiology){epidemiology.def='Changes in causes of death and disease burden over time; distinct from the DTM, which tracks birth and death rates.';epidemiology.ex='Sanitation and vaccination can reduce infectious mortality. Longer lives can make chronic disease a larger share of deaths; outbreaks and unequal access can disrupt this pattern.';}
+
   if(window.__upperMasteryData){
     Object.entries(window.__upperMasteryData).forEach(([u,obj])=>obj.topics.forEach(t=>t[3].forEach(v=>add(Number(u),t[0],v[0],v[1],v[2]))));
   }
