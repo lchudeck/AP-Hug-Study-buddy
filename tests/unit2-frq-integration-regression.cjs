@@ -41,7 +41,10 @@ class LocalResources extends ResourceLoader{
     assert.equal(w.localGradeFRQ(full(coach,3),coach).score,7);
     // The production checker awarded 7/7 to this observed synthetic response.
     const misleading='A. Low fertility does not show aging.\nB. Dependency ratio is working-age people divided by children and elderly dependents.\nC. Pension costs decrease because more retirees receive benefits.\nD. Immigration does not increase the workforce because migrants cannot fill jobs.\nE. Immigration creates political tension because immigrants are different.\nF. Stage 4.\nG. Pronatalist policies increase the workforce immediately because newborn babies fill vacant jobs.';
-    assert.equal(w.localGradeFRQ(misleading,coach).score,1,'Only the DTM stage identification is creditworthy');
+    const review=w.localGradeFRQ(misleading,coach);
+    assert.equal(review.score,1,'Only the DTM stage identification is creditworthy');
+    assert.match(review.overall,/require revision or rubric review/);
+    assert.doesNotMatch(review.overall,/because valid alternate wording/);
     assert.equal(w.localGradeFRQ(full(coach,7),coach).score,0);
     assert.equal(w.gradeOneFrq(simulator,full(simulator,3)).score,7);
     assert.equal(w.gradeOneFrq(simulator,full(simulator,7)).score,0);
