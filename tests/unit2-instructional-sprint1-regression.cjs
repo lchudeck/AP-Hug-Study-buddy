@@ -50,6 +50,20 @@ class LocalResources extends ResourceLoader{
       w.urStart('quick',10);buttons=[...app.querySelectorAll('.quiz-option')];buttons.find(b=>b.textContent.slice(3)!==q[3]).click();assert.match(app.textContent,/Not yet/);
     }
     quiz.splice(0,quiz.length,...original);extras.forEach((k,i)=>w[k]=prior[i]);
+    // The quick-practice normalizer used to drop source tables from array-backed items.
+    w.eval('active="practiceMastery"');
+    const observed=new Set();
+    for(let pass=0;pass<3;pass++){
+      w.pmStart('unit',2);
+      for(let n=0;n<25;n++){
+        const heading=app.querySelector('h2')?.textContent;
+        const q=changed.find(q=>q[1]===heading);
+        if(q?.stimulus){assert.ok(app.querySelector('table'),'quick-practice normalizer preserves the evidence for '+q.misconception);observed.add(q[1]);}
+        w.pmChoose(0);w.pmNext();
+      }
+      assert.match(app.textContent,/You finished/);
+    }
+    assert.ok(observed.size>0,'changed source questions appear in actual practice sessions');
     const route=w.APHG_STIMULUS_SET_QUESTIONS_EXTRA.filter(q=>q.setId==='migration-flow');
     assert.equal(route.length,4);assert.ok(route.every(q=>q.stimulus.includes('600 remain here')));
     assert.match(route.find(q=>/two arrows/.test(q.prompt)).answer,/Forty percent/);

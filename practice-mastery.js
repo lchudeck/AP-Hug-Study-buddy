@@ -10,7 +10,7 @@
   // Quality-first bank. The old mass-generated bank remains in the repo as drafting inventory,
   // but is intentionally NOT served because some stems reveal the answer by name.
   const setQuestions=[...(window.APHG_STIMULUS_SET_QUESTIONS||[]),...(window.APHG_STIMULUS_SET_QUESTIONS_EXTRA||[]),...(window.APHG_REAL_DATA_QUESTIONS||[])];
-  const cedBase=(typeof quiz!=='undefined'?quiz:[]).map((q,i)=>({id:`pm-ced-${i+1}`,unit:Number(String(q[0]||'').match(/\d+/)?.[0]||0),topic:String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion(q)||''),prompt:q[1],choices:q[2],answer:q[3],explain:q[4],skill:q.skill,difficulty:q.difficulty,misconception:q.misconception})).filter(q=>q.unit&&q.topic&&q.prompt&&q.choices?.length===4&&q.answer);
+  const cedBase=(typeof quiz!=='undefined'?quiz:[]).map((q,i)=>({id:`pm-ced-${i+1}`,unit:Number(String(q[0]||'').match(/\d+/)?.[0]||0),topic:String(q.topic||window.APHGTopicSkillMastery?.topicFromQuestion(q)||''),prompt:q[1],choices:q[2],answer:q[3],explain:q[4],stimulus:q.stimulus||q.visual||'',stimulusTitle:q.stimulusTitle||'',skill:q.skill,difficulty:q.difficulty,misconception:q.misconception})).filter(q=>q.unit&&q.topic&&q.prompt&&q.choices?.length===4&&q.answer);
   const unique=new Map();[...core,...(window.APHG_UNIFIED_AP_BANK||[]),...(window.APHG_IMAGE_MCQ_BANK||[]),...cedBase].forEach(q=>{if(!unique.has(q.prompt))unique.set(q.prompt,q);});
   const nonSetBase=[...unique.values()];
   // Each served question now has a genuinely distinct stem. Prefixing the same stem with
