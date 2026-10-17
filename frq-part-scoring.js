@@ -99,7 +99,7 @@
         [/\b(migrants?|people|rural residents).{0,70}(concentrate|settle|move).{0,35}(cities|urban areas).{0,65}(grow|larger|urbanization|urbanisation|expand)/, /\b(cities|urban areas|urban share).{0,35}(grow|expand|increase).{0,65}(migrants?|arrivals|rural residents|people move)/, /urbanization.{0,60}(migrants?|people).{0,45}(concentrate|move|settle)/],
         'Explain how movement concentrates people in cities, increasing urban population or urban share. Listing urbanization alone does not explain the changing settlement pattern.', /\b(reduc|decreas|declin|shrink)[a-z]*.{0,20}(urbanization|urbanisation|city size|cities)/],
       [/^identify one pull factor for migration/,
-        [/\b(higher|better) (wages|pay|schools)|\bjob opportunities\b|\bfamily reunification\b|\b(political safety|religious freedom|access to education)\b/],
+        [/^(jobs|employment|safety|education|political freedom)$|\b(higher|better) (wages|pay|schools|education)|\b(job|employment) opportunities\b|\bfamily reunification\b|\b(political safety|religious freedom|access to education)\b/],
         'Identify an attraction at the destination, such as higher wages, job opportunities, safety, or family reunification. Unemployment at the origin is a push factor.', /\b(unemployment|war|persecution|drought|lower wages)\b/],
       [/^explain one consequence of a high dependency ratio/,
         [/\b(fewer|less) (working[- ]age people|workers).{0,35}(support|provide|pay).{0,25}(more )?(dependents|children|elderly|retirees)/, /\b(more|many|growing numbers of) (retirees|dependents|children|elderly).{0,45}(increase|raise|strain).{0,30}(pension|health|spending|tax|service|workers)/],

@@ -70,6 +70,9 @@ if(require.main===module){
   [12,'Fertility may decline because education expands employment choices.'],
   [13,'Cities grow because migrants arrive from rural regions.'],
   [14,'Family reunification.'],
+  [14,'Jobs.'],
+  [14,'Employment opportunities.'],
+  [14,'Safety.'],
   [15,'Fewer workers must support more dependents, increasing the tax burden.']
  ];
  for(const [i,text]of alternate){const [,verb,prompt,model]=cases[i];assert.equal(grade(['A',verb,prompt,model],text).earned,true,text);}
