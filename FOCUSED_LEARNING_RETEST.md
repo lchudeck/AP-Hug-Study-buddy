@@ -32,7 +32,7 @@ Local, full-script-order JSDOM checks (simulation, **not real-browser visual val
 - Seven Coach submission/model/rewrite flows; wrong responses through both Coach UI and shared simulator grading. Thirteen incorrect/reversed cases, eleven valid alternatives, partial/vague/blank/nonsense samples.
 - Existing Unit 2 matrix: 80 five-level responses, 18 alternatives and four contradictions; actual Coach, simulator and shared drills.
 - Units 1–7: entry to teaching, topic retry to results, 25-question practice sessions with feedback/recovery and stimuli, bounded Unit Review retries and completion. Planner introductory visuals checked for every unit across ten reorderings.
-- Relevant existing checks passed: FRQ scoring, Unit 2 integration/instructional work, beta blockers, exam failure, practice-exam quality, readiness evidence, stimulus integration/depth, student/unified question quality, reliability DOM routes and authentic-map assets. Changed-JS syntax and whitespace checks passed.
+- Relevant existing checks passed: FRQ scoring, Unit 2 integration/instructional work, beta blockers, exam failure, practice-exam quality, readiness evidence, stimulus integration/depth, student/unified question quality, reliability DOM routes and authentic-map assets. Changed-JS syntax and whitespace checks passed. The old Student Success Path CI assertion required the broken numeric route; it was updated to require unit lookup, while the DOM regression exercises actual shuffled routing.
 - Map asset checks verify 51 real US boundaries and the Census population total, and reject flat-color image assets. These do not establish browser readability or enlargement behavior.
 
 The interactive browser failed before navigation: `bwrap: Can't create file at /home/agent/.codex/sessions: Read-only file system`. The installed Playwright package also has no Chromium executable. No screenshots, rendered visual inspection, mobile visual validation or preview-browser pass is claimed.
@@ -41,7 +41,7 @@ The interactive browser failed before navigation: `bwrap: Can't create file at /
 
 1. **High — release validation:** real-browser final validation remains outstanding, including displayed labels/legends, image loading, enlargement and representative student progression on a preview.
 2. **Medium — FRQ scope:** conservative local rules are not a semantic AP reader. Unsupported alternate wording receives rubric review, and complex contradictions can exceed their coverage. Beyond supported tasks, only the curated model text is automatically verified; other answers receive honest review guidance. This prevents generic word-overlap credit but increases self-check burden. Separate keyword-based tools that do not use the shared scorer were not certified.
-3. **Medium — existing release gate:** main already exceeds the 48-script / 1,000,000-byte startup budget. The combined branch retains 49 scripts and adds instructional content. The gate was not weakened or addressed through an unrelated startup refactor.
+3. **Medium — existing release gate:** main already exceeds the 48-script / 1,000,000-byte startup budget. The combined branch retains 49 scripts and approximately 1.06 MB of initial JavaScript. The gate was not weakened or addressed through an unrelated startup refactor.
 4. **Medium — existing simulator limitation:** PR #66's simulator stimulus-preservation correction remains separate and unmerged. The full production simulator should not be described as visually validated by this work.
 
 ## Three-perspective verdicts
