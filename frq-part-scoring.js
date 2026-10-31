@@ -119,6 +119,31 @@
         `No point automatically verified. ${contradiction?'Check the direction or accuracy of your claim. ':ambiguous?'Your wording includes a negation that this limited checker cannot safely interpret. ':''}${rule[2]} A defensible alternative may earn credit; compare the reasoning with the model or ask your teacher.`,
       fix:model};
   }
+  // Content-specific checks are intentionally bounded. Unrecognized prose is
+  // rubric review, not a point inferred from word overlap or response length.
+  function courseRubric(part,text){
+    const [letter,verb,prompt,model]=part,t=norm(text),p=norm(prompt);
+    const rules=[
+      [/^define situation/, /(?:relative (?:location|to)|location.{0,45}(?:other places|connections)|(?:connections|relationship).{0,35}other places)/, /absolute|latitude|longitude/, 'Define relative location and connections to other places, not absolute coordinates.'],
+      [/^define relocation diffusion/, /(?:people|families|individuals|migrants|migrating).{0,45}(?:move|moving|migrat|relocat).{0,35}(?:bring|carry|spread).{0,35}(?:trait|culture|cultural|custom|religio|language)|(?:trait|culture|cultural).{0,65}(?:people move|migration|migrants move)/, /stay home|(?:leave|abandon).{0,35}(?:trait|culture)|prevent.{0,25}(?:cultural|spread)|without.{0,20}(?:mov|migrat)/, 'Relocation diffusion requires people moving and carrying cultural traits to a new place.'],
+      [/^define sovereignty/, /(?:authority|power|right).{0,45}(?:govern|rule|control).{0,35}(?:itself|territory|independent|own)/, /(?:no|loses?|lacks?).{0,15}(?:authority|power|right)|controlled from outside|external control/, 'State sovereignty means authority to govern its territory independently.'],
+      [/explain why dairy|explain why.*market gardening/, /(?:near|close).{0,30}market.{0,100}(?:spoil|perish|transport.{0,20}cost|cost.{0,20}transport)|(?:spoil|perish).{0,90}(?:near|close).{0,20}market/, /(?:far|distant|away) from (?:the )?market|less costly.{0,25}distance/, 'Connect proximity to the market with reduced spoilage or transportation costs for perishable products.'],
+      [/negative effect of gentrification/, /(?:rising|higher|increased|increase in).{0,25}(?:rent|cost|tax).{0,70}(?:unaffordable|displac|force.{0,15}(?:leave|move)|cannot afford|can t afford)|displac.{0,65}(?:rising|higher|increased).{0,20}(?:rent|cost|tax)/, /more affordable|(?:reduce|prevent|stop|less).{0,20}displac|keep.{0,30}residents|lower.{0,15}(?:rent|cost)/, 'Explain how higher rents or taxes make housing unaffordable and can displace longtime residents.'],
+      [/^define (?:hdi|human development index)/, /^(?=.*\b(?:income|gni|standard of living)\b)(?=.*\b(?:education|schooling)\b)(?=.*\blife expectancy\b)/, /military|total population/, 'HDI combines income, education, and life expectancy. All three dimensions are needed.'],
+      [/explain how improved transportation can affect market access/, /(?:roads?|rail|transportation).{0,80}(?:reach|connect|access).{0,35}(?:buyers|consumers|customer|market)/, /fewer buyers|reduce.{0,20}access/, 'Connect better transportation to reaching more buyers or markets through lower travel time or cost.']
+    ];
+    const rule=rules.find(r=>r[0].test(p));
+    // Exact supplied model is curated content, not a semantic inference. This
+    // also avoids imposing a connector word on the site's own explanations.
+    const modelMatch=t===norm(model);
+    const contradiction=rule&&rule[2].test(t);
+    const negated=/\b(not|never|no|cannot|can't|doesn't|without)\b/.test(t.replace(/cannot afford|can t afford/g,''));
+    const earned=modelMatch||!!(rule&&!contradiction&&!negated&&rule[1].test(t));
+    return {letter,verb,earned,status:earned?'verified':'unverified',coachingOnly:!earned,
+      reviewLabel:earned?undefined:(contradiction?'Revise geographic reasoning':'Not verified — rubric review'),
+      feedback:earned?`Part ${letter}: 1/1 locally verified against this task. This coaching check is not an official AP score.`:
+      `${contradiction?'Your claim conflicts with the geographic relationship. ':''}No point automatically verified. ${rule?rule[3]:`For this ${verb.toLowerCase()} task, compare your claim and required geographic reasoning with the model below.`} ${negated?'This checker cannot reliably interpret every negated statement. ':''}A concise answer or valid alternative may earn credit; review meaning, not matching words or length.`,fix:model};
+  }
   function gradePart(part,text){
     const [letter,verb,prompt,model]=part;
     const clean=norm(text),wc=clean.split(' ').filter(Boolean).length;
@@ -128,29 +153,7 @@
     const unit2=unit2Rubric(part,text);
     if(unit2)return unit2;
 
-    const ev=evidence(text,model);
-    const requiredHits=verb==='Identify'?1:(ev.needed.length>=4?2:1);
-    const contentOK=ev.hits.length>=requiredHits;
-    let structureOK=true;
-    if(verb==='Define'||verb==='Describe') structureOK=wc>=4;
-    if(verb==='Explain') structureOK=wc>=6&&hasCausalRelationship(text);
-    if(verb==='Apply'||verb==='Evaluate'||verb==='Compare') structureOK=wc>=6;
-
-    if(contentOK&&structureOK){
-      return {letter,verb,earned:true,status:'verified',feedback:`Part ${letter}: 1/1. Study Buddy found enough APHG content and task completion to verify this point. This is a coaching check—not an official AP score.`,fix:model};
-    }
-
-    const tooBrief=verb==='Explain'?(wc<12||!hasCausalRelationship(text)):wc<6;
-    const selfCheckLevel=tooBrief?'too-brief':'could-earn';
-    const reasons=[];
-    if(verb==='Explain'&&!hasCausalRelationship(text))reasons.push('make the cause-and-effect relationship explicit');
-    if(wc<4)reasons.push('add enough detail to complete the task verb');
-    if(!contentOK)reasons.push('compare the geographic idea/example with the rubric');
-    return {
-      letter,verb,earned:false,status:'unverified',coachingOnly:true,selfCheckLevel,
-      feedback:tooBrief?'Too brief to earn the point yet — add a specific example and explain the cause/effect.':'Could earn the point — compare your wording with the model answer.',
-      fix:model
-    };
+    return courseRubric(part,text);
   }
 
   window.__frqHasCausalRelationship=hasCausalRelationship;

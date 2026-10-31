@@ -47,6 +47,10 @@ jobs:
         run: node tests/unit2-frq-accuracy-regression.cjs
       - name: Install DOM test dependency outside the repository
         run: npm install --prefix /tmp/aphg-frq-test jsdom@26
+      - name: Run focused cross-course learning checks
+        env:
+          NODE_PATH: /tmp/aphg-frq-test/node_modules
+        run: node tests/focused-learning-regression.cjs
       - name: Run Unit 2 FRQ integration checks
         env:
           NODE_PATH: /tmp/aphg-frq-test/node_modules
