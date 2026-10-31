@@ -135,10 +135,19 @@
     const rule=rules.find(r=>r[0].test(p));
     // Exact supplied model is curated content, not a semantic inference. This
     // also avoids imposing a connector word on the site's own explanations.
-    const modelMatch=t===norm(model);
+    const bare=s=>s.replace(/^(?:the|a|an) /,'');
+    const modelMatch=bare(t)===bare(norm(model));
     const contradiction=rule&&rule[2].test(t);
     const negated=/\b(not|never|no|cannot|can't|doesn't|without)\b/.test(t.replace(/cannot afford|can t afford/g,''));
     const earned=modelMatch||!!(rule&&!contradiction&&!negated&&rule[1].test(t));
+    // A short reply sharing no idea with the task or model (e.g. "random",
+    // "because because") must not be told it "may earn credit". It stays a
+    // coaching status, never a point.
+    const wc=t.split(' ').filter(Boolean).length;
+    if(!earned&&!contradiction&&wc<=4&&!evidence(text,prompt+' '+model).hits.length){
+      return {letter,verb,earned:false,status:'unverified',coachingOnly:true,selfCheckLevel:'too-brief',reviewLabel:'Too brief',
+        feedback:`Too brief to earn the point yet. Add the required geographic reasoning for this ${verb.toLowerCase()} task. ${rule?rule[3]:'Use the specific term, example, or cause-and-effect the part asks for, then compare with the model below.'}`,fix:model};
+    }
     return {letter,verb,earned,status:earned?'verified':'unverified',coachingOnly:!earned,
       reviewLabel:earned?undefined:(contradiction?'Revise geographic reasoning':'Not verified — rubric review'),
       feedback:earned?`Part ${letter}: 1/1 locally verified against this task. This coaching check is not an official AP score.`:

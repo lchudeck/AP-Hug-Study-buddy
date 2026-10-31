@@ -53,4 +53,15 @@ for(const text of ['use GIS maps','build more stuff']){
   assert.equal(result.earned,false);
 }
 assert.match(global.aiResultHtml({parts:[developed,vague],score:0,total:2}),/Not verified — rubric review/);
+
+// Short off-task replies get a clear "Too brief" status instead of "may earn credit";
+// concise correct answers (including a leading article) still verify.
+const siteA=['A','Identify',"Identify the geographic concept that describes the physical characteristics of the city's location.",'Site.'];
+for(const text of ['site','The site.'])assert.equal(global.__gradeFrqPart(siteA,text).status,'verified',text+' should verify');
+for(const text of ['qwrty','random','because because']){
+  const r=global.__gradeFrqPart(siteA,text);
+  assert.equal(r.earned,false,text);assert.equal(r.reviewLabel,'Too brief',text);
+  assert.doesNotMatch(r.feedback,/may earn credit/,text);
+}
+assert.match(global.aiResultHtml({parts:[global.__gradeFrqPart(siteA,'random')],score:0,total:1}),/Too brief/);
 console.log(`FRQ regression passed: ${cases.length} response types, causal-language coverage, and distinct self-check guidance.`);
