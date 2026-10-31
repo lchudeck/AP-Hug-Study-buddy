@@ -9,6 +9,12 @@ on:
       - 'session-rating.js'
       - 'student-proof-v1.js'
       - 'tests/frq-scoring-regression.cjs'
+      - 'tests/unit2-frq-accuracy-regression.cjs'
+      - 'tests/unit2-frq-integration-regression.cjs'
+      - 'pr6-frq-polish.js'
+      - 'strict-frq-drill-grading.js'
+      - 'ced-content-audit-fixes.js'
+      - 'ced-final-audit-patch.js'
       - 'tests/practice-exam-quality-regression.cjs'
       - 'tests/readiness-evidence-regression.cjs'
       - '.github/workflows/student-reliability-regression.yml'
@@ -37,6 +43,18 @@ jobs:
         run: grep -Eq '<script src="student-reliability-patch.js(\?[^"]*)?"></script>' index.html
       - name: Run FRQ regression cases
         run: node tests/frq-scoring-regression.cjs
+      - name: Run Unit 2 FRQ accuracy cases
+        run: node tests/unit2-frq-accuracy-regression.cjs
+      - name: Install DOM test dependency outside the repository
+        run: npm install --prefix /tmp/aphg-frq-test jsdom@26
+      - name: Run focused cross-course learning checks
+        env:
+          NODE_PATH: /tmp/aphg-frq-test/node_modules
+        run: node tests/focused-learning-regression.cjs
+      - name: Run Unit 2 FRQ integration checks
+        env:
+          NODE_PATH: /tmp/aphg-frq-test/node_modules
+        run: node tests/unit2-frq-integration-regression.cjs
       - name: Run practice exam quality regression
         run: node tests/practice-exam-quality-regression.cjs
       - name: Run readiness evidence regression

@@ -42,15 +42,30 @@ for(const [part,valid,invalid] of demographicCases){
 const unit1=['B','Explain','Explain why national and neighborhood maps can show different patterns.','Aggregated national statistics obscure small-area variation that disaggregated neighborhood evidence reveals.'];
 const developed=global.__gradeFrqPart(unit1,'When figures are combined across an entire country, distinct conditions within individual communities can disappear because a single summary smooths over their differences.');
 assert.equal(developed.status,'unverified');
-assert.equal(developed.selfCheckLevel,'could-earn');
-assert.match(developed.feedback,/Could earn the point — compare your wording with the model answer/);
+assert.equal(developed.reviewLabel,'Not verified — rubric review');
+assert.match(developed.feedback,/valid alternative may earn credit/);
 const vague=global.__gradeFrqPart(unit1,'scale changes things');
 assert.equal(vague.status,'unverified');
-assert.equal(vague.selfCheckLevel,'too-brief');
-assert.match(vague.feedback,/Too brief to earn the point yet/);
+assert.equal(vague.earned,false);
+assert.match(vague.feedback,/required geographic reasoning/);
 for(const text of ['use GIS maps','build more stuff']){
   const result=global.__gradeFrqPart(unit1,text);
-  assert.equal(result.selfCheckLevel,'too-brief');
+  assert.equal(result.earned,false);
 }
-assert.match(global.aiResultHtml({parts:[developed,vague],score:0,total:2}),/Could earn the point[\s\S]*Too brief/);
+assert.match(global.aiResultHtml({parts:[developed,vague],score:0,total:2}),/Not verified — rubric review/);
+
+// Short off-task replies get a clear "Too brief" status instead of "may earn credit";
+// concise correct answers (including a leading article) still verify.
+const siteA=['A','Identify',"Identify the geographic concept that describes the physical characteristics of the city's location.",'Site.'];
+for(const text of ['site','The site.'])assert.equal(global.__gradeFrqPart(siteA,text).status,'verified',text+' should verify');
+for(const text of ['qwrty','random','because because']){
+  const r=global.__gradeFrqPart(siteA,text);
+  assert.equal(r.earned,false,text);assert.equal(r.reviewLabel,'Too brief',text);
+  assert.doesNotMatch(r.feedback,/may earn credit/,text);
+}
+const pull=['B','Identify','Identify one pull factor for migration.','Job opportunities in the destination.'];
+assert.equal(global.__gradeFrqPart(pull,'jobs').status,'verified','Unit 2 concise pull factor');
+assert.equal(global.__gradeFrqPart(pull,'random').reviewLabel,'Too brief','Unit 2 off-task reply');
+assert.match(global.__gradeFrqPart(pull,'unemployment').feedback,/push factor/,'Unit 2 contradiction keeps its guidance');
+assert.match(global.aiResultHtml({parts:[global.__gradeFrqPart(siteA,'random')],score:0,total:1}),/Too brief/);
 console.log(`FRQ regression passed: ${cases.length} response types, causal-language coverage, and distinct self-check guidance.`);

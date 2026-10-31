@@ -49,44 +49,125 @@
     if(/\b(increasing|decreasing|expanding|reducing|raising|rises?|rising|falls?|falling)\b/i.test(t))return true;
     return /(because|therefore|thus|hence|consequently|as a result|due to|leads? to|led to|results? in|resulted in|caus(?:e|es|ed|ing)|so that|which (?:raises?|reduces?|increases?|decreases?|creates?|allows?|prevents?)|\b(?:raises?|reduces?|increases?|decreases?|creates?|allows?|prevents?|encourages?|discourages?|limits?|expands?|shrinks?|pushes?|pulls?)\b)/i.test(t);
   }
+  // Only the existing Unit 2 Coach, simulator and two Unit 2 drills use these
+  // task-specific checks. Unknown phrasing needs review; it never falls through
+  // to the generic model-word overlap scorer. These are conservative coaching
+  // rules, not a semantic reader or an official AP scoring rubric.
+  function unit2Rubric(part,text){
+    const [letter,verb,prompt,model]=part, t=norm(String(text).replace(/[\u2010-\u2015]/g,'-'));
+    const rules=[
+      [/indicator.*aging population/,
+        [/\b(rising|increasing|higher|high) median age\b|median age (is )?(rising|increasing)/, /\b(high|higher|increasing|larger|growing) (share|proportion|percentage|number) of (elderly|older|people (over|aged) 65)/, /\b(high|higher|rising) (elderly|old-age) dependency ratio|top-heavy (population )?pyramid|\blow (fertility|birth) rate/],
+        'Name an indicator with its direction: rising median age, a larger elderly share, or high elderly dependency.', /\b(falling|decreasing|lower) median age|wide base.*aging|median age.{0,40}(younger|more children)/],
+      [/^define dependency ratio/,
+        [/\b(dependents?|children and (the )?(elderly|older people)|people under 15 and over 64).{0,65}\b(to|with|by|per|relative to|compared to|divided by)\b.{0,20}(the )?(working[- ]age|15[- ]64)/],
+        'Compare dependents (children and older people) with the working-age population. For a calculation, divide dependents by working-age people, often multiplying by 100.', /working[- ]age.{0,35}(divided by|over|per).{0,25}(dependents|children|elderly)/],
+      [/economic challenge caused by an aging population/,
+        [/\b(higher|increase|increased|increasing|rising|more) (pension|health[- ]?care|medical) (costs?|spending|expenses?|demand)/, /(pension|health[- ]?care|medical) (costs?|spending|expenses?).{0,20}(rise|increase|grow)/, /\b(labo[u]?r|worker) shortages?\b|\b(smaller|shrinking) workforce\b/],
+        'Describe a specific economic effect, such as rising pension spending or labor shortages. Describe needs a clear effect; it does not require a because sentence.', /(pension|health[- ]?care) (costs?|spending).{0,20}(decrease|fall|decline|shrink)|\b(lower|falling|decreasing) (pension|health[- ]?care) (costs?|spending)/],
+      [/immigration.*shrinking workforce/,
+        [/\b(working[- ]age (im)?migrants?|new arrivals|immigrants?|migrants?).{0,70}(fill|take).{0,25}(vacan|job|labo[u]?r shortage)/, /\b(working[- ]age (im)?migrants?|immigrants?|migrants?).{0,60}(expand|increase|add to|boost|enlarge|grow).{0,25}(workforce|labo[u]?r (force|pool)|supply of workers)/],
+        'Connect arriving workers to filling vacant jobs or expanding labor supply. Merely naming immigration or tax revenue does not explain how the workforce grows.', /immigration.{0,25}(shrinks|reduces|decreases) (the )?workforce/],
+      [/social or political challenge connected to increased immigration/,
+        [/\b(housing|rental|rent).{0,55}(demand|competition|shortage|supply).{0,70}(rent|cost|price|tension|oppos|resent)/, /\b(demand|competition|pressure).{0,30}(housing|public services|schools|health care).{0,65}(cost|strain|tension|oppos|capacity|overcrowd)/, /\b(residents?|voters?|some people).{0,30}(fear|worry|resent|oppose).{0,40}(cultural change|language|religio|housing|public service)/, /\b(language|cultural|religious) differences.{0,55}(misunderstanding|discrimination|conflict|tension)/],
+        'Explain a specific mechanism: for example, housing demand outpaces construction, raising rents and opposition, or residents fear cultural change. Saying people are different does not explain the challenge.', /(lower|falling|decreas|reduc)[a-z]*.{0,15}(rent|housing cost)/],
+      [/demographic transition.*low birth rates and low death rates/,
+        [/\bstage (4|5|iv|v)\b/],
+        'Identify Stage 4 (or Stage 5 in a five-stage version). Low birth and death rates do not describe Stage 1, where both are high.', /\bstage (1|2|3|i|ii|iii)\b|\bhigh (birth|death) rates?|\b(birth|death) rates?.{0,15}(high|rising)/],
+      [/(explain|evaluate) one policy.*aging population/,
+        [/\b(raise|raising|increase|increasing).{0,12}(the )?retirement age.{0,75}(keep|remain|stay|longer|delay).{0,30}(work|employ|retir)|retirement age.{0,35}(keep|remain|stay).{0,30}(work|employ)/, /\b(childcare|child care|parental leave|child benefits|birth subsid|pronatalist).{0,90}(afford|cost|encourage|support|birth|fertility).{0,90}(future|eventual|long[- ]term|later|workforce|workers|births|fertility)/, /\b(encourage|allow|admit|attract|increase).{0,20}immigration.{0,65}(fill|expand|increase|add).{0,25}(job|workforce|labo[u]?r|worker)/, /\b(automation|robots|robotics).{0,70}(replace|substitut|productivity|produce more|fewer workers)/],
+        'Name a policy and explain its mechanism: later retirement keeps adults employed longer; working-age immigration fills vacancies; childcare support reduces childrearing costs and may raise births; automation offsets labor shortages. More births help the workforce only after children grow up.', /\b(newborn|babies|infants).{0,35}(fill|take|work).{0,20}(jobs|vacancies)|\b(immediately|instantly).{0,35}(workforce|workers)|\b(antinatalist|restrict births).{0,55}(increase|expand|grow).{0,20}(workforce|births)/],
+      [/demographic model that best explains/,
+        [/\bdemographic transition( model)?\b|\bdtm\b/],
+        'Name the Demographic Transition Model: falling deaths with births still high fit Stage 2.', /\b(epidemiological|malthus|stage (1|3|4|5))\b/],
+      [/population pattern likely shown.*population pyramid/,
+        [/\b(wide|broad) base\b|\b(many|large (share|proportion|number) of|more) (children|young people|youth)|\bhigh birth rates?\b/],
+        'Describe a wide base or a large young population, consistent with the scenario’s high births and falling deaths.', /\b(narrow base|top-heavy|aging population|low birth rates?|low fertility)\b/],
+      [/challenge.*rapid urban growth/,
+        [/\b(migrants?|arrivals|urban growth|population growth).{0,85}(outpace|faster than|exceed|overwhelm).{0,60}(housing|services|infrastructure|construction|capacity)/, /\b(housing|infrastructure|services|schools|water|sewage).{0,60}(cannot keep up|can t keep up|not keep pace|cannot accommodate)/, /\b(migrants?|urban growth|population growth).{0,55}(increase|raise|strain).{0,35}(demand|pressure).{0,60}(housing|infrastructure|services|schools|water)/],
+        'Connect rapid arrivals to a specific capacity problem, such as housing construction failing to keep pace with demand. Naming infrastructure alone is a description.'],
+      [/reason rural residents may migrate to cities/,
+        [/\b(cities|urban areas).{0,45}(offer|provide|have).{0,25}(more|better|higher).{0,20}(jobs|wages|schools|health care|services|employment)/, /\b(jobs|employment|higher wages|better schools|health care).{0,35}(in cities|in urban areas).{0,50}(attract|draw|pull|encourage)/, /\b(rural|farm).{0,40}(job losses|unemployment|drought|mechanization).{0,50}(push|force|drive|leave|seek|move)/],
+        'Locate the reason: better urban jobs or services attract migrants, or a specific rural hardship pushes residents toward cities. Naming jobs without location or direction is incomplete.', /drought in cities|leave cities for rural/],
+      [/effect of a high youth dependency ratio/,
+        [/\b(higher|more|increases|increased|increasing|rising|greater).{0,25}(demand|spending|pressure|need).{0,30}(schools|education|child|working[- ]age|workers)/, /\b(schools|child health care|education).{0,20}(demand|spending|costs?).{0,15}(increase|rise|grow)/],
+        'Describe increased demand for schools or child health care, or greater support pressure on working-age people. Youth dependency is not elderly dependency.', /\b(pension|retiree)\b/],
+      [/educational opportunities for women.*fertility/,
+        [/\b(education|school|educational opportunities).{0,80}(delay|postpone).{0,30}(marriage|childbirth|childbearing|birth).{0,65}(lower|reduce|fewer|decline).{0,20}(fertility|births|children)/, /\b(lower|reduce|declin|fewer).{0,20}(fertility|births|children).{0,70}(delay|postpone|employment|career|contracepti|family planning)|fertility.{0,15}(decline|fall|decrease).{0,70}(employment|career|contracepti|family planning)/, /\b(education|school).{0,65}(employment|career|contracepti|family planning).{0,65}(lower|reduce|fewer).{0,20}(fertility|births|children)/],
+        'Connect education to a mechanism, such as later childbearing, more employment choices, or access to family planning, and then to potentially lower fertility. Education does not make all women’s decisions identical.', /\b(always|every woman|all women|infertile|sterile)\b/],
+      [/rural-to-urban migration.*settlement pattern/,
+        [/\b(migrants?|people|rural residents).{0,70}(concentrate|settle|move).{0,35}(cities|urban areas).{0,65}(grow|larger|urbanization|urbanisation|expand)/, /\b(cities|urban areas|urban share).{0,35}(grow|expand|increase).{0,65}(migrants?|arrivals|rural residents|people move)/, /urbanization.{0,60}(migrants?|people).{0,45}(concentrate|move|settle)/],
+        'Explain how movement concentrates people in cities, increasing urban population or urban share. Listing urbanization alone does not explain the changing settlement pattern.', /\b(reduc|decreas|declin|shrink)[a-z]*.{0,20}(urbanization|urbanisation|city size|cities)/],
+      [/^identify one pull factor for migration/,
+        [/^(jobs|employment|safety|education|political freedom)$|\b(higher|better) (wages|pay|schools|education)|\b(job|employment) opportunities\b|\bfamily reunification\b|\b(political safety|religious freedom|access to education)\b/],
+        'Identify an attraction at the destination, such as higher wages, job opportunities, safety, or family reunification. Unemployment at the origin is a push factor.', /\b(unemployment|war|persecution|drought|lower wages)\b/],
+      [/^explain one consequence of a high dependency ratio/,
+        [/\b(fewer|less) (working[- ]age people|workers).{0,35}(support|provide|pay).{0,25}(more )?(dependents|children|elderly|retirees)/, /\b(more|many|growing numbers of) (retirees|dependents|children|elderly).{0,45}(increase|raise|strain).{0,30}(pension|health|spending|tax|service|workers)/],
+        'Connect many dependents relative to working-age people with greater support needs, pension or school costs, or tax pressure. A list of costs is not an explanation.', /(pension|health) costs.{0,20}(decrease|fall)|dependents.{0,25}(reduce|lower).{0,20}(costs|tax)/]
+    ];
+    const rule=rules.find(r=>r[0].test(norm(prompt)));
+    if(!rule)return null;
+    // A keyword match cannot establish the meaning of a negated, conditional or
+    // self-contradictory claim. Retain these for student/teacher rubric review.
+    const negationText=/challenge.*rapid urban growth/.test(norm(prompt))?t.replace(/cannot keep up|can'?t keep up|not keep pace|cannot accommodate/g,'capacity limit'):t;
+    const ambiguous=/\b(not|never|cannot|can'?t|doesn'?t|don'?t|isn'?t|aren'?t|won'?t|no)\b/.test(negationText);
+    const contradiction=rule[3]&&rule[3].test(t);
+    const earned=!ambiguous&&!contradiction&&rule[1].some(re=>re.test(t));
+    return {letter,verb,earned,status:earned?'verified':'unverified',coachingOnly:!earned,
+      reviewLabel:earned?undefined:'Not verified — rubric review',
+      feedback:earned?`Part ${letter}: 1/1 locally verified. Your response states the required geographic relationship. This is a coaching check, not an official AP score.`:
+        `No point automatically verified. ${contradiction?'Check the direction or accuracy of your claim. ':ambiguous?'Your wording includes a negation that this limited checker cannot safely interpret. ':''}${rule[2]} A defensible alternative may earn credit; compare the reasoning with the model or ask your teacher.`,
+      fix:model};
+  }
+  // A short reply sharing no idea with the task or model (e.g. "random",
+  // "because because") must not be told it "may earn credit". It stays a
+  // coaching status, never a point.
+  function offTask(part,text){
+    const t=norm(text);
+    return t.split(' ').filter(Boolean).length<=4&&!evidence(text,part[2]+' '+part[3]).hits.length;
+  }
+  function tooBrief(part,guidance){
+    const [letter,verb,,model]=part;
+    return {letter,verb,earned:false,status:'unverified',coachingOnly:true,selfCheckLevel:'too-brief',reviewLabel:'Too brief',
+      feedback:`Too brief to earn the point yet. Add the required geographic reasoning for this ${verb.toLowerCase()} task. ${guidance||'Use the specific term, example, or cause-and-effect the part asks for, then compare with the model below.'}`,fix:model};
+  }
+  // Content-specific checks are intentionally bounded. Unrecognized prose is
+  // rubric review, not a point inferred from word overlap or response length.
+  function courseRubric(part,text){
+    const [letter,verb,prompt,model]=part,t=norm(text),p=norm(prompt);
+    const rules=[
+      [/^define situation/, /(?:relative (?:location|to)|location.{0,45}(?:other places|connections)|(?:connections|relationship).{0,35}other places)/, /absolute|latitude|longitude/, 'Define relative location and connections to other places, not absolute coordinates.'],
+      [/^define relocation diffusion/, /(?:people|families|individuals|migrants|migrating).{0,45}(?:move|moving|migrat|relocat).{0,35}(?:bring|carry|spread).{0,35}(?:trait|culture|cultural|custom|religio|language)|(?:trait|culture|cultural).{0,65}(?:people move|migration|migrants move)/, /stay home|(?:leave|abandon).{0,35}(?:trait|culture)|prevent.{0,25}(?:cultural|spread)|without.{0,20}(?:mov|migrat)/, 'Relocation diffusion requires people moving and carrying cultural traits to a new place.'],
+      [/^define sovereignty/, /(?:authority|power|right).{0,45}(?:govern|rule|control).{0,35}(?:itself|territory|independent|own)/, /(?:no|loses?|lacks?).{0,15}(?:authority|power|right)|controlled from outside|external control/, 'State sovereignty means authority to govern its territory independently.'],
+      [/explain why dairy|explain why.*market gardening/, /(?:near|close).{0,30}market.{0,100}(?:spoil|perish|transport.{0,20}cost|cost.{0,20}transport)|(?:spoil|perish).{0,90}(?:near|close).{0,20}market/, /(?:far|distant|away) from (?:the )?market|less costly.{0,25}distance/, 'Connect proximity to the market with reduced spoilage or transportation costs for perishable products.'],
+      [/negative effect of gentrification/, /(?:rising|higher|increased|increase in).{0,25}(?:rent|cost|tax).{0,70}(?:unaffordable|displac|force.{0,15}(?:leave|move)|cannot afford|can t afford)|displac.{0,65}(?:rising|higher|increased).{0,20}(?:rent|cost|tax)/, /more affordable|(?:reduce|prevent|stop|less).{0,20}displac|keep.{0,30}residents|lower.{0,15}(?:rent|cost)/, 'Explain how higher rents or taxes make housing unaffordable and can displace longtime residents.'],
+      [/^define (?:hdi|human development index)/, /^(?=.*\b(?:income|gni|standard of living)\b)(?=.*\b(?:education|schooling)\b)(?=.*\blife expectancy\b)/, /military|total population/, 'HDI combines income, education, and life expectancy. All three dimensions are needed.'],
+      [/explain how improved transportation can affect market access/, /(?:roads?|rail|transportation).{0,80}(?:reach|connect|access).{0,35}(?:buyers|consumers|customer|market)/, /fewer buyers|reduce.{0,20}access/, 'Connect better transportation to reaching more buyers or markets through lower travel time or cost.']
+    ];
+    const rule=rules.find(r=>r[0].test(p));
+    // Exact supplied model is curated content, not a semantic inference. This
+    // also avoids imposing a connector word on the site's own explanations.
+    const bare=s=>s.replace(/^(?:the|a|an) /,'');
+    const modelMatch=bare(t)===bare(norm(model));
+    const contradiction=rule&&rule[2].test(t);
+    const negated=/\b(not|never|no|cannot|can't|doesn't|without)\b/.test(t.replace(/cannot afford|can t afford/g,''));
+    const earned=modelMatch||!!(rule&&!contradiction&&!negated&&rule[1].test(t));
+    if(!earned&&!contradiction&&offTask(part,text))return tooBrief(part,rule&&rule[3]);
+    return {letter,verb,earned,status:earned?'verified':'unverified',coachingOnly:!earned,
+      reviewLabel:earned?undefined:(contradiction?'Revise geographic reasoning':'Not verified — rubric review'),
+      feedback:earned?`Part ${letter}: 1/1 locally verified against this task. This coaching check is not an official AP score.`:
+      `${contradiction?'Your claim conflicts with the geographic relationship. ':''}No point automatically verified. ${rule?rule[3]:`For this ${verb.toLowerCase()} task, compare your claim and required geographic reasoning with the model below.`} ${negated?'This checker cannot reliably interpret every negated statement. ':''}A concise answer or valid alternative may earn credit; review meaning, not matching words or length.`,fix:model};
+  }
   function gradePart(part,text){
     const [letter,verb,prompt,model]=part;
     const clean=norm(text),wc=clean.split(' ').filter(Boolean).length;
     if(!clean) return {letter,verb,earned:false,status:'incorrect',feedback:`Part ${letter}: 0/1. This part is blank.`,fix:model};
     if(looksNonsense(text)) return {letter,verb,earned:false,status:'incorrect',feedback:`Part ${letter}: 0/1. The response does not contain a recognizable AP Human Geography idea that answers this part.`,fix:model};
 
-    // These Unit 2 tasks need the relationship, not shared demographic words.
-    // Unrecognized wording remains a rubric self-check, never an automatic zero.
-    let demographicCheck=null;
-    if(/indicator.*aging population/i.test(prompt)) demographicCheck=/(rising|increasing|higher|growing).*median age|median age.*(rises|increases)|(?:greater|higher|increasing|growing|larger).*\b(elderly|older|65|senior)|low.*(fertility|birth)/i.test(clean)&&!/(falling|decreasing|lower).*median age/.test(clean);
-    if(/define dependency ratio/i.test(prompt)) demographicCheck=/(dependent|children|elderly|older|under 15|over 64|over 65)/.test(clean)&&/(working.age|15.*64)/.test(clean)&&/(ratio|compar|relative|per |divid)/.test(clean);
-    if(/immigration.*shrinking workforce/i.test(prompt)) demographicCheck=/(labor|workforce|worker|job|employment)/.test(clean)&&/(fill|expand|increase|add|larger|grow|boost|supply|provide)/.test(clean)&&!/(no .*work|cannot work|shrinks? .*workforce|reduces? .*workforce)/.test(clean);
-    if(/demographic transition.*low birth rates and low death rates/i.test(prompt)) demographicCheck=/\bstage (4|5|iv|v)\b/.test(clean)&&!/\bstage (1|2|3|i|ii|iii)\b/.test(clean);
-    if(demographicCheck===false) return {letter,verb,earned:false,status:'unverified',coachingOnly:true,selfCheckLevel:'could-earn',feedback:'Not automatically verified — check the demographic relationship, direction of change, and definition against the model. Shared vocabulary alone does not establish an accurate answer.',fix:model};
+    const unit2=unit2Rubric(part,text);
+    if(unit2)return !unit2.earned&&!/Check the direction/.test(unit2.feedback)&&offTask(part,text)?tooBrief(part):unit2;
 
-    const ev=evidence(text,model);
-    const requiredHits=verb==='Identify'?1:(ev.needed.length>=4?2:1);
-    const contentOK=ev.hits.length>=requiredHits;
-    let structureOK=true;
-    if(verb==='Define'||verb==='Describe') structureOK=wc>=4;
-    if(verb==='Explain') structureOK=wc>=6&&hasCausalRelationship(text);
-    if(verb==='Apply'||verb==='Evaluate'||verb==='Compare') structureOK=wc>=6;
-
-    if(contentOK&&structureOK){
-      return {letter,verb,earned:true,status:'verified',feedback:`Part ${letter}: 1/1. Study Buddy found enough APHG content and task completion to verify this point. This is a coaching check—not an official AP score.`,fix:model};
-    }
-
-    const tooBrief=verb==='Explain'?(wc<12||!hasCausalRelationship(text)):wc<6;
-    const selfCheckLevel=tooBrief?'too-brief':'could-earn';
-    const reasons=[];
-    if(verb==='Explain'&&!hasCausalRelationship(text))reasons.push('make the cause-and-effect relationship explicit');
-    if(wc<4)reasons.push('add enough detail to complete the task verb');
-    if(!contentOK)reasons.push('compare the geographic idea/example with the rubric');
-    return {
-      letter,verb,earned:false,status:'unverified',coachingOnly:true,selfCheckLevel,
-      feedback:tooBrief?'Too brief to earn the point yet — add a specific example and explain the cause/effect.':'Could earn the point — compare your wording with the model answer.',
-      fix:model
-    };
+    return courseRubric(part,text);
   }
 
   window.__frqHasCausalRelationship=hasCausalRelationship;
