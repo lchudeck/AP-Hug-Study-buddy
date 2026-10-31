@@ -119,6 +119,18 @@
         `No point automatically verified. ${contradiction?'Check the direction or accuracy of your claim. ':ambiguous?'Your wording includes a negation that this limited checker cannot safely interpret. ':''}${rule[2]} A defensible alternative may earn credit; compare the reasoning with the model or ask your teacher.`,
       fix:model};
   }
+  // A short reply sharing no idea with the task or model (e.g. "random",
+  // "because because") must not be told it "may earn credit". It stays a
+  // coaching status, never a point.
+  function offTask(part,text){
+    const t=norm(text);
+    return t.split(' ').filter(Boolean).length<=4&&!evidence(text,part[2]+' '+part[3]).hits.length;
+  }
+  function tooBrief(part,guidance){
+    const [letter,verb,,model]=part;
+    return {letter,verb,earned:false,status:'unverified',coachingOnly:true,selfCheckLevel:'too-brief',reviewLabel:'Too brief',
+      feedback:`Too brief to earn the point yet. Add the required geographic reasoning for this ${verb.toLowerCase()} task. ${guidance||'Use the specific term, example, or cause-and-effect the part asks for, then compare with the model below.'}`,fix:model};
+  }
   // Content-specific checks are intentionally bounded. Unrecognized prose is
   // rubric review, not a point inferred from word overlap or response length.
   function courseRubric(part,text){
@@ -135,10 +147,12 @@
     const rule=rules.find(r=>r[0].test(p));
     // Exact supplied model is curated content, not a semantic inference. This
     // also avoids imposing a connector word on the site's own explanations.
-    const modelMatch=t===norm(model);
+    const bare=s=>s.replace(/^(?:the|a|an) /,'');
+    const modelMatch=bare(t)===bare(norm(model));
     const contradiction=rule&&rule[2].test(t);
     const negated=/\b(not|never|no|cannot|can't|doesn't|without)\b/.test(t.replace(/cannot afford|can t afford/g,''));
     const earned=modelMatch||!!(rule&&!contradiction&&!negated&&rule[1].test(t));
+    if(!earned&&!contradiction&&offTask(part,text))return tooBrief(part,rule&&rule[3]);
     return {letter,verb,earned,status:earned?'verified':'unverified',coachingOnly:!earned,
       reviewLabel:earned?undefined:(contradiction?'Revise geographic reasoning':'Not verified — rubric review'),
       feedback:earned?`Part ${letter}: 1/1 locally verified against this task. This coaching check is not an official AP score.`:
@@ -151,7 +165,7 @@
     if(looksNonsense(text)) return {letter,verb,earned:false,status:'incorrect',feedback:`Part ${letter}: 0/1. The response does not contain a recognizable AP Human Geography idea that answers this part.`,fix:model};
 
     const unit2=unit2Rubric(part,text);
-    if(unit2)return unit2;
+    if(unit2)return !unit2.earned&&!/Check the direction/.test(unit2.feedback)&&offTask(part,text)?tooBrief(part):unit2;
 
     return courseRubric(part,text);
   }

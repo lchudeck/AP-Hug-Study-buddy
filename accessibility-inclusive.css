@@ -2,6 +2,8 @@
 :root{--focus-ring:#0b57d0;--focus-offset:#fff}
 html{scroll-behavior:smooth}
 body{overflow-wrap:anywhere}
+/* Data-table cells size to whole words so headings like "Earlier" do not split mid-word on phones. */
+th,td{overflow-wrap:break-word}
 .skip-link{position:fixed;left:12px;top:12px;z-index:1000000;background:#fff;color:#0f172a;border:3px solid #0f172a;border-radius:10px;padding:10px 14px;font-weight:900;transform:translateY(-180%)}
 .skip-link:focus{transform:none}
 :where(a,button,input,select,textarea,[tabindex]:not([tabindex="-1"])):focus-visible{outline:3px solid var(--focus-ring)!important;outline-offset:3px!important;box-shadow:0 0 0 2px var(--focus-offset)!important}
