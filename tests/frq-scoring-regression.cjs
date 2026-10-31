@@ -63,5 +63,9 @@ for(const text of ['qwrty','random','because because']){
   assert.equal(r.earned,false,text);assert.equal(r.reviewLabel,'Too brief',text);
   assert.doesNotMatch(r.feedback,/may earn credit/,text);
 }
+const pull=['B','Identify','Identify one pull factor for migration.','Job opportunities in the destination.'];
+assert.equal(global.__gradeFrqPart(pull,'jobs').status,'verified','Unit 2 concise pull factor');
+assert.equal(global.__gradeFrqPart(pull,'random').reviewLabel,'Too brief','Unit 2 off-task reply');
+assert.match(global.__gradeFrqPart(pull,'unemployment').feedback,/push factor/,'Unit 2 contradiction keeps its guidance');
 assert.match(global.aiResultHtml({parts:[global.__gradeFrqPart(siteA,'random')],score:0,total:1}),/Too brief/);
 console.log(`FRQ regression passed: ${cases.length} response types, causal-language coverage, and distinct self-check guidance.`);

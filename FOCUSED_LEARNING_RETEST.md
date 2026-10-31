@@ -63,3 +63,22 @@ Scores below are provisional judgments of the sampled working-branch content and
 | 7 | 4 | 3 | 3 | 3 | 2 | 3 |
 
 **Readiness: Limited beta, provisional. Recommendation: fix a few focused items first.** Keep this PR unmerged until the existing release gate is resolved and a real-browser preview check covers the changed paths. The smallest instructional validation step is that preview check; no broad audit is proposed.
+
+## Continuation — October 31, 2026 (real-browser pass)
+
+Branch `claude/gifted-keller-n3vb76`, stacked on `focused-learning-retest` (#69).
+
+**Fixes**
+- *FRQ Coach, off-task replies (regression from #69):* the new rubric-review fallback told students that gibberish or one-word off-task replies ("qwrty", "random") "may earn credit". This failed the PR6 ninth-grade audit in CI. Short replies (≤4 words) that share no idea with the task or model now get a clear **Too brief** status with task guidance, in both the course rubric and the Unit 2 rubric. No point is inferred; contradiction messages are unchanged.
+- *FRQ Coach, exact model match:* "The site." now verifies like "Site." (a leading article is ignored).
+- *Data tables on phones:* the global `overflow-wrap:anywhere` split table headings mid-word ("Earli/er"). Table cells now use `break-word`.
+- Scorer and stylesheet cache versions were bumped.
+
+**Real Chromium (Playwright, local static server; production not tested)**
+- Units 1–7 Unit Check (25 questions each, 390 px): every session reached results. All 175 questions were distinct within their unit, each had exactly one keyed answer and showed an explanation for right and wrong choices. There were no page errors.
+- Units 1–7 Unit Review "Start here": every session reached results with a CED topic breakdown. A struggling student's concept retries extend the 10-question set to 17–35 questions.
+- 100 rendered data tables at 320/390/768 px had no horizontal overflow, and headings wrapped on whole words.
+- Visual practice banks for Units 1–7: images and SVGs rendered, with no broken stimuli; each bank ran to completion.
+- FRQ Coach, all seven prompts: model answers scored 7/7; vague answers 0/7; gibberish 0/7 ("Too brief"). Vocabulary-only answers scored 0–1/7, and each single point was an Identify part whose answer is that term.
+
+**Not verified:** physical devices, Safari/Firefox, production after deploy, and enlargement/zoom behaviour. The performance-budget check fails on main as well (49 scripts against a limit of 48); it is not addressed here.
