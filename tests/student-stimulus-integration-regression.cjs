@@ -5,6 +5,10 @@ const app=fs.readFileSync('app.js','utf8');
 const path=fs.readFileSync('student-success-path.js','utf8');
 const home=fs.readFileSync('index.html','utf8');
 
+const polishCss=fs.readFileSync('final-freshman-polish.css','utf8');
+const enlargedTable=(polishCss.match(/\.study-visual-scroll table\{[^}]*\}/)||[''])[0];
+assert.ok(enlargedTable,'enlarged-visual table rule must exist');
+assert.doesNotMatch(enlargedTable,/min-width/,'enlarged data tables must fit the phone screen; a fixed min-width hides the Value column');
 assert.match(app,/q\.stimulus\?`<div class="box-info quiz-stimulus"/,'the standard practice quiz must render attached map, chart, and data stimuli');
 assert.match(path,/Array\.isArray\(q\)[\s\S]*stimulus:q\.stimulus\|\|q\.visual\|\|''/,'the personalized practice normalizer must preserve stimuli attached to array-format quiz questions');
 assert.doesNotMatch(home,/9th graders|ninth graders|ninth-grade|Grade 9/i,'the public student homepage must not position Study Buddy for one grade only');

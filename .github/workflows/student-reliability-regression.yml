@@ -9,6 +9,7 @@ on:
       - 'session-rating.js'
       - 'student-proof-v1.js'
       - 'tests/frq-scoring-regression.cjs'
+      - 'tests/frq-paraphrase-regression.cjs'
       - 'tests/unit2-frq-accuracy-regression.cjs'
       - 'tests/unit2-frq-integration-regression.cjs'
       - 'pr6-frq-polish.js'
@@ -51,6 +52,10 @@ jobs:
         env:
           NODE_PATH: /tmp/aphg-frq-test/node_modules
         run: node tests/focused-learning-regression.cjs
+      - name: Run FRQ Coach paraphrase matrix (Units 1-7)
+        env:
+          NODE_PATH: /tmp/aphg-frq-test/node_modules
+        run: node tests/frq-paraphrase-regression.cjs
       - name: Run Unit 2 FRQ integration checks
         env:
           NODE_PATH: /tmp/aphg-frq-test/node_modules

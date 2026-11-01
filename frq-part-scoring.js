@@ -57,23 +57,23 @@
     const [letter,verb,prompt,model]=part, t=norm(String(text).replace(/[\u2010-\u2015]/g,'-'));
     const rules=[
       [/indicator.*aging population/,
-        [/\b(rising|increasing|higher|high) median age\b|median age (is )?(rising|increasing)/, /\b(high|higher|increasing|larger|growing) (share|proportion|percentage|number) of (elderly|older|people (over|aged) 65)/, /\b(high|higher|rising) (elderly|old-age) dependency ratio|top-heavy (population )?pyramid|\blow (fertility|birth) rate/],
+        [/\b(rising|increasing|higher|high) median age\b|median age (is )?(rising|increasing)/, /\b(high|higher|increasing|larger|growing) (share|proportion|percentage|number) of (elderly|older|people (over|aged) 65)/, /\b(high|higher|rising) (elderly|old-age) dependency ratio|top-heavy (population )?pyramid|\blow (fertility|birth) rate/, /\b(share|proportion|percentage|number) of (elderly|older (people|adults)|people (over|aged|older than) 65|seniors|retirees).{0,20}(is |are )?(rising|increasing|growing|higher)/],
         'Name an indicator with its direction: rising median age, a larger elderly share, or high elderly dependency.', /\b(falling|decreasing|lower) median age|wide base.*aging|median age.{0,40}(younger|more children)/],
       [/^define dependency ratio/,
-        [/\b(dependents?|children and (the )?(elderly|older people)|people under 15 and over 64).{0,65}\b(to|with|by|per|relative to|compared to|divided by)\b.{0,20}(the )?(working[- ]age|15[- ]64)/],
+        [/\b(dependents?|children and (the )?(elderly|older people)|people under 15 and over 64).{0,65}\b(to|with|by|per|relative to|compared to|divided by)\b.{0,32}(the )?(working[- ]age|15[- ]64|(people )?aged 15 to 64|15 to 64)/],
         'Compare dependents (children and older people) with the working-age population. For a calculation, divide dependents by working-age people, often multiplying by 100.', /working[- ]age.{0,35}(divided by|over|per).{0,25}(dependents|children|elderly)/],
       [/economic challenge caused by an aging population/,
-        [/\b(higher|increase|increased|increasing|rising|more) (pension|health[- ]?care|medical) (costs?|spending|expenses?|demand)/, /(pension|health[- ]?care|medical) (costs?|spending|expenses?).{0,20}(rise|increase|grow)/, /\b(labo[u]?r|worker) shortages?\b|\b(smaller|shrinking) workforce\b/],
+        [/\b(higher|increase|increased|increasing|rising|more) (pension|health[- ]?care|medical) (costs?|spending|expenses?|demand)/, /(pension|health[- ]?care|medical) (costs?|spending|expenses?).{0,20}(rise|increase|grow)/, /\b(labo[u]?r|worker) shortages?\b|\b(smaller|shrinking) workforce\b/, /\b(spend|pay)\w* (more|extra) (money )?(on|for) (pension|health|medical|social security)/],
         'Describe a specific economic effect, such as rising pension spending or labor shortages. Describe needs a clear effect; it does not require a because sentence.', /(pension|health[- ]?care) (costs?|spending).{0,20}(decrease|fall|decline|shrink)|\b(lower|falling|decreasing) (pension|health[- ]?care) (costs?|spending)/],
       [/immigration.*shrinking workforce/,
         [/\b(working[- ]age (im)?migrants?|new arrivals|immigrants?|migrants?).{0,70}(fill|take).{0,25}(vacan|job|labo[u]?r shortage)/, /\b(working[- ]age (im)?migrants?|immigrants?|migrants?).{0,60}(expand|increase|add to|boost|enlarge|grow).{0,25}(workforce|labo[u]?r (force|pool)|supply of workers)/],
         'Connect arriving workers to filling vacant jobs or expanding labor supply. Merely naming immigration or tax revenue does not explain how the workforce grows.', /immigration.{0,25}(shrinks|reduces|decreases) (the )?workforce/],
       [/social or political challenge connected to increased immigration/,
-        [/\b(housing|rental|rent).{0,55}(demand|competition|shortage|supply).{0,70}(rent|cost|price|tension|oppos|resent)/, /\b(demand|competition|pressure).{0,30}(housing|public services|schools|health care).{0,65}(cost|strain|tension|oppos|capacity|overcrowd)/, /\b(residents?|voters?|some people).{0,30}(fear|worry|resent|oppose).{0,40}(cultural change|language|religio|housing|public service)/, /\b(language|cultural|religious) differences.{0,55}(misunderstanding|discrimination|conflict|tension)/],
+        [/\b(housing|rental|rent).{0,55}(demand|competition|shortage|supply).{0,70}(rent|cost|price|tension|oppos|resent)/, /\b(demand|competition|pressure).{0,30}(housing|public services|schools|health care).{0,65}(cost|strain|tension|oppos|capacity|overcrowd)/, /\b(residents?|voters?|some people).{0,30}(fear|worry|resent|oppose).{0,60}(cultural change|language|religio|housing|public service)/, /\b(language|cultural|religious) differences.{0,55}(misunderstanding|discrimination|conflict|tension)/],
         'Explain a specific mechanism: for example, housing demand outpaces construction, raising rents and opposition, or residents fear cultural change. Saying people are different does not explain the challenge.', /(lower|falling|decreas|reduc)[a-z]*.{0,15}(rent|housing cost)/],
       [/demographic transition.*low birth rates and low death rates/,
-        [/\bstage (4|5|iv|v)\b/],
-        'Identify Stage 4 (or Stage 5 in a five-stage version). Low birth and death rates do not describe Stage 1, where both are high.', /\bstage (1|2|3|i|ii|iii)\b|\bhigh (birth|death) rates?|\b(birth|death) rates?.{0,15}(high|rising)/],
+        [/\bstage (4|5|iv|v)\b|\b(fourth|fifth|4th|5th) stage\b/],
+        'Identify Stage 4 (or Stage 5 in a five-stage version). Low birth and death rates do not describe Stage 1, where both are high.', /\bstage (1|2|3|i|ii|iii)\b|\b(first|second|third|1st|2nd|3rd) stage\b|\bhigh (birth|death) rates?|\b(birth|death) rates?.{0,15}(high|rising)/],
       [/(explain|evaluate) one policy.*aging population/,
         [/\b(raise|raising|increase|increasing).{0,12}(the )?retirement age.{0,75}(keep|remain|stay|longer|delay).{0,30}(work|employ|retir)|retirement age.{0,35}(keep|remain|stay).{0,30}(work|employ)/, /\b(childcare|child care|parental leave|child benefits|birth subsid|pronatalist).{0,90}(afford|cost|encourage|support|birth|fertility).{0,90}(future|eventual|long[- ]term|later|workforce|workers|births|fertility)/, /\b(encourage|allow|admit|attract|increase).{0,20}immigration.{0,65}(fill|expand|increase|add).{0,25}(job|workforce|labo[u]?r|worker)/, /\b(automation|robots|robotics).{0,70}(replace|substitut|productivity|produce more|fewer workers)/],
         'Name a policy and explain its mechanism: later retirement keeps adults employed longer; working-age immigration fills vacancies; childcare support reduces childrearing costs and may raise births; automation offsets labor shortages. More births help the workforce only after children grow up.', /\b(newborn|babies|infants).{0,35}(fill|take|work).{0,20}(jobs|vacancies)|\b(immediately|instantly).{0,35}(workforce|workers)|\b(antinatalist|restrict births).{0,55}(increase|expand|grow).{0,20}(workforce|births)/],
@@ -135,22 +135,26 @@
   // rubric review, not a point inferred from word overlap or response length.
   function courseRubric(part,text){
     const [letter,verb,prompt,model]=part,t=norm(text),p=norm(prompt);
+    const any=(...g)=>({test:s=>g.some(r=>r.test(s))});
     const rules=[
-      [/^define situation/, /(?:relative (?:location|to)|location.{0,45}(?:other places|connections)|(?:connections|relationship).{0,35}other places)/, /absolute|latitude|longitude/, 'Define relative location and connections to other places, not absolute coordinates.'],
+      [/^define situation/, /(?:relative (?:location|to)|in relation to (?:other|nearby|surrounding)|compared (?:with|to) (?:the )?(?:other |nearby |surrounding )?(?:places|cities|routes)|location.{0,45}(?:other places|connections)|(?:connections|relationship).{0,35}other places)/, /absolute|latitude|longitude/, 'Define relative location and connections to other places, not absolute coordinates.'],
       [/^define relocation diffusion/, /(?:people|families|individuals|migrants|migrating).{0,45}(?:move|moving|migrat|relocat).{0,35}(?:bring|carry|spread).{0,35}(?:trait|culture|cultural|custom|religio|language)|(?:trait|culture|cultural).{0,65}(?:people move|migration|migrants move)/, /stay home|(?:leave|abandon).{0,35}(?:trait|culture)|prevent.{0,25}(?:cultural|spread)|without.{0,20}(?:mov|migrat)/, 'Relocation diffusion requires people moving and carrying cultural traits to a new place.'],
-      [/^define sovereignty/, /(?:authority|power|right).{0,45}(?:govern|rule|control).{0,35}(?:itself|territory|independent|own)/, /(?:no|loses?|lacks?).{0,15}(?:authority|power|right)|controlled from outside|external control/, 'State sovereignty means authority to govern its territory independently.'],
-      [/explain why dairy|explain why.*market gardening/, /(?:near|close).{0,30}market.{0,100}(?:spoil|perish|transport.{0,20}cost|cost.{0,20}transport)|(?:spoil|perish).{0,90}(?:near|close).{0,20}market/, /(?:far|distant|away) from (?:the )?market|less costly.{0,25}distance/, 'Connect proximity to the market with reduced spoilage or transportation costs for perishable products.'],
-      [/negative effect of gentrification/, /(?:rising|higher|increased|increase in).{0,25}(?:rent|cost|tax).{0,70}(?:unaffordable|displac|force.{0,15}(?:leave|move)|cannot afford|can t afford)|displac.{0,65}(?:rising|higher|increased).{0,20}(?:rent|cost|tax)/, /more affordable|(?:reduce|prevent|stop|less).{0,20}displac|keep.{0,30}residents|lower.{0,15}(?:rent|cost)/, 'Explain how higher rents or taxes make housing unaffordable and can displace longtime residents.'],
+      [/^define sovereignty/, any(/(?:authority|power|right).{0,45}(?:govern|rule|control).{0,35}(?:itself|territory|independent|own)/, /(?:authority|power|right|ability).{0,30}(?:make|pass|set|decide|run).{0,25}(?:its|their) own (?:laws|decisions|rules|territory|affairs)/), /(?:no|loses?|lacks?).{0,15}(?:authority|power|right)|controlled from outside|external control|controlled by (?:another|other|a foreign)/, 'State sovereignty means authority to govern its territory independently.', /without (?:any )?(?:outside|other countr\w*|foreign|external|another-country)\w*.{0,15}(?:interfer|control|involvement)\w*/],
+      [/explain why dairy|explain why.*market gardening/, /(?:near|close).{0,30}market.{0,100}(?:spoil|perish|transport.{0,20}cost|cost.{0,20}transport)|(?:spoil|perish).{0,90}(?:near|close).{0,20}market|(?:go bad|goes bad|spoil|perish|rot)\w*.{0,90}(?:close|near)\w*.{0,30}(?:city|market|town)/, /(?:far|distant|away) from (?:the )?market|less costly.{0,25}distance/, 'Connect proximity to the market with reduced spoilage or transportation costs for perishable products.'],
+      [/negative effect of gentrification/, /(?:rising|higher|increased|increase in).{0,25}(?:rent|cost|tax).{0,70}(?:unaffordable|displac|force.{0,15}(?:leave|move)|cannot afford|can t afford)|displac.{0,65}(?:rising|higher|increased).{0,20}(?:rent|cost|tax)|(?:rent|cost|tax|price)s? (?:go|goes|went|going|rise|rising|increase|climb)\w*.{0,70}(?:afford|pushed out|forced out|priced out|displac|move out)/, /more affordable|(?:reduce|prevent|stop|less).{0,20}displac|keep.{0,30}residents|lower.{0,15}(?:rent|cost)/, 'Explain how higher rents or taxes make housing unaffordable and can displace longtime residents.'],
       [/^define (?:hdi|human development index)/, /^(?=.*\b(?:income|gni|standard of living)\b)(?=.*\b(?:education|schooling)\b)(?=.*\blife expectancy\b)/, /military|total population/, 'HDI combines income, education, and life expectancy. All three dimensions are needed.'],
       [/explain how improved transportation can affect market access/, /(?:roads?|rail|transportation).{0,80}(?:reach|connect|access).{0,35}(?:buyers|consumers|customer|market)/, /fewer buyers|reduce.{0,20}access/, 'Connect better transportation to reaching more buyers or markets through lower travel time or cost.']
     ];
-    const rule=rules.find(r=>r[0].test(p));
+    // Units 1 and 3-7 Coach rules load after startup (frq-course-rules.js). Until
+    // they arrive, those parts fall back to conservative rubric review, never credit.
+    const rule=rules.concat(window.__frqCourseRules||[]).find(r=>r[0].test(p));
     // Exact supplied model is curated content, not a semantic inference. This
     // also avoids imposing a connector word on the site's own explanations.
     const bare=s=>s.replace(/^(?:the|a|an) /,'');
     const modelMatch=bare(t)===bare(norm(model));
     const contradiction=rule&&rule[2].test(t);
-    const negated=/\b(not|never|no|cannot|can't|doesn't|without)\b/.test(t.replace(/cannot afford|can t afford/g,''));
+    const negText=rule&&rule[4]?t.replace(new RegExp(rule[4].source,'g'),' '):t;
+    const negated=/\b(not|never|no|cannot|can't|doesn't|without)\b/.test(negText.replace(/(?:cannot|can't|can t|can no longer|no longer|not) afford/g,''));
     const earned=modelMatch||!!(rule&&!contradiction&&!negated&&rule[1].test(t));
     if(!earned&&!contradiction&&offTask(part,text))return tooBrief(part,rule&&rule[3]);
     return {letter,verb,earned,status:earned?'verified':'unverified',coachingOnly:!earned,
@@ -184,4 +188,10 @@
     if(incorrect.length) overall+=` Rework part${incorrect.length>1?'s':''} ${incorrect.join(', ')}.`;
     return {parts,score,total,uncertain,incorrect,warnings:uncertain.length?[`Rubric/self-check needed for: ${uncertain.join(', ')}`]:[],overall};
   };
+  // The paraphrase rules are only needed when an answer is checked, so they load
+  // after the page instead of adding to startup JavaScript.
+  if(typeof document!=='undefined'&&!window.__frqCourseRules){
+    const addRules=()=>{if(window.__frqCourseRules||document.querySelector('script[data-frq-rules]'))return;const s=document.createElement('script');s.src='frq-course-rules.js?v=20261101-frq-paraphrase';s.async=true;s.dataset.frqRules='1';document.head.appendChild(s);};
+    if(document.readyState==='complete')setTimeout(addRules,0);else window.addEventListener('load',()=>setTimeout(addRules,0),{once:true});
+  }
 })();
