@@ -86,6 +86,8 @@ const good=[
     w.urChoose(0);w.urNext();
    }
    assert.equal(mainTotals.size,1,'Unit '+u+' main question total must not grow during retries');
+   const mainCount=+[...mainTotals][0],asked=app.textContent.match(/(\d+)\/(\d+)correct/);
+   assert.ok(asked&&+asked[2]<=2*mainCount,'Unit '+u+' retries must not chain: '+(asked&&asked[0])+' for '+mainCount+' main questions');
    assert.ok(steps>0&&steps<=61,'Unit review finishes with bounded retries');
    assert.ok(!app.querySelector('.quiz-option'),'Unit '+u+' results');
  }
