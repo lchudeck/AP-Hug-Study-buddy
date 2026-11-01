@@ -15,3 +15,18 @@ The site does not require a login. Flashcard and quiz progress used by the adapt
 ## Validation
 
 The GitHub Actions workflow runs JavaScript syntax checks and foundation integrity checks when the core app files change.
+
+### Startup delivery assets
+
+Edit the readable root JavaScript sources, then regenerate the committed compact
+`assets/` copies and content-versioned HTML references:
+
+```sh
+npm install --prefix /tmp/aphg-assets --no-save --no-package-lock terser@5.51.2
+NODE_PATH=/tmp/aphg-assets/node_modules node scripts/build-startup-assets.cjs
+```
+
+`scripts/startup-assets.json` preserves execution order and the deferred accessibility
+script. Only the adjacent reflection and mini-FRQ IIFEs share a request. No content
+is removed or deferred; global names are preserved. CI checks generated/source
+synchronization and the unchanged 48-script / 1,000,000-byte budget.

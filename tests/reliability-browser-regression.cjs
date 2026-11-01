@@ -47,7 +47,7 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   }
 
   // Exercise the complete script stack: rating must not race the authoritative analytics installation.
-  assert.equal(document.querySelectorAll('script[src^="analytics.js"]').length,1,'analytics loads exactly once');
+  assert.equal(document.querySelectorAll('script[src^="assets/analytics.js"]').length,1,'analytics loads exactly once');
   assert.equal(window.dataLayer.filter(x=>x[0]==='config').length,1,'GA4 is configured once');
   const eventCount=name=>window.dataLayer.filter(x=>x[0]==='event'&&x[1]===name).length;
   window.go('unitReview');

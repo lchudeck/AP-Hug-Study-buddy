@@ -51,6 +51,8 @@ jobs:
           from pathlib import Path
           import re
           index=Path('index.html').read_text()
+          import re
+          index = re.sub(r'assets/([^"?]+)\?v=[^"]+', r'\1', index)
           required=['unit-mastery-unified.js','unit-review.js','practice-mastery.js','reflection-fix.js','strict-frq-drill-grading.js','pr6-frq-polish.js','contact-report.js','pyramid-next-fix.js','responsive-student-ux.js']
           for f in required: assert re.search(rf'<script src="{re.escape(f)}(?:\?[^"]*)?"></script>', index), f
           pm=Path('practice-mastery.js').read_text(); assert 'APHG_EXPANDED_BANK' not in pm; assert 'seenKey' in pm and 'shuffle(q.choices)' in pm

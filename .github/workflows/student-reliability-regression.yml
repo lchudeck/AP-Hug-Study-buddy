@@ -40,7 +40,7 @@ jobs:
       - name: Syntax check readiness tracker
         run: node --check session-rating.js
       - name: Verify reliability patch is loaded in production
-        run: grep -Eq '<script src="student-reliability-patch.js(\?[^"]*)?"></script>' index.html
+        run: grep -Eq '<script src="assets/student-reliability-patch.js(\?[^"]*)?"></script>' index.html
       - name: Run FRQ regression cases
         run: node tests/frq-scoring-regression.cjs
       - name: Run Unit 2 FRQ accuracy cases

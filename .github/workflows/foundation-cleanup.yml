@@ -32,6 +32,8 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           index=Path('index.html').read_text(encoding='utf-8')
+          import re
+          index = re.sub(r'assets/([^"?]+)\?v=[^"]+', r'\1', index)
           js=Path('app.js').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
           assert '<link rel="stylesheet" href="styles.css">' in index

@@ -32,6 +32,8 @@ jobs:
           from pathlib import Path
           import re
           index=Path('index.html').read_text(encoding='utf-8')
+          import re
+          index = re.sub(r'assets/([^"?]+)\?v=[^"]+', r'\1', index)
           lab=Path('exam-lab.js').read_text(encoding='utf-8')
           sim=Path('ap-simulator.js').read_text(encoding='utf-8')
           assert '<script src="exam-lab.js"></script>' in index

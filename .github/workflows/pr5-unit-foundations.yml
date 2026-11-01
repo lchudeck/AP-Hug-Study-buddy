@@ -50,6 +50,8 @@ jobs:
           worlddata=Path('data/world-political-map-110m.json').read_text(encoding='utf-8')
           practice=Path('visual-practice.js').read_text(encoding='utf-8')
           index=Path('index.html').read_text(encoding='utf-8')
+          import re
+          index = re.sub(r'assets/([^"?]+)\?v=[^"]+', r'\1', index)
           for script in ['unit-foundations.js','unit-mastery-3-7.js','master-flashcards.js','visual-learning.js','visual-practice.js']:
               assert f'<script src="{script}' in index, script
           for topic in [f'1.{i}' for i in range(1,8)]: assert f"id:'{topic}'" in lower, topic

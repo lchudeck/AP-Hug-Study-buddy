@@ -41,6 +41,8 @@ jobs:
           from pathlib import Path
           import re
           index = Path('index.html').read_text(encoding='utf-8')
+          import re
+          index = re.sub(r'assets/([^"?]+)\?v=[^"]+', r'\1', index)
           guide = Path('ced-guide.js').read_text(encoding='utf-8')
           practice = Path('ced-practice.js').read_text(encoding='utf-8')
           assert re.search(r'<script src="app\.js(?:\?[^\"]*)?"></script>', index)

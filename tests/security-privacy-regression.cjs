@@ -17,7 +17,7 @@ assert.match(privacy,/forms do not request a student name or email address/i,'pr
 for(const file of formScripts){
   const source=read(file);
   const escaped=file.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  assert.match(html,new RegExp(`<script src=["']${escaped}\\?v=[^"']+["']`),
+  assert.match(html,new RegExp(`<script src=["']assets/${escaped}\\?v=[^"']+["']`),
     `${file} must use a versioned URL so privacy fixes are not held behind a stale browser cache`);
   assert.doesNotMatch(source,/url\s*:\s*location\.href/,
     `${file} must not transmit query strings or fragments`);
