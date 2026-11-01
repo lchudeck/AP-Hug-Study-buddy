@@ -60,6 +60,13 @@ const M={
 (async()=>{
 // Use the prompts and scorer exactly as the served page assembles them.
 const {w,errors}=await boot(root);
+// The course rules load after startup; they must arrive on their own and must
+// not be added back as an initial script (startup JavaScript budget).
+for(let i=0;i<100&&!w.__frqCourseRules;i++)await new Promise(r=>setTimeout(r,50));
+assert.ok(Array.isArray(w.__frqCourseRules)&&w.__frqCourseRules.length===36,'frq-course-rules.js did not load after the page');
+const index=require('node:fs').readFileSync(root+'/index.html','utf8');
+assert.doesNotMatch(index,/<script[^>]+frq-course-rules\.js/,'course rules must stay out of the initial script list');
+assert.match(require('node:fs').readFileSync(root+'/frq-part-scoring.js','utf8'),/frq-course-rules\.js\?v=[^'"]+/,'course rules load must be versioned');
 const prompts=w.eval('prompts'),grade=w.__gradeFrqPart;
 assert.equal(prompts.length,7,'expected seven Coach prompts');
 assert.deepEqual(errors,[],'page errors: '+errors.join(' | '));
