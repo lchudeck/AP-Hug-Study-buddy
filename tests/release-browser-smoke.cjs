@@ -38,10 +38,11 @@ const url=process.env.SMOKE_URL||'http://127.0.0.1:8765/';
   assert.match(await page.locator('#app').innerText(),/Review Results/);assert.ok(count>=10);assert.ok(retrySeen,'A wrong answer must exercise an exact-topic retry');
   console.log('Completed Unit 2 review, incorrect-answer explanation and exact-topic retry: '+count+' questions.');
   // Directly inspect the corrected simulator path, then answer a rendered stimulus question.
-  await page.evaluate(()=>go('exams'));
-  const target=await page.evaluate(()=>{const e=buildPracticeExam(activeExam+1);return e.mcq.findIndex(q=>q.stimulus?.html?.includes('<table'));});assert.ok(target>=0);
-  const option=page.locator(`[onclick^="setExamAnswer(${target},"]`).first();assert.equal(await option.count(),1);await option.click();
-  assert.ok(await page.locator('#app table').count()>0);assert.equal(await page.evaluate(i=>examAnswers[i]!==undefined,target),true);
+  await page.evaluate(()=>startFullExam());
+  await page.getByRole('button',{name:'Start Section I: MCQ',exact:true}).click();
+  const target=await page.evaluate(()=>{const e=buildSimulatorExam(simExam);return e.mcq.findIndex(q=>q.stimulus?.html?.includes('<table'));});assert.ok(target>=0);
+  const option=page.locator(`[onclick^="simSetMcq(${target},"]`).first();assert.equal(await option.count(),1);await option.click();
+  assert.ok(await page.locator('#app table').count()>0);assert.equal(await page.evaluate(i=>simMcqAnswers[i]!==undefined,target),true);
   console.log('Simulator table retained and a stimulus answer recorded.');
   // Real textarea submissions through the Coach's rendered controls.
   for(const kind of ['correct','incorrect','nonsense','contradiction']){
