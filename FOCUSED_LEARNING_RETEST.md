@@ -82,3 +82,13 @@ Branch `claude/gifted-keller-n3vb76`, stacked on `focused-learning-retest` (#69)
 - FRQ Coach, all seven prompts: model answers scored 7/7; vague answers 0/7; gibberish 0/7 ("Too brief"). Vocabulary-only answers scored 0–1/7, and each single point was an Identify part whose answer is that term.
 
 **Not verified:** physical devices, Safari/Firefox, production after deploy, and enlargement/zoom behaviour. The performance-budget check fails on main as well (49 scripts against a limit of 48); it is not addressed here.
+
+## Continuation — November 1, 2026
+
+Branch `claude/gifted-keller-n3vb76` from main `c5d6b53`.
+
+- **FRQ Coach paraphrases:** 36 of 49 Coach parts verified only an exact copy of the model answer. Each now has a bounded rule in `frq-course-rules.js`, and six older rules and five Unit 2 rules were widened. `tests/frq-paraphrase-regression.cjs` covers 49 parts × 7 responses: two correct wordings must verify, while partial, vague, reversed, vocabulary-only and keyword-trap answers must not. A second, independently written set scored 43/49 correct and 48/49 wrong rejected on first pass; the gaps it found were fixed and added to the test. The rules load after startup, which keeps the JavaScript budget.
+- **Unit Review:** retries no longer chain. Before, a Chromium run turned a 10-question review into 45 questions; now it is at most 20, and retries are counted separately ("Retry 3 of 9").
+- **Enlarge visual:** tables no longer use a 700px minimum width, which hid the Value column at 320px and at 200% zoom.
+- **Browser coverage:** Chromium only, since WebKit and Firefox are not installed here. The check covered 320/390/768/1280px and an emulated 200% zoom for Units 1–7 (35 combinations: enlarge opens and closes, focus returns, no page overflow, no errors). At 320px three wide numeric tables need a sideways swipe; nothing does at 390px.
+- **Not verified:** production, because this environment's network policy blocks `www.apstudybuddy.com`. Also not verified: Safari, Firefox and physical devices.
