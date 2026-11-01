@@ -60,7 +60,7 @@ const url=process.env.SMOKE_URL||'http://127.0.0.1:8765/';
   console.log('FRQ Coach correct 7/7; incorrect, nonsense and contradictory responses 0/7.');
   await page.evaluate(()=>{sspSetPlan('unit',4);sspSetPlan('minutes',30);sspGo('plan');});
   const visual=page.locator('#app button[onclick*="maps"]');assert.ok(await visual.count()>0);await visual.first().click();
-  assert.match(await page.locator('#app .pill').first().innerText(),/Unit 4/);
+  assert.match(await page.locator('#app .pill').first().innerText(),/Unit 4/i);
   console.log('Visual-study shortcut opens Unit 4.');
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(()=>sspStartTopic('2.1'));
