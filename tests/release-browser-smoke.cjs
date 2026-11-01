@@ -18,7 +18,9 @@ const url=process.env.SMOKE_URL||'http://127.0.0.1:8765/';
   console.log('All 48 served assets match this commit and their content versions.');
   await page.locator('#nav button').filter({hasText:/Unit Review/}).click();
   await page.locator('[onclick="urUnit(2)"]').click();
+  const startsBefore=await page.evaluate(()=>dataLayer.filter(x=>x[0]==='event'&&x[1]==='practice_started').length);
   await page.getByRole('button',{name:/Start here/}).click();
+  assert.equal(await page.evaluate(()=>dataLayer.filter(x=>x[0]==='event'&&x[1]==='practice_started').length),startsBefore+1,'One study start must emit one event');
   let count=0,missedTopic=null,retrySeen=false,stimulusSeen=false;
   while(await page.locator('.quiz-option').count()){
    assert.ok(count<61,'Unit Review must finish');
@@ -51,7 +53,7 @@ const url=process.env.SMOKE_URL||'http://127.0.0.1:8765/';
     kind==='incorrect'?'B. Dependency ratio compares rainfall with crop yields.':
     kind==='contradiction'?'B. Dependency ratio is working-age population divided by the number of dependent children and elderly people.':
     'A. qwrty\nB. nonsense\nC. random\nD. blah\nE. zzz\nF. qqq\nG. nope';
-   await page.locator('#mainAnswer').fill(answer);await page.getByRole('button',{name:'Check my answer',exact:true}).click();
+   await page.locator('#mainAnswer').fill(answer);await page.getByRole('button',{name:/^(?:✦\s*)?Check my answer$/}).click();
    await page.waitForFunction(()=>document.querySelector('.ai-result')?.textContent.includes('Locally verified:'));
    assert.match(await page.locator('.ai-result').innerText(),new RegExp('Locally verified: '+(kind==='correct'?7:0)+'/7'));
   }
@@ -72,6 +74,9 @@ const url=process.env.SMOKE_URL||'http://127.0.0.1:8765/';
   const before=await page.evaluate(()=>localStorage.getItem('aphgUnitReviewProgressV1'));assert.ok(JSON.parse(before).attempted>=10);
   await page.reload({waitUntil:'networkidle'});assert.equal(await page.evaluate(()=>localStorage.getItem('aphgUnitReviewProgressV1')),before);
   assert.equal(await page.evaluate(()=>dataLayer.filter(x=>x[0]==='config').length),1);
+  const privacy=await page.evaluate(()=>{const events=dataLayer.filter(x=>x[0]==='event');return {keys:events.flatMap(x=>Object.keys(x[2]||{})),payload:JSON.stringify(events)};});
+  assert.ok(privacy.keys.every(k=>['study_path','unit','feature','session_result','rating'].includes(k)),'Analytics parameters must use the anonymous allowlist');
+  assert.ok(!/qwrty|rainfall with crop yields|working-age population divided/.test(privacy.payload),'Analytics must exclude submitted answer text');
   const dims=await page.evaluate(()=>[document.documentElement.scrollWidth,document.documentElement.clientWidth]);assert.ok(dims[0]<=dims[1]+5);
   assert.deepEqual(errors,[]);
   console.log('Mobile activity completed; real progress survives warm-cache reload; analytics configured once; no page errors.');
