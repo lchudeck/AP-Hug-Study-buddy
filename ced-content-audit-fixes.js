@@ -31,6 +31,13 @@
       (p.parts||[]).forEach(part=>{if(r[part[0]]){part[1]=r[part[0]][0];part[2]=r[part[0]][1];}});
     });
 
+    // Unit 2: demonstrate a policy mechanism rather than list interchangeable policies.
+    const u2=(prompts||[]).find(p=>p.unit===2);
+    if(u2){
+      const policy=u2.parts.find(p=>p[0]==='G');
+      if(policy)policy[3]='Raise the retirement age so adults remain employed longer, slowing workforce decline. Alternatively, subsidize childcare to lower childrearing costs and encourage births; the workforce benefit arrives after those children reach working age.';
+    }
+
     const u7=(prompts||[]).find(p=>p.unit===7);
     if(u7){
       const A=u7.parts.find(p=>p[0]==='A'),C=u7.parts.find(p=>p[0]==='C'),D=u7.parts.find(p=>p[0]==='D');

@@ -53,10 +53,11 @@
         const uncertain=parts.filter(p=>!p.earned&&p.coachingOnly).map(p=>p.letter);
         const missed=parts.filter(p=>!p.earned&&!p.coachingOnly).map(p=>p.letter);
         let overall=`Study Buddy verified ${score}/${total} point${score===1?'':'s'} with its local coaching check.`;
-        if(uncertain.length)overall+=` Part${uncertain.length>1?'s':''} ${uncertain.join(', ')} need rubric/self-check because valid alternate wording may not match the model answer.`;
+        const targetedReview=parts.some(p=>p.reviewLabel);
+        if(uncertain.length)overall+=targetedReview?` Part${uncertain.length>1?'s':''} ${uncertain.join(', ')} require revision or rubric review. Use each part's feedback to check task completion and geographic reasoning.`:` Part${uncertain.length>1?'s':''} ${uncertain.join(', ')} need rubric/self-check because valid alternate wording may not match the model answer.`;
         if(missed.length)overall+=` Rework part${missed.length>1?'s':''} ${missed.join(', ')}.`;
         overall+=' This is practice feedback, not an official College Board score.';
-        return {parts,score,total,warnings:uncertain.length?[`Auto-grading could not verify valid-alternative responses for: ${uncertain.join(', ')}`]:[],overall};
+        return {parts,score,total,warnings:uncertain.length?[targetedReview?`Not automatically verified; review feedback for: ${uncertain.join(', ')}`:`Auto-grading could not verify valid-alternative responses for: ${uncertain.join(', ')}`]:[],overall};
       };
     }
   }catch(e){}

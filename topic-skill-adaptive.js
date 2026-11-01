@@ -43,7 +43,7 @@
       3:[['relocation|hierarchical|contagious|stimulus diffusion','3.4'],['hearth','3.3'],['lingua franca|language|religion','3.7'],['culture|cultural','3.1']],
       4:[['gerrymander|packing|cracking|district','4.6'],['federal|unitary|governance','4.7'],['devolution','4.8'],['centripetal|centrifugal','4.10'],['sovereignty|state|nation','4.1'],['boundary|border','4.4']],
       5:[['von thünen|von thunen','5.8'],['green revolution','5.5'],['subsistence|commercial agriculture','5.6'],['food desert|agriculture challenge','5.11'],['agribusiness|commodity|global','5.9']],
-      6:[['gentrification|displacement','6.11'],['concentric|sector model|multiple nuclei|city model','6.5'],['sprawl|smart growth|sustainab','6.8'],['cbd|edge city|land use','6.5'],['urbanization|suburbanization','6.1']],
+      6:[['gentrification|displacement','6.10'],['concentric|sector model|multiple nuclei|city model','6.5'],['sprawl|smart growth|sustainab','6.8'],['cbd|edge city|land use','6.5'],['urbanization|suburbanization','6.1']],
       7:[['hdi|gdp|gni|development measure','7.3'],['rostow|wallerstein|world-systems|weber','7.5'],['outsourc|offshor|trade','7.6'],['deindustrial','world economy','7.7'],['sustainable','7.8']]
     };
     const list=rules[unit]||[];
