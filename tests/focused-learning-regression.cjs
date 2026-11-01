@@ -62,6 +62,7 @@ const good=[
    assert.ok(w.APHGStudentSuccess.session().deck.every(q=>q.topic===p.unit+'.1'));
  }
  // Regular practice, deliberate errors, recovery, stimulus and results in each unit.
+ let sawRetryLabel=false;
  for(let u=1;u<=7;u++){
    w.sspSetPlan('unit',u);w.studentProofRoute('learn');assert.match(app.textContent,/Teach Me This/);
    w.eval("active='practiceMastery'");w.pmStart('unit',u);
@@ -75,10 +76,20 @@ const good=[
    assert.match(app.textContent,/You finished/);assert.ok(stimulusSeen,'Unit '+u+' stimulus');
    w.eval("active='unitReview'");w.urUnit(u);w.urStart('quick',3);
    let steps=0;
-   while(app.querySelector('.quiz-option')&&steps++<65){w.urChoose(0);w.urNext();}
+   const mainTotals=new Set();
+   while(app.querySelector('.quiz-option')&&steps++<65){
+    // Main questions keep a fixed denominator; appended retries are counted separately.
+    const label=app.querySelector('.mastery-mini-nav span:last-child').textContent.trim();
+    const m=label.match(/^(\d+)\/(\d+)$/),r=label.match(/^Retry (\d+) of (\d+)$/);
+    assert.ok(m||r,'Unit '+u+' review counter: '+label);
+    if(m)mainTotals.add(m[2]);else{sawRetryLabel=true;assert.ok(+r[1]<=+r[2],'retry count '+label);}
+    w.urChoose(0);w.urNext();
+   }
+   assert.equal(mainTotals.size,1,'Unit '+u+' main question total must not grow during retries');
    assert.ok(steps>0&&steps<=61,'Unit review finishes with bounded retries');
    assert.ok(!app.querySelector('.quiz-option'),'Unit '+u+' results');
  }
+ assert.ok(sawRetryLabel,'expected at least one Unit Review retry label');
  // Repeated shuffles must not change the planner's selected unit.
  for(let repeat=0;repeat<10;repeat++)for(let u=1;u<=7;u++){
    w.__visualPractice37.sets.reverse();w.__visualPractice12.sets.reverse();
