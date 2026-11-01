@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 
 const html=fs.readFileSync('index.html','utf8');
-const scripts=[...html.matchAll(/<script src="([^"?]+\.js)(?:\?[^\"]*)?"/g)].map(m=>m[1]).filter(f=>fs.existsSync(f)&&/^(?:reliability-core|app|ced-practice|unit1-question-bank-v3|units2-7-question-bank-v3|image-mcq-bank|stimulus-sets|stimulus-sets-extra|real-data-stimulus|authentic-stimulus-v3|adaptive-stimulus-v2|stimulus-clusters-frq-v4|student-reliability-patch)\.js$/.test(f));
+const scripts=[...html.matchAll(/<script src="([^"?]+\.js)(?:\?[^\"]*)?"/g)].map(m=>m[1]).filter(f=>fs.existsSync(f)&&/^(?:reliability-core|app|ced-practice|unit1-question-bank-v3|units2-7-question-bank-v3|image-mcq-bank|stimulus-sets|stimulus-sets-extra|real-data-stimulus|authentic-stimulus-v3|adaptive-stimulus-v2|stimulus-clusters-frq-v4|student-reliability-patch)\.js$/.test(f.replace(/^assets\//,'')));
 const sandbox={
   window:{addEventListener:()=>{}},
   localStorage:{getItem:()=>null,setItem:()=>{},removeItem:()=>{}},
@@ -28,6 +28,9 @@ vm.createContext(sandbox);
 for(const f of scripts)vm.runInContext(fs.readFileSync(f,'utf8'),sandbox,{filename:f});
 
 assert.equal(vm.runInContext('typeof buildPracticeExam',sandbox),'function','buildPracticeExam did not load');
+const converted=vm.runInContext(`normalizeExamItem(Object.assign(['Unit 4','Read this dataset',['A','B','C','D'],'A','Explanation'],{stimulus:'<table><tr><td>82%</td></tr></table>',stimulusTitle:'Districting'}))`,sandbox);
+assert.match(converted.stimulus.html,/82%/,'Array-backed questions must preserve their stimulus');
+assert.match(converted.stimulus.html,/Districting/);
 const exams=[1,2,3].map(n=>vm.runInContext(`buildPracticeExam(${n})`,sandbox));
 const report=sandbox.__examQualityReport;
 assert.ok(report,'exam quality report was not created');

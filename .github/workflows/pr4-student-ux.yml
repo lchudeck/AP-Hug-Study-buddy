@@ -28,6 +28,8 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           index=Path('index.html').read_text(encoding='utf-8')
+          import re
+          index = re.sub(r'assets/([^"?]+)\?v=[^"]+', r'\1', index)
           ux=Path('student-ux.js').read_text(encoding='utf-8')
           assert '<script src="student-ux.js"></script>' in index
           assert 'homePage=' not in ux

@@ -3,7 +3,7 @@ const vm=require('vm');
 const assert=require('assert/strict');
 const listeners={};
 let calls=0;
-const names=['flashFlip','setFlashStatus','updateScaffold','setExamAnswer','setExamFrq','selectExam','resetExam','go','simStart','pmStart'];
+const names=['flashFlip','setFlashStatus','updateScaffold','setExamAnswer','setExamFrq','selectExam','resetExam','go','simStart','pmStart','urStart','urWeak','sspStart','sspStartTopic'];
 const context={window:{},location:{origin:'https://www.apstudybuddy.com',pathname:'/'},document:{title:'Study Buddy',head:{appendChild(){}},createElement(){return {}},addEventListener(type,fn){(listeners[type]??=[]).push(fn)}}};
 for(const name of names)context.window[name]=function(){calls++;return 'preserved'};
 vm.createContext(context);
@@ -26,3 +26,31 @@ assert(events().some(x=>x[1]==='practice_started'));
 assert(!JSON.stringify(w.dataLayer).includes('PRIVATE RESPONSE'));
 assert(calls>0);
 console.log('Activity starts deduplicated, original behavior preserved, answer text excluded.');
+
+const before=events().length;
+w.go('quiz');assert.equal(events().length,before,'Menu opening is not a session start');
+for(const name of ['urStart','urWeak','sspStart','sspStartTopic']) {
+  const n=events().filter(x=>x[1]==='practice_started').length;
+  assert.equal(w[name]('standard',10),'preserved');
+  assert.equal(events().filter(x=>x[1]==='practice_started').length,n+1);
+}
+w.studyBuddyTrack('practice_started',{feature:'PRIVATE RESPONSE',unit:99,rating:9,session_result:'PRIVATE RESPONSE',email:'PRIVATE RESPONSE'});
+assert.equal(JSON.stringify(events().at(-1)[2]),'{}');
+w.studyBuddyTrack('PRIVATE RESPONSE',{});
+assert(!JSON.stringify(w.dataLayer).includes('PRIVATE RESPONSE'));
+const installs=w.dataLayer.filter(x=>x[0]==='config').length;
+vm.runInContext(readFileSync('analytics.js','utf8'),context);
+assert.equal(w.dataLayer.filter(x=>x[0]==='config').length,installs);
+console.log('Actual session launches tracked once; arbitrary text rejected; installation idempotent.');
+
+w.go('frq');
+for(const fn of listeners.input) fn({target:{matches:selector=>selector==='#mainAnswer'}});
+w.updateScaffold('A','PRIVATE RESPONSE');
+assert.equal(events().filter(x=>x[1]==='frq_practice_started').length,2);
+const testStarts=events().filter(x=>x[1]==='practice_test_started').length;
+w.urStart('standard',35);
+assert.equal(events().filter(x=>x[1]==='practice_test_started').length,testStarts+1);
+for(const fn of listeners.click) fn({target:{closest:()=>({textContent:'Unit 2'})}});
+assert.equal(events().filter(x=>x[1]==='unit_selected').length,1);
+assert.equal(events().at(-1)[2].unit,2);
+console.log('Direct FRQ entry, unit selection and Unit Review practice tests verified.');

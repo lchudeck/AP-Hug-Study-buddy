@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 
 const html=fs.readFileSync('index.html','utf8');
-const scripts=[...html.matchAll(/<script src="([^"?]+\.js)(?:\?[^\"]*)?"/g)].map(m=>m[1]).filter(f=>fs.existsSync(f)&&/^(?:reliability-core|app|ced-practice|unit1-question-bank-v3|units2-7-question-bank-v3|image-mcq-bank|stimulus-sets|stimulus-sets-extra|real-data-stimulus|authentic-stimulus-v3|adaptive-stimulus-v2|stimulus-clusters-frq-v4|student-reliability-patch)\.js$/.test(f));
+const scripts=[...html.matchAll(/<script src="([^"?]+\.js)(?:\?[^\"]*)?"/g)].map(m=>m[1]).filter(f=>fs.existsSync(f)&&/^(?:reliability-core|app|ced-practice|unit1-question-bank-v3|units2-7-question-bank-v3|image-mcq-bank|stimulus-sets|stimulus-sets-extra|real-data-stimulus|authentic-stimulus-v3|adaptive-stimulus-v2|stimulus-clusters-frq-v4|student-reliability-patch)\.js$/.test(f.replace(/^assets\//,'')));
 const sandbox={
   window:{addEventListener:()=>{}},
   localStorage:{getItem:()=>null,setItem:()=>{},removeItem:()=>{}},

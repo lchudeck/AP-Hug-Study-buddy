@@ -7,7 +7,7 @@ const html=read('index.html');
 const privacy=read('privacy.html');
 const analytics=read('analytics.js');
 const formScripts=['contact-report.js','student-feedback.js','session-rating.js'];
-assert.match(read('session-rating.js'),/s\.src=['\"]analytics\.js\?v=[^'\"]+['\"]/, 'analytics dynamic load must be versioned');
+assert.doesNotMatch(read('session-rating.js'),/s\.src=['\"]analytics\.js/, 'session rating must not install a second analytics script');
 assert.doesNotMatch(read('session-rating.js'),/s\.src=['\"]student-reliability-patch\.js['\"]/, 'do not inject an unversioned reliability patch');
 
 assert.doesNotMatch(html,/name=["']reply-email["']/i,'student-facing forms must not request an email address');
@@ -17,7 +17,7 @@ assert.match(privacy,/forms do not request a student name or email address/i,'pr
 for(const file of formScripts){
   const source=read(file);
   const escaped=file.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  assert.match(html,new RegExp(`<script src=["']${escaped}\\?v=[^"']+["']`),
+  assert.match(html,new RegExp(`<script src=["']assets/${escaped}\\?v=[^"']+["']`),
     `${file} must use a versioned URL so privacy fixes are not held behind a stale browser cache`);
   assert.doesNotMatch(source,/url\s*:\s*location\.href/,
     `${file} must not transmit query strings or fragments`);

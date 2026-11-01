@@ -1,0 +1,339 @@
+[
+  {
+    "file": "accessibility-inclusive-v3.js",
+    "defer": true,
+    "sources": [
+      "accessibility-inclusive-v3.js"
+    ]
+  },
+  {
+    "file": "reliability-core.js",
+    "defer": false,
+    "sources": [
+      "reliability-core.js"
+    ]
+  },
+  {
+    "file": "app.js",
+    "defer": false,
+    "sources": [
+      "app.js"
+    ]
+  },
+  {
+    "file": "ced-practice.js",
+    "defer": false,
+    "sources": [
+      "ced-practice.js"
+    ]
+  },
+  {
+    "file": "unit1-question-bank-v3.js",
+    "defer": false,
+    "sources": [
+      "unit1-question-bank-v3.js"
+    ]
+  },
+  {
+    "file": "units2-7-question-bank-v3.js",
+    "defer": false,
+    "sources": [
+      "units2-7-question-bank-v3.js"
+    ]
+  },
+  {
+    "file": "exam-lab.js",
+    "defer": false,
+    "sources": [
+      "exam-lab.js"
+    ]
+  },
+  {
+    "file": "ap-simulator.js",
+    "defer": false,
+    "sources": [
+      "ap-simulator.js"
+    ]
+  },
+  {
+    "file": "ced-guide.js",
+    "defer": false,
+    "sources": [
+      "ced-guide.js"
+    ]
+  },
+  {
+    "file": "student-ux.js",
+    "defer": false,
+    "sources": [
+      "student-ux.js"
+    ]
+  },
+  {
+    "file": "unit-foundations.js",
+    "defer": false,
+    "sources": [
+      "unit-foundations.js"
+    ]
+  },
+  {
+    "file": "unit-mastery-3-7.js",
+    "defer": false,
+    "sources": [
+      "unit-mastery-3-7.js"
+    ]
+  },
+  {
+    "file": "unit-mastery-unified.js",
+    "defer": false,
+    "sources": [
+      "unit-mastery-unified.js"
+    ]
+  },
+  {
+    "file": "master-flashcards.js",
+    "defer": false,
+    "sources": [
+      "master-flashcards.js"
+    ]
+  },
+  {
+    "file": "flashcard-nav-fix.js",
+    "defer": false,
+    "sources": [
+      "flashcard-nav-fix.js"
+    ]
+  },
+  {
+    "file": "visual-learning.js",
+    "defer": false,
+    "sources": [
+      "visual-learning.js"
+    ]
+  },
+  {
+    "file": "visual-practice.js",
+    "defer": false,
+    "sources": [
+      "visual-practice.js"
+    ]
+  },
+  {
+    "file": "visual-practice-3-7.js",
+    "defer": false,
+    "sources": [
+      "visual-practice-3-7.js"
+    ]
+  },
+  {
+    "file": "image-mcq-bank.js",
+    "defer": false,
+    "sources": [
+      "image-mcq-bank.js"
+    ]
+  },
+  {
+    "file": "stimulus-sets.js",
+    "defer": false,
+    "sources": [
+      "stimulus-sets.js"
+    ]
+  },
+  {
+    "file": "stimulus-sets-extra.js",
+    "defer": false,
+    "sources": [
+      "stimulus-sets-extra.js"
+    ]
+  },
+  {
+    "file": "real-data-stimulus.js",
+    "defer": false,
+    "sources": [
+      "real-data-stimulus.js"
+    ]
+  },
+  {
+    "file": "authentic-stimulus-v3.js",
+    "defer": false,
+    "sources": [
+      "authentic-stimulus-v3.js"
+    ]
+  },
+  {
+    "file": "adaptive-stimulus-v2.js",
+    "defer": false,
+    "sources": [
+      "adaptive-stimulus-v2.js"
+    ]
+  },
+  {
+    "file": "unit-review.js",
+    "defer": false,
+    "sources": [
+      "unit-review.js"
+    ]
+  },
+  {
+    "file": "practice-mastery.js",
+    "defer": false,
+    "sources": [
+      "practice-mastery.js"
+    ]
+  },
+  {
+    "file": "reflection-fix.js",
+    "defer": false,
+    "sources": [
+      "reflection-fix.js",
+      "mini-frq-feedback.js"
+    ]
+  },
+  {
+    "file": "strict-frq-drill-grading.js",
+    "defer": false,
+    "sources": [
+      "strict-frq-drill-grading.js"
+    ]
+  },
+  {
+    "file": "frq-part-scoring.js",
+    "defer": false,
+    "sources": [
+      "frq-part-scoring.js"
+    ]
+  },
+  {
+    "file": "frq-feedback-polish.js",
+    "defer": false,
+    "sources": [
+      "frq-feedback-polish.js"
+    ]
+  },
+  {
+    "file": "pr6-frq-polish.js",
+    "defer": false,
+    "sources": [
+      "pr6-frq-polish.js"
+    ]
+  },
+  {
+    "file": "contact-report.js",
+    "defer": false,
+    "sources": [
+      "contact-report.js"
+    ]
+  },
+  {
+    "file": "student-feedback.js",
+    "defer": false,
+    "sources": [
+      "student-feedback.js"
+    ]
+  },
+  {
+    "file": "pyramid-next-fix.js",
+    "defer": false,
+    "sources": [
+      "pyramid-next-fix.js"
+    ]
+  },
+  {
+    "file": "responsive-student-ux.js",
+    "defer": false,
+    "sources": [
+      "responsive-student-ux.js"
+    ]
+  },
+  {
+    "file": "topic-skill-adaptive.js",
+    "defer": false,
+    "sources": [
+      "topic-skill-adaptive.js"
+    ]
+  },
+  {
+    "file": "adaptive-coach-v2.js",
+    "defer": false,
+    "sources": [
+      "adaptive-coach-v2.js"
+    ]
+  },
+  {
+    "file": "stimulus-clusters-frq-v4.js",
+    "defer": false,
+    "sources": [
+      "stimulus-clusters-frq-v4.js"
+    ]
+  },
+  {
+    "file": "freshman-ux-guard-v1.js",
+    "defer": false,
+    "sources": [
+      "freshman-ux-guard-v1.js"
+    ]
+  },
+  {
+    "file": "freshman-fixes-v2.js",
+    "defer": false,
+    "sources": [
+      "freshman-fixes-v2.js"
+    ]
+  },
+  {
+    "file": "final-freshman-polish.js",
+    "defer": false,
+    "sources": [
+      "final-freshman-polish.js"
+    ]
+  },
+  {
+    "file": "student-success-path.js",
+    "defer": false,
+    "sources": [
+      "student-success-path.js"
+    ]
+  },
+  {
+    "file": "ced-content-audit-fixes.js",
+    "defer": false,
+    "sources": [
+      "ced-content-audit-fixes.js"
+    ]
+  },
+  {
+    "file": "ced-final-audit-patch.js",
+    "defer": false,
+    "sources": [
+      "ced-final-audit-patch.js"
+    ]
+  },
+  {
+    "file": "student-proof-v1.js",
+    "defer": false,
+    "sources": [
+      "student-proof-v1.js"
+    ]
+  },
+  {
+    "file": "session-rating.js",
+    "defer": false,
+    "sources": [
+      "session-rating.js"
+    ]
+  },
+  {
+    "file": "student-reliability-patch.js",
+    "defer": false,
+    "sources": [
+      "student-reliability-patch.js"
+    ]
+  },
+  {
+    "file": "analytics.js",
+    "defer": false,
+    "sources": [
+      "analytics.js"
+    ]
+  }
+]

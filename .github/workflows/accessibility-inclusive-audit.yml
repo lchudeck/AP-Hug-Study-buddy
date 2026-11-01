@@ -41,7 +41,7 @@ jobs:
           need(js,/Incorrect:/,'Incorrect answers lack non-color cue');
           need(js,/labelField/,'Form controls lack fallback accessible labeling');
           need(index,/accessibility-inclusive\.css\?v=/,'Accessibility CSS is not loaded directly');
-          need(index,/script defer src="accessibility-inclusive-v3\.js\?v=/,'Accessibility JS is not loaded directly');
+          need(index,/script defer src="assets\/accessibility-inclusive-v3\.js\?v=/,'Accessibility JS is not loaded directly');
           need(loader,/loadUnits27CedFixes/,'Personalized coach correction layer is missing');
           if(problems.length){console.error(problems.join('\n'));process.exit(1)}
           console.log('Accessibility audit passed: focus, target size, motion, forced colors, skip link, live regions, dialog keyboard/focus handling, flashcards, form labels, dynamic feedback, and non-color cues.');

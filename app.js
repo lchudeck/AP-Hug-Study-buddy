@@ -1106,7 +1106,7 @@ function flashcardsPage(){termView='flashcards';return termsPage();}
 
 
 function normalizeExamItem(item){
-  if(Array.isArray(item)) return {unit:Number(String(item[0]).replace(/\D/g,"")),q:item[1],choices:[...item[2]],answer:item[3],why:item[4],topic:item.topic,skill:item.skill,difficulty:Number(item.difficulty)||2,quality:item.quality||'',id:item.id,setId:item.setId};
+  if(Array.isArray(item)) return normalizeExamItem({...item,unit:Number(String(item[0]).replace(/\D/g,"")),prompt:item[1],choices:item[2],answer:item[3],explain:item[4]});
   const visual=item.visual||item.stimulus;
   return {unit:Number(item.unit),q:item.prompt||item.q,choices:[...item.choices],answer:item.answer,why:item.explain||item.why,topic:item.topic,skill:item.skill,difficulty:Number(item.difficulty)||2,quality:item.quality||'',id:item.id,setId:item.setId,stimulus:visual?{html:`<div class="sim-stimulus"><b>Stimulus${item.stimulusTitle?": "+item.stimulusTitle:""}</b><div class="diagram-wrap">${visual}</div></div>`}:null};
 }

@@ -1,0 +1,51 @@
+name: Focused release browser smoke
+on:
+  pull_request:
+    paths: ['assets/**', 'scripts/startup-assets.json', 'scripts/build-startup-assets.cjs', 'tests/release-browser-smoke.cjs', 'index.html', '.github/workflows/release-browser-smoke.yml']
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.55.0
+      - run: npx playwright install --with-deps chromium
+      - name: Serve candidate for pull-request validation
+        if: github.event_name == 'pull_request'
+        run: python3 -m http.server 8765 > /tmp/aphg-server.log 2>&1 &
+      - name: Validate candidate in real Chromium
+        if: github.event_name == 'pull_request'
+        run: node tests/release-browser-smoke.cjs
+      - name: Wait for production to publish the approved assets
+        if: github.event_name != 'pull_request'
+        run: |
+          python3 - <<'PY'
+          import pathlib, urllib.request, re, time
+          html=pathlib.Path('index.html').read_text()
+          srcs=re.findall(r'<script[^>]+src="(assets/[^"]+)"',html)
+          for attempt in range(40):
+              try:
+                  live=urllib.request.urlopen('https://www.apstudybuddy.com/',timeout=20).read().decode()
+                  if all(src in live for src in srcs):
+                      break
+              except Exception:
+                  pass
+              time.sleep(10)
+          else:
+              raise SystemExit('Production has not published the approved asset versions')
+          PY
+      - name: Validate production in real Chromium
+        if: github.event_name != 'pull_request'
+        env:
+          SMOKE_URL: https://www.apstudybuddy.com/
+        run: node tests/release-browser-smoke.cjs
