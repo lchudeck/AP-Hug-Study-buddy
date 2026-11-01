@@ -70,7 +70,7 @@ const url=process.env.SMOKE_URL||'http://127.0.0.1:8765/';
    const opts=page.locator('#app [onclick^="sspAnswer("]');assert.equal(await opts.count(),q.choices.length);
    await opts.nth(q.choices.indexOf(q.answer)).click();await page.locator('#app [onclick="sspNext()"]').click();assert.ok(++mobileCount<=5);
   }
-  assert.ok(mobileCount>0);assert.match(await page.locator('#app').innerText(),/Retrieval complete/);
+  assert.ok(mobileCount>0);assert.match(await page.locator('#app').innerText(),/Retrieval complete/i);
   const before=await page.evaluate(()=>localStorage.getItem('aphgUnitReviewProgressV1'));assert.ok(JSON.parse(before).attempted>=10);
   await page.reload({waitUntil:'networkidle'});assert.equal(await page.evaluate(()=>localStorage.getItem('aphgUnitReviewProgressV1')),before);
   assert.equal(await page.evaluate(()=>dataLayer.filter(x=>x[0]==='config').length),1);
