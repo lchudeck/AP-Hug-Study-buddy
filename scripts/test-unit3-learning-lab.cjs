@@ -32,3 +32,78 @@ assert.ok(answerCounts.every(count=>count>=3&&count<=6),'Balanced answer positio
 assert.ok(html.includes('First-try accuracy'));
 assert.ok(html.includes('Grammar is not scored here'));
 console.log('Unit 3 content integrity: 17 questions, 8 visual stimuli, 2 three-part FRQs, all eight CED topics.');
+
+async function mobileReview() {
+  const {chromium,devices}=require('playwright');
+  const browser=await chromium.launch();
+  try {
+    const page=await browser.newPage({...devices['iPhone 13']});
+    const errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.route('http://lab.test/**',async route=>{
+      const path=new URL(route.request().url()).pathname.slice(1);
+      if(path==='ap-human-geography-unit-3.html'||path==='unit-3-learning-lab.html'||path==='seo.css'){
+        await route.fulfill({path});
+      }else{
+        await route.abort();
+      }
+    });
+    await page.goto('http://lab.test/ap-human-geography-unit-3.html');
+    await page.getByRole('link',{name:/Start.*Learning Lab/}).click();
+    assert.equal(await page.evaluate(()=>innerWidth),390);
+    const missed=new Set([0,2,8,14,16]);
+    const visuals=new Set();
+    for(const [index,q] of data.Q.entries()){
+      if(q[1]==='final'&&data.Q[index-1][1]!=='final'){
+        await page.locator('#frq-reveal').click();
+        assert.match(await page.locator('#frq-check').innerText(),/Write a response for each part/);
+        await page.getByLabel('Part A',{exact:true}).fill('Multilingual signs appear in 2020.');
+        await page.getByLabel('Part B',{exact:true}).fill('A church and rail depot remain from earlier years.');
+        await page.getByLabel('Part C',{exact:true}).fill('Migrants move there.');
+        await page.locator('#frq-reveal').click();
+        for(const [part,rating] of ['met','met','review'].entries()){
+          await page.locator(`input[name="part-${part}"][value="${rating}"]`).check();
+        }
+        await page.locator('#frq-next').click();
+      }
+      if(q[10]!==undefined){
+        const diagram=page.locator('.diagram');
+        assert.ok(await diagram.isVisible());
+        assert.equal(await diagram.locator('strong').innerText(),data.V[q[10]].title);
+        const layout=await diagram.evaluate(element=>({
+          fits:element.scrollWidth<=element.clientWidth+1,
+          pageFits:document.documentElement.scrollWidth<=innerWidth,
+          labelsFit:[...element.querySelectorAll('svg text')].every(text=>{
+            const label=text.getBoundingClientRect();
+            const svg=text.ownerSVGElement.getBoundingClientRect();
+            return label.left>=svg.left&&label.right<=svg.right+1;
+          })
+        }));
+        assert.deepEqual(layout,{fits:true,pageFits:true,labelsFit:true},data.V[q[10]].title);
+        visuals.add(q[10]);
+      }
+      const miss=missed.has(index);
+      await page.locator('.choice').nth(miss?(q[4]+1)%q[3].length:q[4]).click();
+      if(miss){
+        assert.equal(await page.locator('#next').count(),0);
+        await page.locator('.retry').nth((q[9]+1)%q[8].length).click();
+        assert.equal(await page.locator('#next').count(),0);
+        await page.locator('.retry').nth(q[9]).click();
+      }
+      await page.locator('#next').click();
+    }
+    assert.equal(visuals.size,8);
+    const summary=await page.locator('.card').innerText();
+    assert.match(summary,/12\/17/);
+    assert.match(summary,/Connect language ancestry and migration/);
+    assert.match(summary,/Link a plausible action by migrants/);
+    assert.deepEqual(errors,[]);
+    console.log('390px touch Chromium: all eight visuals fit, recovery required, FRQ self-check and summary completed.');
+  } finally {
+    await browser.close();
+  }
+}
+
+if(process.argv.includes('--browser')){
+  mobileReview().catch(error=>{console.error(error);process.exitCode=1;});
+}
