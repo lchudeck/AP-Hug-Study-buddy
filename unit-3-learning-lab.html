@@ -81,7 +81,7 @@ const f=FRQS[frqIndex];
 app.innerHTML='<div class="card"><span class="pill">Short FRQ · Visual interpretation</span><h2>'+esc(f.title)+'</h2>'+diagram(f.visual)+'<p>Write a brief content-focused response for A–C. Use specific evidence. Grammar is not scored here. This is a self-check, not automated AP Reader scoring.</p>'+f.parts.map(p=>'<label><strong>'+p[0]+'. '+esc(p[1])+'</strong><textarea aria-label="Part '+p[0]+'" placeholder="Write your response here…"></textarea></label>').join('')+'<div id="frq-check"></div><button id="frq-reveal" class="primary">Compare with sample reasoning</button></div>';
 document.getElementById('frq-reveal').addEventListener('click',()=>{
 document.getElementById('frq-check').innerHTML='<div class="feedback"><strong>Content-focused self-check:</strong><ul>'+f.parts.map(p=>'<li><b>'+p[0]+'</b>: '+esc(p[2])+'</li>').join('')+'</ul><p>For each part, check that your answer contains the concept and the requested evidence or cause-and-effect connection. These are examples, not the only valid answers.</p><label><input type="checkbox" id="frq-self"> I compared all three parts with the criteria.</label></div><button id="frq-next">Continue to final mastery check →</button>';
-document.getElementById('frq-next').addEventListener('click',()=>{if(!document.getElementById('frq-self').checked){alert('Compare all three parts before continuing.');return;}i=14;mode='question';show();});
+document.getElementById('frq-next').addEventListener('click',()=>{if(!document.getElementById('frq-self').checked){alert('Compare all three parts before continuing.');return;}if(frqIndex===1){mode='done';show();}else{i=14;mode='question';show();}});
 });
 }
 function summary(){
