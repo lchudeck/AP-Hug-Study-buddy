@@ -1,0 +1,23 @@
+name: Focused FRQ guided learning
+on:
+  pull_request:
+    paths: ['*frq*.js', 'app.js', 'assets/**', 'tests/*frq*', 'scripts/verify-frq-guided.cjs', '.github/workflows/frq-guided-learning.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frq-guided:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.55.0 jsdom@26
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/frq-guided-accuracy.cjs && node tests/frq-guided-session.cjs && node tests/frq-scoring-regression.cjs && node tests/unit2-frq-accuracy-regression.cjs && node tests/unit2-frq-integration-regression.cjs
+      - run: python3 -m http.server 8765 > /tmp/frq-server.log 2>&1 &
+      - run: node scripts/verify-frq-guided.cjs
