@@ -14,7 +14,8 @@ try{for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
   const checks=page.locator('.part-result input[type=checkbox]');if(await checks.count())await checks.first().check();
   assert.match(await page.locator('.ai-result').innerText(),/Locally verified: 0\/7/);
   await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>typeof window.frqGuidedDraft==='function');
-  await page.evaluate(u=>{active='frq';selectedPrompt=u-1;render();},unit);
+  await page.evaluate(()=>go('frq'));
+  assert.equal(await page.locator('#guidedPrompt').inputValue(),String(unit-1));
   assert.equal(await page.locator('#mainAnswer').inputValue(),original);
   await page.evaluate(()=>{go('home');go('frq');});
   assert.equal(await page.locator('#mainAnswer').inputValue(),original);

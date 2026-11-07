@@ -24,10 +24,11 @@ window.__frqGuidedRules=[
  ['Name the geographic term for a cultural trait’s place of origin.','Define how movement of people carries a cultural trait to a new place.','Give a specific example of a spreading idea being adapted to local culture.','Explain how migrating people carry cultural traits to new places.','Name a connection mechanism and explain why it speeds or extends cultural spread.','Explain how a shared language supports interaction between different language groups.','Explain a specific change to local culture and connect it to incoming cultural influences.']
  ];
   const key='aphg-frq-guided-v1';
-  let sessions={};try{sessions=JSON.parse(sessionStorage.getItem(key)||'{}');}catch(e){}
+  let sessions={},storageAvailable=true;try{const saved=JSON.parse(sessionStorage.getItem(key)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))sessions=saved;}catch(e){storageAvailable=false;}
+  if(Number.isInteger(sessions.lastPrompt)&&sessions.lastPrompt>=0&&sessions.lastPrompt<3)selectedPrompt=sessions.lastPrompt;
   const scoped=()=>prompts[selectedPrompt]?.unit<=3;
-  const state=()=>sessions[selectedPrompt]||(sessions[selectedPrompt]={draft:'',checks:{}});
-  const save=()=>{try{sessionStorage.setItem(key,JSON.stringify(sessions));}catch(e){}};
+  const state=()=>{sessions.lastPrompt=selectedPrompt;return sessions[selectedPrompt]||(sessions[selectedPrompt]={draft:'',checks:{}});};
+  const save=()=>{try{sessionStorage.setItem(key,JSON.stringify(sessions));}catch(e){storageAvailable=false;}};
   const baseGrade=window.__gradeFrqPart;
   window.__gradeFrqPart=function(part,text){
     const r=baseGrade(part,text);
@@ -71,7 +72,7 @@ window.__frqGuidedRules=[
       <textarea id="mainAnswer" class="answer-textarea" oninput="frqGuidedDraft(this.value)" ${s.revised||s.skipped?'readonly':''}>${esc(s.draft)}</textarea>
       ${!s.revised&&!s.skipped?`<button class="btn-ai" onclick="gradeWithAI()">${s.first?'Check revision':'Check my answer'}</button>`:''}
       ${s.first&&!s.revised&&!s.skipped?'<button class="btn-secondary" onclick="frqGuidedSkip()">Skip revision and compare models</button>':''}
-      <p>Your work is kept in this browser tab for refresh and navigation. Closing the tab clears it. Do not include names or personal details.</p>
+      <p>${storageAvailable?'Your work is kept in this browser tab for refresh and navigation. Closing the tab clears it.':'This browser could not save your session. Copy your work before refreshing or leaving.'} Do not include names or personal details.</p>
       </section><section class="card" id="feedbackArea">${result?window.aiResultHtml(result):'<p>Submit your first answer to get feedback before seeing models.</p>'}</section><section class="card"><details><summary>Single-point practice drills</summary>${drillHtml()}</details></section></main>`;
   };
   window.aiResultHtml=function(result){
