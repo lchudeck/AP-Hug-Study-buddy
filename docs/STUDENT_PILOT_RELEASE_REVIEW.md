@@ -19,7 +19,7 @@ First submissions remained available after revision. Unit 1 draft survived refre
 
 Automation sometimes required a second click after editing a revision. Immediately navigating during refresh twice returned to homepage; reopening Coach restored work. These are observations, not a diagnosed code cause. Do not claim these interactions are fully resolved.
 
-Phone coverage: dedicated follow-up PR check exercises current production at 390×844 with touch/mobile emulation: vocabulary cards → DTM misconception/application → original/revision FRQ → self-check safeguards, model timing, retained original, navigation and overflow/page-error checks. Record the actual run outcome in the PR. This is emulated Chromium, not a physical phone or Safari test.
+Phone coverage: dedicated follow-up PR check exercises current production at 390×844 with touch/mobile emulation: vocabulary cards → DTM misconception/application → original/revision FRQ → self-check safeguards, model timing, retained original, navigation and overflow/page-error checks. PASS in GitHub Actions run 42406095956: current-production Unit 2 phone flow scored 2→6, preserving the written-stage review honestly; candidate scored 3→7 with the written-stage fix and directly expanded four vocabulary definitions. Candidate desktop/phone revision checks also passed all six unit/viewport workflows. This is emulated Chromium, not a physical phone or Safari test.
 
 ## Vocabulary findings
 Definitions/examples were inspected in visible flashcards; 59 Unit 1, 72 Unit 2 and 39 Unit 3 card fronts were traversed to locate requested terms. This exposes a findability cost: the Study List's term chips were inert and there was no term search. This was a targeted term review, not an audit of every definition.
@@ -33,7 +33,7 @@ Definitions/examples were inspected in visible flashcards; 59 Unit 1, 72 Unit 2 
 Academic reference: current College Board AP Human Geography CED, https://apcentral.collegeboard.org/media/pdf/ap-human-geography-course-and-exam-description.pdf . These original practice criteria are not official College Board scoring guidelines. No AP Classroom secure materials were copied.
 
 ## Focused follow-up changes and checks
-Five independent rubric-labeled live reproductions: released scorer fails two cases (false scale credit and unrecognized written stage); follow-up passes all five. Existing 63 correct + 126 invalid/partial synthetic-response bank remains 63/63 verified and 0/126 false credits. Existing Unit 2 accuracy/integration tests pass. Six expandable vocabulary entries and scoped recommendation regression pass. Startup remains within budget: 48 scripts, 996,952 bytes.
+Five independent rubric-labeled live reproductions: released scorer fails two cases (false scale credit and unrecognized written stage); follow-up passes all five. Existing 63 correct + 126 invalid/partial synthetic-response bank remains 63/63 verified and 0/126 false credits. Existing Unit 2 accuracy/integration tests pass. Six expandable vocabulary entries and scoped recommendation regression pass. The follow-up also replaces the unsupported “lower bound” score promise with a limited-practice-score explanation; the live false-credit example shows why a guaranteed lower-bound claim is too strong. Startup remains within budget: 48 scripts, 996,952 bytes.
 
 Changes are proposed in a follow-up PR, not merged/deployed. They do not establish reliable scoring for arbitrary prose. The old finite bank did not expose the live scale error; additional unseen responses remain valuable.
 

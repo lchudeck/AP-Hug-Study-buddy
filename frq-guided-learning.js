@@ -79,7 +79,7 @@ window.__frqGuidedRules=[
     if(!scoped())return oldHtml(result);
     const s=state(),done=!!(s.revised||s.skipped),first=s.first;
     return `<div class="ai-result"><div class="score-circle">${result.score}<small>/${result.total}</small></div><h3>Locally verified: ${result.score}/${result.total}</h3>
-      <p>Verified points are a lower bound, not necessarily your final rubric score. Student self-checks never award verified credit.</p>
+      <p>This limited practice total may differ from a teacher’s rubric score. Unrecognized wording needs rubric review. Student self-checks never award verified credit.</p>
       ${first?`<p>First attempt: ${first.result.score}/${result.total} verified points</p><details><summary>Read original submission</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(first.text)}</pre></details>`:''}
       ${s.revised?`<p>After revision: ${result.score}/${result.total} verified points · Change: ${result.score-first.result.score>=0?'+':''}${result.score-first.result.score} verified points</p><p>A higher practice score alone does not demonstrate independent learning.</p>`:''}
       <p>Needs rubric review: ${result.parts.filter(p=>p.outcome==='review').map(p=>p.letter).join(', ')||'None'}.</p>
