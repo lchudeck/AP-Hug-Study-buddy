@@ -48,7 +48,7 @@ const url=process.env.SMOKE_URL||'http://127.0.0.1:8765/';
   console.log('Simulator table retained and a stimulus answer recorded.');
   // Real textarea submissions through the Coach's rendered controls.
   for(const kind of ['correct','incorrect','nonsense','contradiction']){
-   await page.evaluate(()=>{active='frq';selectedPrompt=1;aiResult=null;render();});
+   await page.evaluate(()=>{active='frq';selectedPrompt=1;aiResult=null;if(window.frqGuidedNew)frqGuidedNew();render();});
    const answer=kind==='correct'?await page.evaluate(()=>prompts[1].parts.map(p=>p[0]+'. '+p[3]).join('\n')):
     kind==='incorrect'?'B. Dependency ratio compares rainfall with crop yields.':
     kind==='contradiction'?'B. Dependency ratio is working-age population divided by the number of dependent children and elderly people.':

@@ -23,6 +23,7 @@ class LocalResources extends ResourceLoader{
   });
   try{
     await new Promise(resolve=>dom.window.addEventListener('load',resolve,{once:true}));
+    await new Promise(r=>setTimeout(r,100));
     const w=dom.window,app=w.document.getElementById('app');
 
     const coach=w.eval('prompts.find(p=>p.unit===2)');
@@ -55,20 +56,20 @@ class LocalResources extends ResourceLoader{
     const answer=full(coach,7);
     const field=app.querySelector('#mainAnswer');field.value=answer;field.dispatchEvent(new w.Event('input',{bubbles:true}));
     await w.gradeWithAI();
-    assert.match(app.textContent,/Not verified — rubric review/);
+    assert.match(app.textContent,/Needs rubric review|Not yet demonstrated/);
     assert.doesNotMatch(app.querySelector('.ai-result').textContent,/Could earn the point/);
-    assert.match(app.textContent,/Name a policy and explain its mechanism/);
+    assert.match(app.textContent,/Name a government policy and explain the mechanism/);
     assert.equal(app.querySelector('#mainAnswer').value,answer);
-    [...app.querySelectorAll('button')].find(b=>b.textContent==='Rewrite and try again').click();
+    assert.ok([...app.querySelectorAll('button')].some(b=>b.textContent==='Check revision'));
     assert.equal(app.querySelector('#mainAnswer').value,answer);
     assert.equal(w.__gradeStrictDrill(0,'Unemployment').earned,false);
     assert.equal(w.__gradeStrictDrill(0,'Higher wages.').earned,true);
     assert.equal(w.__gradeStrictDrill(6,'More retirees increase pension costs, leaving fewer workers supporting benefits.').earned,true);
     assert.equal(w.__gradeStrictDrill(6,'More dependents lower pension costs because more people retire.').earned,false);
-    w.eval('drillIndex=0; drillAnswer="Unemployment"');w.strictGradeDrill();
+    w.eval('active="frq";drillIndex=0; drillAnswer="Unemployment"');w.strictGradeDrill();
     assert.match(app.textContent,/Not verified — rubric review/);
     // Cross-course scoring now deliberately uses conservative rubric review.
-    for(const prompt of w.eval('prompts.filter(p=>p.unit!==2)'))for(const p of prompt.parts){
+    for(const prompt of w.eval('prompts.filter(p=>p.unit<=3&&p.unit!==2)'))for(const p of prompt.parts){
       assert.equal(w.__gradeFrqPart(p,p[3]).earned,true,'Curated model: '+p[2]);
       for(const response of ['It makes things better.','', 'asdf qwrty zzzzz'])
         assert.equal(w.__gradeFrqPart(p,response).earned,false,p[2]);

@@ -100,7 +100,7 @@ const prompts=[
  ["D","Explain","Explain how immigration could help address a shrinking workforce.","Immigration could help because working-age migrants fill labor shortages and contribute taxes, reducing pressure on the existing workforce."],
  ["E","Explain","Explain one possible social or political challenge connected to increased immigration.","Increased immigration may create political tension because some residents may worry about cultural change, competition for housing, or pressure on public services."],
  ["F","Apply","Apply the Demographic Transition Model by identifying the stage most likely associated with low birth rates and low death rates.","Stage 4, or sometimes Stage 5, is associated with low birth rates and low death rates."],
- ["G","Evaluate","Evaluate one policy a government could use to respond to an aging population.","A government could provide childcare support, encourage immigration, raise the retirement age, or invest in automation because these policies can increase the workforce or reduce dependency pressure."]]},
+ ["G","Evaluate","Evaluate one policy a government could use to respond to an aging population.","A government could raise the retirement age to keep adults employed longer, slowing the decline in the workforce."]]},
 {unit:3,title:"Cultural Diffusion",scenario:"A cultural trait begins in one hearth, spreads through migration, and is later adapted by businesses and communities in different countries. In some places, the trait changes to fit local languages, religions, or food preferences.",
  parts:[
  ["A","Identify","Identify the term for the place where a cultural trait begins.","A cultural hearth."],

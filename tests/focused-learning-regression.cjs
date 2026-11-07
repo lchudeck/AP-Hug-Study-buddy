@@ -43,7 +43,7 @@ const good=[
    app.querySelector('#mainAnswer').dispatchEvent(new w.Event('input',{bubbles:true}));
    await w.gradeWithAI();
    assert.match(app.querySelector('.ai-result').textContent,/Locally verified: 7\/7/);
-   [...app.querySelectorAll('button')].find(b=>b.textContent==='Rewrite and try again').click();
+   if(p.unit<=3){assert.ok([...app.querySelectorAll('button')].some(b=>b.textContent==='Check revision'));}else [...app.querySelectorAll('button')].find(b=>b.textContent==='Rewrite and try again').click();
    const broken=bad.find(x=>x[0]===p.unit);
    app.querySelector('#mainAnswer').value=broken[1]+'. '+broken[2];
    app.querySelector('#mainAnswer').dispatchEvent(new w.Event('input',{bubbles:true}));await w.gradeWithAI();
