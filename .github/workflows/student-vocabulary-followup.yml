@@ -24,3 +24,9 @@ jobs:
         run: python3 -m http.server 8765 > /tmp/student-server.log 2>&1 &
       - name: Verify candidate revision flows on desktop and phone
         run: node scripts/verify-frq-guided.cjs
+      - name: Verify candidate vocabulary-to-FRQ phone flow
+        env:
+          STUDENT_URL: http://127.0.0.1:8765/
+          STUDENT_FIRST_SCORE: '3'
+          STUDENT_REVISED_SCORE: '7'
+        run: node scripts/verify-live-student-mobile.cjs
