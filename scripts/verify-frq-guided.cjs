@@ -21,7 +21,8 @@ try{for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
   await page.locator('#mainAnswer').fill(Object.entries(M[unit]).map(([l,v])=>l+'. '+v[0]).join('\n'));
   await page.getByRole('button',{name:/^(?:✦\s*)?Check revision$/}).click();
   await page.getByText('After revision: 7/7 verified points',{exact:false}).waitFor();
-  assert.ok((await page.locator('.ai-result').innerText()).includes(original));
+  await page.getByText('Read original submission',{exact:true}).click();
+  assert.equal(await page.locator('.ai-result pre').innerText(),original);
   await page.getByRole('button',{name:'Compare model answers',exact:true}).click();
   assert.equal(await page.locator('.part-result details').count(),7);
   await page.locator('.part-result details summary').first().click();
