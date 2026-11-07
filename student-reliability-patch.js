@@ -83,4 +83,4 @@
 // Load focused Coach UI after startup. Wait before grading if it is still loading.
 (function(){let ready;const loaded=new Promise(r=>ready=r),prior=window.gradeWithAI;
 window.gradeWithAI=async function(){if(prompts[selectedPrompt]?.unit<=3){await loaded;if(window.gradeWithAI!==waiting)return window.gradeWithAI();}return prior();};const waiting=window.gradeWithAI;
-function load(){const s=document.createElement('script');s.src='frq-guided-learning.js?v=1';s.onload=()=>ready();s.onerror=()=>{window.gradeWithAI=prior;ready();};document.head.appendChild(s);}if(document.readyState==='complete')load();else window.addEventListener('load',load,{once:true});})();
+function load(){const s=document.createElement('script');s.src='frq-guided-learning.js?v=2';s.onload=()=>ready();s.onerror=()=>{window.gradeWithAI=prior;ready();};document.head.appendChild(s);}if(document.readyState==='complete')load();else window.addEventListener('load',load,{once:true});})();

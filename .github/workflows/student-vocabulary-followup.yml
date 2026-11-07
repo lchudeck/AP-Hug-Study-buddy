@@ -1,0 +1,32 @@
+name: Focused student vocabulary follow-up
+on:
+  pull_request:
+    paths: ['master-flashcards.js', 'personalized-unit1-coach.js', 'frq-guided-learning.js', 'tests/vocabulary-student-regression.cjs', 'tests/frq-student-reproduction.cjs', 'scripts/verify-live-student-mobile.cjs', '.github/workflows/student-vocabulary-followup.yml']
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.55.0 jsdom@26
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/frq-student-reproduction.cjs && node tests/vocabulary-student-regression.cjs && node tests/frq-guided-accuracy.cjs
+      - name: Test current production as a phone student
+        run: node scripts/verify-live-student-mobile.cjs
+      - name: Serve follow-up candidate locally
+        run: python3 -m http.server 8765 > /tmp/student-server.log 2>&1 &
+      - name: Verify candidate revision flows on desktop and phone
+        run: node scripts/verify-frq-guided.cjs
+      - name: Verify candidate vocabulary-to-FRQ phone flow
+        env:
+          STUDENT_URL: http://127.0.0.1:8765/
+          STUDENT_FIRST_SCORE: '3'
+          STUDENT_REVISED_SCORE: '7'
+        run: node scripts/verify-live-student-mobile.cjs
