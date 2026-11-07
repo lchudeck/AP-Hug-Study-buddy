@@ -66,7 +66,7 @@ window.__frqGuidedRules=[
       <label for="guidedPrompt">Choose a prompt</label><select id="guidedPrompt" class="frq-select" onchange="selectedPrompt=Number(this.value);render()">${prompts.map((x,i)=>`<option value="${i}" ${i===selectedPrompt?'selected':''}>Unit ${x.unit}: ${esc(x.title)}</option>`).join('')}</select>
       <div class="scenario-box">${esc(p.scenario)}</div>
       <p>Label A–G. Identify: name it. Define: give its meaning. Describe: add a specific detail. Explain: connect a cause to its effect; no special connector word is required. Grammar is not scored.</p>
-      ${p.parts.map(x=>`<p><b>${esc(x[0])}.</b> ${esc(x[2])}</p>`).join('')}
+      ${p.parts.map((x,i)=>`<div class="frq-task-card"><p><b>${esc(x[0])}.</b> ${esc(x[2])}</p><div><b>Rubric — earn this point:</b> ${esc(checkpoints[p.unit-1][i])}</div></div>`).join('')}
       <label for="mainAnswer"><b>${s.first?'Revise your answer once using the feedback below':'Your first answer'}</b></label>
       <textarea id="mainAnswer" class="answer-textarea" oninput="frqGuidedDraft(this.value)" ${s.revised||s.skipped?'readonly':''}>${esc(s.draft)}</textarea>
       ${!s.revised&&!s.skipped?`<button class="btn-ai" onclick="gradeWithAI()">${s.first?'Check revision':'Check my answer'}</button>`:''}
@@ -77,14 +77,14 @@ window.__frqGuidedRules=[
   window.aiResultHtml=function(result){
     if(!scoped())return oldHtml(result);
     const s=state(),done=!!(s.revised||s.skipped),first=s.first;
-    return `<div class="ai-result"><h3>Locally verified: ${result.score}/${result.total}</h3>
+    return `<div class="ai-result"><div class="score-circle">${result.score}<small>/${result.total}</small></div><h3>Locally verified: ${result.score}/${result.total}</h3>
       <p>Verified points are a lower bound, not necessarily your final rubric score. Student self-checks never award verified credit.</p>
       ${first?`<p>First attempt: ${first.result.score}/${result.total} verified points</p><details><summary>Read original submission</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(first.text)}</pre></details>`:''}
       ${s.revised?`<p>After revision: ${result.score}/${result.total} verified points · Change: ${result.score-first.result.score>=0?'+':''}${result.score-first.result.score} verified points</p><p>A higher practice score alone does not demonstrate independent learning.</p>`:''}
       <p>Needs rubric review: ${result.parts.filter(p=>p.outcome==='review').map(p=>p.letter).join(', ')||'None'}.</p>
       ${result.parts.map(p=>`<div class="part-result"><b>Part ${esc(p.letter)}: ${p.outcome==='verified'?'1/1 — Verified point':p.outcome==='not-yet'?'Not yet demonstrated':'Needs rubric review'}</b><p>${esc(p.feedback)}</p>
       ${p.outcome==='review'?`<label><input type="checkbox" ${s.checks[p.letter]?'checked':''} onchange="frqGuidedCheck('${p.letter}',this.checked)"> Self-check only: I compared my claim and required details or causal relationship with this criterion.</label>`:''}
-      ${s.models?`<details><summary>Compare a model for ${p.letter}</summary><p>${esc(p.fix)}</p></details>`:''}</div>`).join('')}
+      ${s.models?`<details class="part-fix"><summary>Compare a model for ${p.letter}</summary><b>Strong rewrite/model:</b><p>${esc(p.fix)}</p></details>`:''}</div>`).join('')}
       ${done&&!s.models?'<button class="btn-secondary" onclick="frqGuidedModels()">Compare model answers</button>':''}
       ${done?'<button class="btn-secondary" onclick="frqGuidedNew()">Start a new practice attempt</button>':''}</div>`;
   };

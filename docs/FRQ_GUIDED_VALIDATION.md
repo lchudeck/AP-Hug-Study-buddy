@@ -23,6 +23,8 @@ Original synthetic rubric-labeled fixtures reused from PR #71, not actual studen
 | Supported correct/model/paraphrases, 63 responses | 32/63 (50.8%) | 63/63 (100%) |
 | Partial/vague/reversed/vocabulary traps/irrelevant, 126 responses, false credit | 0/126 (0%) | 0/126 (0%) |
 
+Candidate outcomes across all 189 bank responses: 63 verified, 92 needing rubric review (48.7%), and 34 not yet demonstrated (18.0%). Many partial/invalid variants conservatively remain for rubric review rather than receiving a definitive zero.
+
 The 63 correct responses include 21 models and 42 independently worded variants. The policy model changed, so the model portion is not a completely identical pre/post bank; the two paraphrase sets are identical. Model recognition alone is not independent validation.
 
 Existing Unit 2 bank: 80 five-level examples + 18 alternatives + 4 contradictions pass. Existing scorer regression and scoped Unit 2 integration pass. Served-page DOM test checks all 42 paraphrases with actual patched prompt wording, three original/revision sessions, no model before revision, and self-assessment cannot award credit.
@@ -36,7 +38,7 @@ These are original Study Buddy practice criteria, not official College Board sco
 
 ## Browser verification
 
-Local system Chromium and Playwright Chromium could not launch: environment socket/ptrace restrictions. **No successful local real-browser validation.** DOM testing is explicitly separate. Added a PR-only Chromium workflow that exercises Units 1, 2 and 3 at 1280×900 and 390×844, original mistakes, revision, self-check safety, model timing, refresh/navigation persistence, overflow and page errors. Physical phones, Safari and Firefox are not tested. Record remote results separately if available.
+Local system Chromium and Playwright Chromium could not launch: environment socket/ptrace restrictions. **No successful local real-browser validation.** DOM testing is explicitly separate. Added a PR-only Chromium workflow that exercises Units 1, 2 and 3 at 1280×900 and 390×844, original mistakes, revision, self-check safety, model timing, refresh/navigation persistence, overflow and page errors. Physical phones, Safari and Firefox are not tested. Remote Chromium run 42403646245 passed all six complete workflows (three units × two viewports), including original/revised scores 0→7, refresh, navigation, self-check safety, delayed models, overflow and page-error assertions. Existing release-browser run 42403646273 also passed.
 
 ## Limitations and remaining gates
 
@@ -45,4 +47,4 @@ Local system Chromium and Playwright Chromium could not launch: environment sock
 - Generic unrecognized text receives rubric review, not definitive zero; explicit captured contradictions and blank/nonsense receive not-yet feedback.
 - No observed student learning gains. Score changes can reflect feedback use, and are labeled accordingly.
 - Initial delivery remains within the existing 48-script/1,000,000-byte budget. Coach UI and Unit 1/3 rules load after startup. If that optional file fails, existing conservative Coach remains available.
-- Real-browser check and independent teacher validation must pass before READY. No merging or deploying in this task.
+- Independent teacher validation remains required before READY. The remote real-browser check passed. No merging or deploying in this task.
