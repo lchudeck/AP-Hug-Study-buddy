@@ -17,6 +17,8 @@ for(const variant of ['SYNTHETIC asdf qwrty zzzzz','SYNTHETIC Immigration reduce
 await page.locator('#writing-draft').fill(variant);assert.equal(await page.locator('#writing-draft').inputValue(),variant);assert.equal(await page.locator('.score-circle').count(),0);}
 
 const first=['SYNTHETIC: Local maps always show less detail.','SYNTHETIC: Immigration makes workers fewer.','SYNTHETIC: Phones spread dance because everyone moves.'][unit-1];await page.locator('#writing-draft').fill(first);
+await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>typeof frqWritingMove==='function');await page.locator('[data-student-route="frq"]').first().click();assert.equal(await page.locator('#guidedPrompt').inputValue(),String(unit-1));assert.equal(await page.locator('#writing-draft').inputValue(),first);
+
 await page.getByRole('button',{name:'Save original and review',exact:true}).click();
 for(const box of await page.locator('#writingCoach input[type=checkbox]').all())await box.check();
 await page.locator('#writing-revision').fill(['SYNTHETIC: The county average combines areas, hiding South’s 25-minute wait compared with North’s 5.','SYNTHETIC: Qualified arriving nurses fill shifts left open by retirees, reducing the staffing shortage.','SYNTHETIC: Online viewers abroad learn and share the dance, extending its reach.'][unit-1]);
@@ -38,6 +40,8 @@ for(let i=0;i<4;i++)await page.getByRole('button',{name:'Back',exact:true}).clic
 await page.getByRole('button',{name:'Show an example for help',exact:true}).click();await page.getByText('Supported practice: you opened help before finishing your revision.',{exact:true}).waitFor();
 await page.locator('#guidedPrompt').selectOption('1');await page.locator('#guidedPrompt').selectOption('0');assert.match(await page.locator('#writingStep').innerText(),/Apply independently/);
 await page.locator('#guidedPrompt').focus();await page.keyboard.press('Tab');assert.ok(await page.evaluate(()=>document.activeElement!==document.body));
+await page.getByRole('button',{name:'Save original and review',exact:true}).focus();await page.keyboard.press('Enter');await page.getByRole('heading',{name:/Review and revise/}).waitFor();assert.equal(await page.evaluate(()=>document.activeElement.id),'writingStep');
+
 assert.deepEqual(errors,[]);assert.deepEqual(leaks,[]);
 const blocked=await browser.newPage({viewport});await blocked.addInitScript(()=>{Storage.prototype.setItem=function(){throw new Error('disabled')};});await blocked.goto(process.env.FRQ_URL||'http://127.0.0.1:8765/',{waitUntil:'networkidle'});await blocked.waitForFunction(()=>typeof frqWritingMove==='function');await blocked.locator('#nav button').filter({hasText:'FRQ Coach'}).click();assert.match(await blocked.locator('#writingStorage').innerText(),/could not save/);await blocked.close();
 await page.close();

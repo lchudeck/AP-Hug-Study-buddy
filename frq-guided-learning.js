@@ -32,6 +32,9 @@ const state=()=>data.lessons[selectedPrompt]||(data.lessons[selectedPrompt]={ste
 const save=()=>{data.selected=selectedPrompt;try{sessionStorage.setItem(key,JSON.stringify(data));}catch(e){available=false;}};
 // Retain old writing verbatim in a separate archive, never infer its correctness.
 let legacy={};try{legacy=JSON.parse(sessionStorage.getItem('aphg-frq-guided-v1')||'{}');}catch(e){}
+// The home resume shortcut keeps the last selected lesson; explicit unit links still select their unit.
+const priorStudentRoute=window.studentProofRoute;
+if(priorStudentRoute)window.studentProofRoute=function(route){if(route==='frq'&&Number.isInteger(data.selected)&&data.selected<3){selectedPrompt=data.selected;go('frq');return;}return priorStudentRoute(route);};
 const oldPage=window.frqPage,oldGrade=window.gradeWithAI,oldDrill=window.drillHtml,oldStrict=window.strictGradeDrill;
 window.frqWritingInput=(field,value)=>{state()[field]=value;save();if(!available){const n=document.getElementById('writingStorage');if(n)n.textContent='This browser could not save your work. Copy it before refreshing or leaving.';}};
 window.frqWritingCheck=(i,value)=>{state().checks[i]=value;save();};
