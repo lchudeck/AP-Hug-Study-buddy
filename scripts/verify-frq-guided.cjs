@@ -2,15 +2,20 @@ const assert=require('node:assert/strict'),{chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});try{
 for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
 const page=await browser.newPage({viewport}),errors=[],leaks=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if((r.postData()||'').includes('SYNTHETIC'))leaks.push(r.url())});
+await page.addInitScript(()=>{if(!sessionStorage.getItem('aphg-frq-guided-v1'))sessionStorage.setItem('aphg-frq-guided-v1',JSON.stringify({0:{draft:'SYNTHETIC legacy writing',first:{text:'SYNTHETIC old original'}}}));});
 await page.goto(process.env.FRQ_URL||'http://127.0.0.1:8765/',{waitUntil:'networkidle'});await page.waitForFunction(()=>typeof frqWritingMove==='function');
 await page.locator('[data-student-route="frq"]').first().click();
 for(let unit=1;unit<=3;unit++){
 await page.locator('#guidedPrompt').selectOption(String(unit-1));
+if(unit===1){await page.getByText('Writing from your previous Coach session (ungraded archive)',{exact:true}).click();await page.getByText('SYNTHETIC old original',{exact:true}).waitFor();}
 await page.getByRole('button',{name:'Continue',exact:true}).click();
 await page.getByText('Underdeveloped response',{exact:true}).waitFor();
 await page.getByRole('button',{name:'Continue',exact:true}).click();
 await page.getByRole('button',{name:'Save original and review',exact:true}).click();assert.match(await page.locator('#writingCoach').innerText(),/Write a response before continuing/);
 assert.equal(await page.getByText('One valid example',{exact:true}).count(),0);
+for(const variant of ['SYNTHETIC asdf qwrty zzzzz','SYNTHETIC Immigration reduces workers.','SYNTHETIC Workers fill jobs.','SYNTHETIC Wrkers fill vacancys.']){
+await page.locator('#writing-draft').fill(variant);assert.equal(await page.locator('#writing-draft').inputValue(),variant);assert.equal(await page.locator('.score-circle').count(),0);}
+
 const first=['SYNTHETIC: Local maps always show less detail.','SYNTHETIC: Immigration makes workers fewer.','SYNTHETIC: Phones spread dance because everyone moves.'][unit-1];await page.locator('#writing-draft').fill(first);
 await page.getByRole('button',{name:'Save original and review',exact:true}).click();
 for(const box of await page.locator('#writingCoach input[type=checkbox]').all())await box.check();
@@ -33,5 +38,7 @@ for(let i=0;i<4;i++)await page.getByRole('button',{name:'Back',exact:true}).clic
 await page.getByRole('button',{name:'Show an example for help',exact:true}).click();await page.getByText('Supported practice: you opened help before finishing your revision.',{exact:true}).waitFor();
 await page.locator('#guidedPrompt').selectOption('1');await page.locator('#guidedPrompt').selectOption('0');assert.match(await page.locator('#writingStep').innerText(),/Apply independently/);
 await page.locator('#guidedPrompt').focus();await page.keyboard.press('Tab');assert.ok(await page.evaluate(()=>document.activeElement!==document.body));
-assert.deepEqual(errors,[]);assert.deepEqual(leaks,[]);await page.close();
+assert.deepEqual(errors,[]);assert.deepEqual(leaks,[]);
+const blocked=await browser.newPage({viewport});await blocked.addInitScript(()=>{Storage.prototype.setItem=function(){throw new Error('disabled')};});await blocked.goto(process.env.FRQ_URL||'http://127.0.0.1:8765/',{waitUntil:'networkidle'});await blocked.waitForFunction(()=>typeof frqWritingMove==='function');await blocked.locator('#nav button').filter({hasText:'FRQ Coach'}).click();assert.match(await blocked.locator('#writingStorage').innerText(),/could not save/);await blocked.close();
+await page.close();
 } }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

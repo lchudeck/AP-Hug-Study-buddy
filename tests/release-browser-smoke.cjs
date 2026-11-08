@@ -46,18 +46,16 @@ const url=process.env.SMOKE_URL||'http://127.0.0.1:8765/';
   const option=page.locator(`[onclick^="simSetMcq(${target},"]`).first();assert.equal(await option.count(),1);await option.click();
   assert.ok(await page.locator('#app table').count()>0);assert.equal(await page.evaluate(i=>simMcqAnswers[i]!==undefined,target),true);
   console.log('Simulator table retained and a stimulus answer recorded.');
-  // Real textarea submissions through the Coach's rendered controls.
-  for(const kind of ['correct','incorrect','nonsense','contradiction']){
-   await page.evaluate(()=>{active='frq';selectedPrompt=1;aiResult=null;if(window.frqGuidedNew)frqGuidedNew();render();});
-   const answer=kind==='correct'?await page.evaluate(()=>prompts[1].parts.map(p=>p[0]+'. '+p[3]).join('\n')):
-    kind==='incorrect'?'B. Dependency ratio compares rainfall with crop yields.':
-    kind==='contradiction'?'B. Dependency ratio is working-age population divided by the number of dependent children and elderly people.':
-    'A. qwrty\nB. nonsense\nC. random\nD. blah\nE. zzz\nF. qqq\nG. nope';
-   await page.locator('#mainAnswer').fill(answer);await page.getByRole('button',{name:/^(?:✦\s*)?Check my answer$/}).click();
-   await page.waitForFunction(()=>document.querySelector('.ai-result')?.textContent.includes('Locally verified:'));
-   assert.match(await page.locator('.ai-result').innerText(),new RegExp('Locally verified: '+(kind==='correct'?7:0)+'/7'));
-  }
-  console.log('FRQ Coach correct 7/7; incorrect, nonsense and contradictory responses 0/7.');
+  // Scored Coach is replaced; exercise the ungraded textarea without inferring accuracy.
+  await page.waitForFunction(()=>typeof frqWritingMove==='function');
+  await page.evaluate(()=>{active='frq';selectedPrompt=1;render();});
+  await page.getByRole('button',{name:'Continue',exact:true}).click();
+  await page.getByRole('button',{name:'Continue',exact:true}).click();
+  await page.locator('#writing-draft').fill('Nonsense contradictory practice');
+  await page.getByRole('button',{name:'Save original and review',exact:true}).click();
+  assert.equal(await page.locator('#writing-original').inputValue(),'Nonsense contradictory practice');
+  assert.equal(await page.locator('.score-circle').count(),0);
+  console.log('Ungraded Coach retains writing without fabricated grades.');
   await page.evaluate(()=>{sspSetPlan('unit',4);sspSetPlan('minutes',30);sspGo('plan');});
   const visual=page.locator('#app button[onclick*="maps"]');assert.ok(await visual.count()>0);await visual.first().click();
   assert.match(await page.locator('#app .pill').first().innerText(),/Unit 4/i);
