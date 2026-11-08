@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});try{
 for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
-const page=await browser.newPage({viewport}),errors=[],leaks=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if((r.postData()||'').includes('SYNTHETIC'))leaks.push(r.url())});
+const page=await browser.newPage({viewport}),errors=[],leaks=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')console.log(JSON.stringify({consoleError:m.text(),viewport}));});page.on('request',r=>{if((r.postData()||'').includes('SYNTHETIC'))leaks.push(r.url())});
 await page.addInitScript(()=>{if(!sessionStorage.getItem('aphg-frq-guided-v1'))sessionStorage.setItem('aphg-frq-guided-v1',JSON.stringify({0:{draft:'SYNTHETIC legacy writing',first:{text:'SYNTHETIC old original'}}}));});
 await page.goto(process.env.FRQ_URL||'http://127.0.0.1:8765/',{waitUntil:'networkidle'});await page.waitForFunction(()=>typeof frqWritingMove==='function');
 await page.locator('[data-student-route="frq"]').first().click();
