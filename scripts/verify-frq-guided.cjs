@@ -1,34 +1,48 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
-const {M}=require('../tests/frq-guided-bank.cjs');
-(async()=>{const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}: {})});
-try{for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
- const page=await browser.newPage({viewport}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(process.env.FRQ_URL||'http://127.0.0.1:8765/',{waitUntil:'networkidle'});
- await page.waitForFunction(()=>typeof window.frqGuidedDraft==='function');
- for(let unit=1;unit<=3;unit++){
-  await page.evaluate(u=>{active='frq';selectedPrompt=u-1;render();},unit);
-  const original=unit===2?'A. age\nD. Immigration reduces the workforce.':'A. idk\nB. My wording needs careful rubric comparison.';
-  await page.locator('#mainAnswer').fill(original);await page.getByRole('button',{name:/^(?:✦\s*)?Check my answer$/}).click();
-  await page.getByText('First attempt: 0/7 verified points',{exact:true}).waitFor();
-  assert.equal(await page.locator('.part-result details').count(),0,'Models hidden before revision');
-  const checks=page.locator('.part-result input[type=checkbox]');if(await checks.count())await checks.first().check();
-  assert.match(await page.locator('.ai-result').innerText(),/Locally verified: 0\/7/);
-  await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>typeof window.frqGuidedDraft==='function');
-  await page.evaluate(()=>go('frq'));
-  assert.equal(await page.locator('#guidedPrompt').inputValue(),String(unit-1));
-  assert.equal(await page.locator('#mainAnswer').inputValue(),original);
-  await page.evaluate(()=>{go('home');go('frq');});
-  assert.equal(await page.locator('#mainAnswer').inputValue(),original);
-  await page.locator('#mainAnswer').fill(Object.entries(M[unit]).map(([l,v])=>l+'. '+v[0]).join('\n'));
-  await page.getByRole('button',{name:/^(?:✦\s*)?Check revision$/}).click();
-  await page.getByText('After revision: 7/7 verified points',{exact:false}).waitFor();
-  await page.getByText('Read original submission',{exact:true}).click();
-  assert.equal(await page.locator('.ai-result pre').innerText(),original);
-  await page.getByRole('button',{name:'Compare model answers',exact:true}).click();
-  assert.equal(await page.locator('.part-result details').count(),7);
-  await page.locator('.part-result details summary').first().click();
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No horizontal overflow');
-  console.log(JSON.stringify({viewport,unit,first:0,revised:7,refresh:true,navigation:true,selfCheckNoCredit:true,modelsAfterRevision:true}));
- }
- assert.deepEqual(errors,[]);await page.close();
-}}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});try{
+for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
+const page=await browser.newPage({viewport}),errors=[],leaks=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')console.log(JSON.stringify({consoleError:m.text(),viewport}));});page.on('request',r=>{if((r.postData()||'').includes('SYNTHETIC'))leaks.push(r.url())});
+await page.addInitScript(()=>{if(!sessionStorage.getItem('aphg-frq-guided-v1'))sessionStorage.setItem('aphg-frq-guided-v1',JSON.stringify({0:{draft:'SYNTHETIC legacy writing',first:{text:'SYNTHETIC old original'}}}));});
+await page.goto(process.env.FRQ_URL||'http://127.0.0.1:8765/',{waitUntil:'networkidle'});await page.waitForFunction(()=>typeof frqWritingMove==='function');
+await page.locator('[data-student-route="frq"]').first().click();
+for(let unit=1;unit<=3;unit++){
+await page.locator('#guidedPrompt').selectOption(String(unit-1));
+if(unit===1){await page.getByText('Writing from your previous Coach session (ungraded archive)',{exact:true}).click();await page.getByText('SYNTHETIC old original',{exact:true}).waitFor();}
+await page.getByRole('button',{name:'Continue',exact:true}).click();
+await page.getByText('Underdeveloped response',{exact:true}).waitFor();
+await page.getByRole('button',{name:'Continue',exact:true}).click();
+await page.getByRole('button',{name:'Save original and review',exact:true}).click();assert.match(await page.locator('#writingCoach').innerText(),/Write a response before continuing/);
+assert.equal(await page.getByText('One valid example',{exact:true}).count(),0);
+for(const variant of ['SYNTHETIC asdf qwrty zzzzz','SYNTHETIC Immigration reduces workers.','SYNTHETIC Workers fill jobs.','SYNTHETIC Wrkers fill vacancys.']){
+await page.locator('#writing-draft').fill(variant);assert.equal(await page.locator('#writing-draft').inputValue(),variant);assert.equal(await page.locator('.score-circle').count(),0);}
+
+const first=['SYNTHETIC: Local maps always show less detail.','SYNTHETIC: Immigration makes workers fewer.','SYNTHETIC: Phones spread dance because everyone moves.'][unit-1];await page.locator('#writing-draft').fill(first);
+await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>typeof frqWritingMove==='function');await page.locator('[data-student-route="frq"]').first().click();assert.equal(await page.locator('#guidedPrompt').inputValue(),String(unit-1));assert.equal(await page.locator('#writing-draft').inputValue(),first);
+
+await page.getByRole('button',{name:'Save original and review',exact:true}).click();
+for(const box of await page.locator('#writingCoach input[type=checkbox]').all()){assert.ok((await box.getAttribute('aria-label')).startsWith('Did I'));await box.check();}
+await page.locator('#writing-revision').fill(['SYNTHETIC: The county average combines areas, hiding South’s 25-minute wait compared with North’s 5.','SYNTHETIC: Qualified arriving nurses fill shifts left open by retirees, reducing the staffing shortage.','SYNTHETIC: Online viewers abroad learn and share the dance, extending its reach.'][unit-1]);
+await page.locator('#writing-reflection').fill('SYNTHETIC: I changed the direction of the effect.');
+await page.getByRole('button',{name:'Save revision and compare',exact:true}).click();assert.equal(await page.locator('#writing-original').inputValue(),first);
+await page.getByText('One valid example',{exact:true}).waitFor();await page.getByRole('button',{name:'Continue',exact:true}).click();
+await page.locator('#writing-transfer').fill(['SYNTHETIC: Regional internet access hides Hill’s lower access revealed at a local scale.','SYNTHETIC: Arriving qualified electricians fill jobs left open by retirees.','SYNTHETIC: Migrants teach music at gatherings, exposing new neighbors to the tradition.'][unit-1]);
+await page.getByRole('button',{name:'Save transfer and finish',exact:true}).click();
+const before=await page.locator('#writingCoach').innerText();assert.doesNotMatch(before,/Locally verified|Point earned|\d\/7|Your answer is correct|You mastered/);
+await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>typeof frqWritingMove==='function');await page.locator('[data-student-route="frq"]').first().click();
+// Normal home entry may choose a unit; select the saved lesson explicitly.
+await page.locator('#guidedPrompt').selectOption(String(unit-1));assert.equal(await page.locator('#writing-original').inputValue(),first);assert.match(await page.locator('#writingStep').innerText(),/Finish/);
+assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile overflow');
+console.log(JSON.stringify({viewport,unit,workflow:true,refresh:true,original:true,ungraded:true}));
+}
+// Lesson switching preserves the draft and position; explicit help is marked as supported.
+await page.evaluate(()=>{go('home');go('frq')});await page.locator('#guidedPrompt').selectOption('0');
+for(let i=0;i<4;i++)await page.getByRole('button',{name:'Back',exact:true}).click();
+await page.getByRole('button',{name:'Show an example for help',exact:true}).click();await page.getByText('Supported practice: you opened help before finishing your revision.',{exact:true}).waitFor();
+await page.locator('#guidedPrompt').selectOption('1');await page.locator('#guidedPrompt').selectOption('0');assert.match(await page.locator('#writingStep').innerText(),/Apply independently/);
+await page.locator('#guidedPrompt').focus();await page.keyboard.press('Tab');assert.ok(await page.evaluate(()=>document.activeElement!==document.body));
+await page.getByRole('button',{name:'Save original and review',exact:true}).focus();await page.keyboard.press('Enter');await page.getByRole('heading',{name:/Review and revise/}).waitFor();assert.equal(await page.evaluate(()=>document.activeElement.id),'writingStep');
+
+assert.deepEqual(errors,[]);assert.deepEqual(leaks,[]);
+const blocked=await browser.newPage({viewport});await blocked.addInitScript(()=>{Storage.prototype.setItem=function(){throw new Error('disabled')};});await blocked.goto(process.env.FRQ_URL||'http://127.0.0.1:8765/',{waitUntil:'networkidle'});await blocked.waitForFunction(()=>typeof frqWritingMove==='function');await blocked.locator('#nav button').filter({hasText:'FRQ Coach'}).click();assert.match(await blocked.locator('#writingStorage').innerText(),/could not save/);await blocked.close();
+await page.close();
+} }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

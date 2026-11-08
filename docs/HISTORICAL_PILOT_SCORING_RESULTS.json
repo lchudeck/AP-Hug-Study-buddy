@@ -1,0 +1,453 @@
+{
+  "initial": {
+    "total": 30,
+    "correct": 12,
+    "verifiedCorrect": 9,
+    "correctForReview": 3,
+    "negative": 18,
+    "falseVerified": []
+  },
+  "holdout": {
+    "total": 12,
+    "correct": 6,
+    "verifiedCorrect": 4,
+    "correctForReview": 2,
+    "negative": 6,
+    "falseVerified": [
+      {
+        "u": 1,
+        "l": "E",
+        "kind": "reversed",
+        "text": "Local maps conceal service gaps that regional maps reveal.",
+        "expected": "no-verified-credit",
+        "earned": true,
+        "status": "verified"
+      },
+      {
+        "u": 1,
+        "l": "D",
+        "kind": "wrong",
+        "text": "Highways cause businesses to close and eliminate jobs.",
+        "expected": "no-verified-credit",
+        "earned": true,
+        "status": "verified"
+      },
+      {
+        "u": 2,
+        "l": "F",
+        "kind": "contradiction",
+        "text": "Stage 4 has very high fertility.",
+        "expected": "no-verified-credit",
+        "earned": true,
+        "status": "verified"
+      },
+      {
+        "u": 2,
+        "l": "D",
+        "kind": "wrong",
+        "text": "Immigrants fill vacant jobs, which means the supply of workers falls.",
+        "expected": "no-verified-credit",
+        "earned": true,
+        "status": "verified"
+      },
+      {
+        "u": 3,
+        "l": "F",
+        "kind": "contradiction",
+        "text": "A shared language allows communication, but it makes trade impossible.",
+        "expected": "no-verified-credit",
+        "earned": true,
+        "status": "verified"
+      },
+      {
+        "u": 3,
+        "l": "E",
+        "kind": "nonsense",
+        "text": "Social media spreads trends fast because magic internet goblins deliver them.",
+        "expected": "no-verified-credit",
+        "earned": true,
+        "status": "verified"
+      }
+    ]
+  },
+  "responses": [
+    {
+      "u": 1,
+      "l": "A",
+      "kind": "correct",
+      "text": "Site",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 1,
+      "l": "B",
+      "kind": "paraphrase",
+      "text": "Its position relative to nearby towns and transport routes.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 1,
+      "l": "C",
+      "kind": "short",
+      "text": "River water irrigated crops, feeding the first settlers.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 1,
+      "l": "D",
+      "kind": "partial",
+      "text": "There are railroads.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 1,
+      "l": "E",
+      "kind": "reversed",
+      "text": "Regional maps show more neighborhood detail than local maps.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 1,
+      "l": "E",
+      "kind": "contradiction",
+      "text": "Local maps show neighborhood service differences, but regional maps show more detail than local maps.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 1,
+      "l": "F",
+      "kind": "vocabulary",
+      "text": "GIS income inequality overlay",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 1,
+      "l": "G",
+      "kind": "wrong",
+      "text": "Add bus routes to prevent poor residents from reaching jobs.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 1,
+      "l": "B",
+      "kind": "spelling",
+      "text": "Its locaton relative to other places and roads.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 1,
+      "l": "D",
+      "kind": "nonsense",
+      "text": "Railroads make factories grow because purple bananas command them.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "A",
+      "kind": "correct",
+      "text": "The median age is rising.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 2,
+      "l": "B",
+      "kind": "paraphrase",
+      "text": "Children plus seniors per 100 working-age adults.",
+      "expected": "credit-or-review",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "C",
+      "kind": "short",
+      "text": "Rising pension costs.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 2,
+      "l": "D",
+      "kind": "partial",
+      "text": "Immigration brings people.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "D",
+      "kind": "reversed",
+      "text": "Vacant jobs cause immigrants to disappear, increasing the workforce.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "F",
+      "kind": "contradiction",
+      "text": "Stage four, but births and deaths are both very high.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "G",
+      "kind": "vocabulary",
+      "text": "Retirement age workforce policy",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "D",
+      "kind": "wrong",
+      "text": "Immigrants fill vacant jobs but do not increase the workforce.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "C",
+      "kind": "spelling",
+      "text": "More money is spent on pensons and health care.",
+      "expected": "credit-or-review",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "D",
+      "kind": "nonsense",
+      "text": "Immigrants fill vacant jobs because flying pencils turn into workers.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 3,
+      "l": "A",
+      "kind": "correct",
+      "text": "Cultural hearth",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 3,
+      "l": "B",
+      "kind": "paraphrase",
+      "text": "People moving to another place take their customs with them.",
+      "expected": "credit-or-review",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 3,
+      "l": "C",
+      "kind": "short",
+      "text": "Pizza chains adapt toppings to local religious food preferences.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 3,
+      "l": "D",
+      "kind": "partial",
+      "text": "People move.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 3,
+      "l": "E",
+      "kind": "reversed",
+      "text": "Faster cultural diffusion causes the invention of the internet.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 3,
+      "l": "F",
+      "kind": "contradiction",
+      "text": "A shared language lets people communicate, but no one can understand each other.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 3,
+      "l": "G",
+      "kind": "vocabulary",
+      "text": "Local global syncretism diffusion",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 3,
+      "l": "E",
+      "kind": "wrong",
+      "text": "The internet does not spread culture faster across countries.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 3,
+      "l": "D",
+      "kind": "spelling",
+      "text": "Immigrants bring their traditons and food to their new country.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 3,
+      "l": "F",
+      "kind": "nonsense",
+      "text": "A common language allows communication because invisible potatoes control minds.",
+      "expected": "no-verified-credit",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 1,
+      "l": "B",
+      "kind": "paraphrase",
+      "text": "A place compared to the roads, markets and other towns around it.",
+      "expected": "credit-or-review",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 1,
+      "l": "G",
+      "kind": "short",
+      "text": "Extend transit into underserved areas so people can reach clinics.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 1,
+      "l": "E",
+      "kind": "reversed",
+      "text": "Local maps conceal service gaps that regional maps reveal.",
+      "expected": "no-verified-credit",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 1,
+      "l": "D",
+      "kind": "wrong",
+      "text": "Highways cause businesses to close and eliminate jobs.",
+      "expected": "no-verified-credit",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 2,
+      "l": "C",
+      "kind": "short",
+      "text": "More government spending on pensions.",
+      "expected": "credit-or-review",
+      "earned": false,
+      "status": "unverified"
+    },
+    {
+      "u": 2,
+      "l": "F",
+      "kind": "correct",
+      "text": "The fourth stage.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 2,
+      "l": "F",
+      "kind": "contradiction",
+      "text": "Stage 4 has very high fertility.",
+      "expected": "no-verified-credit",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 2,
+      "l": "D",
+      "kind": "wrong",
+      "text": "Immigrants fill vacant jobs, which means the supply of workers falls.",
+      "expected": "no-verified-credit",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 3,
+      "l": "F",
+      "kind": "paraphrase",
+      "text": "A bridge language allows different language groups to exchange ideas.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 3,
+      "l": "D",
+      "kind": "short",
+      "text": "Migrants carry religious beliefs to their new homes.",
+      "expected": "credit-or-review",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 3,
+      "l": "F",
+      "kind": "contradiction",
+      "text": "A shared language allows communication, but it makes trade impossible.",
+      "expected": "no-verified-credit",
+      "earned": true,
+      "status": "verified"
+    },
+    {
+      "u": 3,
+      "l": "E",
+      "kind": "nonsense",
+      "text": "Social media spreads trends fast because magic internet goblins deliver them.",
+      "expected": "no-verified-credit",
+      "earned": true,
+      "status": "verified"
+    }
+  ]
+}

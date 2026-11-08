@@ -64,20 +64,14 @@ jobs:
               for(const f of fields){for(const val of ['asdfgh qwrty zzz','I think this happens because people move for jobs.']){f.value=val;f.dispatchEvent(new w.Event('input',{bubbles:true}));f.dispatchEvent(new w.Event('change',{bubbles:true}));fieldCount++;}}
             }
 
-            reset(/FRQ Coach/i);await sleep(5);w.frqGuidedNew?.();let ta=d.querySelector('#mainAnswer');
-            if(!ta)problems.push('FRQ main answer box missing');else{
-              ta.value='A. qwrty\nB. nonsense\nC. because because\nD. random\nE. blah\nF. zzz\nG. qqq';ta.dispatchEvent(new w.Event('input',{bubbles:true}));btn(/Check my answer/i)?.click();await sleep(350);
-              const score=d.querySelector('.score-circle')?.textContent.trim()||'';if(!/^0\s*\//.test(score))problems.push('Nonsense FRQ not 0 points: '+score);
-              text=d.body.textContent;if(!/(0\/1|Could earn the point|Too brief|Not yet demonstrated|Needs rubric review)/i.test(text))problems.push('FRQ parts show neither a verified 0/1 result nor a self-check status');if(d.querySelector('.part-result details'))problems.push('FRQ model revealed before revision');btn(/Skip revision and compare models/i)?.click();text=d.body.textContent;if(!/Strong rewrite\/model/i.test(text))problems.push('FRQ model missing after skipping revision');if(!/(How to improve|missing|needs|why|compare your wording|add a specific example)/i.test(text))problems.push('FRQ improvement explanation missing');
-              const blanks=[...d.querySelectorAll('.part-fix')].filter(x=>/Strong rewrite\/model:\s*$/.test(x.textContent.trim()));if(blanks.length)problems.push('Blank strong rewrite/model found');
+            reset(/FRQ Coach/i);await sleep(100);
+            if(!w.frqWritingMove)problems.push('Instructional Coach missing');else{
+              w.frqWritingMove(1);w.frqWritingMove(1);w.frqWritingInput('draft','asdf qwrty nonsense');w.frqWritingMove(1);
+              if(d.querySelector('.score-circle'))problems.push('Ungraded writing fabricated a grade');
+              if(!d.body.textContent.includes('Use these questions'))problems.push('Reflection questions missing');
+              w.frqWritingInput('revision','A revised geographic explanation');w.frqWritingMove(1);
+              if(!d.body.textContent.includes('One valid example'))problems.push('Annotated comparison missing');
             }
-
-            const rubricHeads=[...d.querySelectorAll('#app *')].filter(x=>/^Rubric\b/i.test((x.textContent||'').trim())&&x.children.length===0);
-            const rubricNodes=[...new Set(rubricHeads.map(h=>h.parentElement).filter(Boolean))];
-            if(!rubricNodes.length)problems.push('No visible FRQ rubric criteria found');
-            for(const r of rubricNodes){const t=r.textContent.trim();if(t.length<45||!/(point|earn|accurate|identify|define|describe|explain|apply|evaluate)/i.test(t))problems.push('Rubric box unclear: '+t.slice(0,120));}
-
-            reset(/FRQ Coach/i);await sleep(4);const check=btn(/Check this point/i);if(check){const tas=[...d.querySelectorAll('textarea')];const q=tas[tas.length-1];q.value='asdfgh qwrty zzz';q.dispatchEvent(new w.Event('input',{bubbles:true}));check.click();await sleep(10);text=d.body.textContent;if(!text.includes('0/1 — Point not earned'))problems.push('Nonsense 1-point drill awarded credit');if(!/(How to improve|valid|needs|Try)/i.test(text))problems.push('1-point drill lacks corrective feedback');}
 
             reset(/Unit Review/i);await sleep(4);w.urHome?.();await sleep(1);if(typeof w.__unitReviewBuild!=='function')problems.push('Unit Review builder missing');else for(let u=1;u<=7;u++){w.localStorage.clear();const a=w.__unitReviewBuild(u,35,'standard'),b=w.__unitReviewBuild(u,35,'standard'),pool=w.__unitReviewVariants(u);if(a.length!==35||b.length!==35)problems.push(`Unit ${u} not 35 questions`);if(new Set(a.map(q=>q.id)).size!==a.length||new Set(b.map(q=>q.id)).size!==b.length)problems.push(`Unit ${u} duplicates a question inside one set`);for(const deck of [a,b]){const topics=new Set(deck.map(q=>q.topic));for(const t of w.__unitReviewTopics[u]||[])if(!topics.has(t))problems.push(`Unit ${u} missing topic ${t}`);}const ids=new Set(a.map(q=>q.id)),unseen=pool.filter(q=>!ids.has(q.id)),forced=(w.__unitReviewTopics[u]||[]).filter(t=>!unseen.some(q=>q.topic===t)).length,allowed=Math.max(0,35-unseen.length,forced),overlap=b.filter(q=>ids.has(q.id)).length;if(overlap>allowed)problems.push(`Unit ${u} repeats ${overlap}/35; maximum-variety limit is ${allowed}`);}
             btn(/Practice test/i)?.click();await sleep(3);if(!d.body.textContent.includes('1/35'))problems.push('Unit Review does not start at 1/35');d.querySelector('.quiz-option')?.click();await sleep(2);if(!btn(/Next question/i))problems.push('Unit Review lacks Next question after answer');
@@ -114,7 +108,7 @@ jobs:
             const report=d.querySelector('#aphg-report-btn');if(!report)problems.push('Report button missing');else{report.click();await sleep(2);const modal=d.querySelector('#aphg-report-modal');if(!modal)problems.push('Report modal missing');else{const m=modal.textContent;if(/Create email report|email app should open/i.test(m))problems.push('Old email-app reporting still visible');if(!/Send Report/i.test(m))problems.push('Send Report missing');if(modal.querySelector('input[type="email"],input[name*="email"]'))problems.push('Report form must not collect student email');if(!/Do not include your name, email, school ID, or other personal information/i.test(m))problems.push('Report privacy warning missing');}}
 
             if(runtime.length)problems.push('Runtime exceptions: '+runtime.slice(0,3).join(' | '));
-            console.log(`Clicked ${clickCount} rendered buttons; exercised ${fieldCount} field entries; inspected ${rubricNodes.length} rubric boxes.`);
+            console.log(`Clicked ${clickCount} rendered buttons; exercised ${fieldCount} field entries; checked ungraded reflection and comparison controls.`);
             if(problems.length){console.error('AUDIT FAILURES:\n- '+problems.join('\n- '));process.exit(1)}
             console.log('Ninth-grade fast audit passed.');process.exit(0);
           })().catch(e=>{console.error(e);process.exit(1)});
