@@ -125,7 +125,7 @@ Then answer:
 - Zero critical technical blockers or silent loss of work.
 - Zero false verified FRQ points in teacher-reviewed samples.
 - At least 80% complete the planned workflow without teacher rescue beyond ordinary accommodations. Report the numerator and denominator; with 6 students this requires 5/6, with 9 it requires 8/9.
-- Median paired exit-minus-baseline score exceeds zero. Also report median baseline, median exit, range, form order and each unit's results. A tiny pilot is descriptive, not a causal study.
+- Median exit performance exceeds median baseline performance. Also report median paired exit-minus-baseline difference, range, form order and each unit's results. A tiny pilot is descriptive, not a causal study.
 - Each participant can identify at least one corrected misconception; report the proportion meeting this goal and distinguish accurate explanations from vague claims.
 
 No pilot results exist yet. Any false verified point fails the scoring threshold and returns that criterion to review. If usability passes but learning does not improve, adjust only the observed learning failure. Do not expand to an unsupported independent or graded assignment based solely on completion or satisfaction.

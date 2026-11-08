@@ -56,7 +56,7 @@ The local Chromium process cannot launch because the environment denies its sock
 | Live production desktop, new tests | Reversed map-scale and obstructed-access answers earned 2/7 verified points. Revision controls worked; original/revised work survived refresh after reopening Coach. Original error was retained. Initial entry showed legacy UI until a later render. |
 | #74 deployed preview desktop, new tests | Same two wrong answers earned 2/7. Candidate caveat correctly avoids guaranteed “lower bound” wording. Initial legacy UI reproduced. |
 | Existing #74 real Chromium run 42406304925, job 128504640830 | Logs inspected: six Unit 1–3 × 1280×900/390×844 original/revision workflows passed; current-production Unit 2 mobile vocabulary-to-FRQ path passed 2→6; candidate mobile path passed 3→7. No page errors or horizontal overflow in that coverage. Reused, not rerun unnecessarily. |
-| New first-entry correction | The lazy-loader now rerenders an open Coach after installing guided UI, removing the stale legacy sample-answer control. New browser gate checks visible first entry, both reproduced negatives, self-checks and navigation at desktop/phone sizes; six existing revision flows remain required. Final CI outcome must be recorded separately. |
+| New first-entry correction | The lazy-loader now rerenders an open Coach after installing guided UI, removing the stale legacy sample-answer control. New browser gate checks visible first entry, both reproduced negatives, self-checks and navigation at desktop/phone sizes; six existing revision flows remain required. Real Chromium run 42429019844, browser job 128573531965: PASS for both first-entry checks and all six original/revision workflows. The separate independent-scoring job fails on the six preserved holdout cases, as required by the release criterion. |
 | #72 real Chromium run 42162613874, job 127711593398 | Logs inspected: 390px touch flow completed all eight visuals, required recovery, FRQ self-check and summary. Structural check rerun: 17 questions, eight visuals, two three-part FRQs, eight CED topic tags. PR description's “16 questions” and missing-browser warning are stale. |
 | #72 new preview desktop | Deliberate culture/trait miss gave a useful distinction and a different same-concept retry. Continue reached question 2; refresh silently returned to question 1. Source has no session persistence or leave warning. |
 
@@ -103,3 +103,7 @@ Actual pilot participants: **0**. Actual completion rate, median improvement, fa
 3. **Classroom evidence:** after blockers clear, run the small paper-based pilot. Review every claimed verified FRQ point, record assistance and novel-item transfer, and use actual pre/post findings to select the next targeted development task.
 
 No merge approval is requested while the scoring gate is red. Additional cosmetic work and content expansion can wait.
+
+## Final verification record
+
+Candidate commit: `9cb98ed3ffa5ff4da91e2387b204ca62ccbca41b` in draft PR #75, stacked on #74. New browser run: https://github.com/lchudeck/AP-Hug-Study-buddy/actions/runs/42429019844 . Desktop and phone-sized Chromium passed; independent scoring failed, so the overall release gate is red. Documentation-only follow-up records these results and makes the median exit threshold explicit. No runtime source changed after the successful browser run.
