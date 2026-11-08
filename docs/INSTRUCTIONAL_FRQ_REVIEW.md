@@ -43,3 +43,14 @@ Local Chromium launch is blocked by socket/ptrace restrictions; browser evidence
 READY FOR SUPERVISED PILOT after explicit merge/deployment approval. No known critical technical blocker in the exercised workflows. Pilot targets remain proposed and unmeasured. Teacher review should examine accuracy, improved reasoning and transfer using anonymous paper records. This decision covers only the three targeted lessons, not full Units 1–3 content or the separate Unit 3 Learning Lab release.
 
 No merge or deployment performed. Historical scoring failures remain failures; other scored surfaces have not become validated graders because this Coach is now instructional.
+
+## November 8 focused follow-up
+#76 was open and unchanged at 60ddafe; main remains ab81a8d. Existing latest-head checks all passed. Production still visibly presents the older graded Coach. No merge or production deployment authorized.
+
+Agent-operated desktop Chromium in the existing Netlify PR preview completed all three lessons with incomplete drafts, revisions, reflections, model comparison and new transfer responses. Unit 1 refresh restored completed writing; Unit 3 navigation away/back restored completion. No application grading judgment appeared. Console errors observed were browser-extension metadata errors. Immediate fill-and-click in one automation call sometimes required a repeated click; separating input and action worked. Cause is unconfirmed; observe real student clicks during the pilot.
+
+Corrections: task-word support explicitly teaches Compare with a bus-wait comparison and distinguishes it from Describe and Explain. Reflection checkboxes now have question-specific accessible names; the generic accessibility layer previously labeled them with the section heading. Current public CED task-verb guidance was rechecked. No academic concept errors were found in the targeted lessons.
+
+Ratings: academic accuracy 5/5 for these targeted lessons (accurate definitions and mechanisms); clarity/independence 4/5 (no actual student independence evidence); writing instruction 4/5 (useful annotations, Compare explained but not a full practice lesson); application/revision 5/5 (different tasks, preserved original, reflection and transfer exercised); technical reliability/privacy 4/5 (passing existing checks and local-only writing, but no physical-phone/Safari test and browser-click uncertainty). These are reviewer judgments, not measured learner outcomes.
+
+CONDITIONAL GO for supervised pilot, superseding earlier unconditional wording. Ready for approval after correction checks pass. No confirmed critical app blocker; student independence, physical-mobile behavior and learning gains remain unproven. An adult walkthrough cannot establish a 20–30 minute independent student session. Existing printable protocol remains appropriate.

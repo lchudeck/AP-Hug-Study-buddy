@@ -20,7 +20,7 @@ const first=['SYNTHETIC: Local maps always show less detail.','SYNTHETIC: Immigr
 await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>typeof frqWritingMove==='function');await page.locator('[data-student-route="frq"]').first().click();assert.equal(await page.locator('#guidedPrompt').inputValue(),String(unit-1));assert.equal(await page.locator('#writing-draft').inputValue(),first);
 
 await page.getByRole('button',{name:'Save original and review',exact:true}).click();
-for(const box of await page.locator('#writingCoach input[type=checkbox]').all())await box.check();
+for(const box of await page.locator('#writingCoach input[type=checkbox]').all()){assert.ok((await box.getAttribute('aria-label')).startsWith('Did I'));await box.check();}
 await page.locator('#writing-revision').fill(['SYNTHETIC: The county average combines areas, hiding South’s 25-minute wait compared with North’s 5.','SYNTHETIC: Qualified arriving nurses fill shifts left open by retirees, reducing the staffing shortage.','SYNTHETIC: Online viewers abroad learn and share the dance, extending its reach.'][unit-1]);
 await page.locator('#writing-reflection').fill('SYNTHETIC: I changed the direction of the effect.');
 await page.getByRole('button',{name:'Save revision and compare',exact:true}).click();assert.equal(await page.locator('#writing-original').inputValue(),first);

@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),boot=require('./loaded-page.cjs');
 (async()=>{const {w,errors}=await boot(process.cwd());await new Promise(r=>setTimeout(r,100));
 for(let u=0;u<3;u++){
-w.eval(`active='frq';selectedPrompt=${u};render()`);w.frqWritingMove(1);w.frqWritingMove(1);w.frqWritingMove(1);assert.equal(w.document.querySelector('#writing-draft')!==null,true);
+w.eval(`active='frq';selectedPrompt=${u};render()`);assert.match(w.document.body.textContent,/Compare: describe similarities/);w.frqWritingMove(1);w.frqWritingMove(1);w.frqWritingMove(1);assert.equal(w.document.querySelector('#writing-draft')!==null,true);
 for(const text of ['asdf qwrty zzzzz','Immigration reduces available workers.','New workers fill jobs.','Wrkers fill vacancys.']){
 w.frqWritingInput('draft',text);w.frqWritingCheck(0,true);assert.doesNotMatch(w.document.body.textContent,/Locally verified|Point earned|Your answer is correct|\d\/7/);
 }
