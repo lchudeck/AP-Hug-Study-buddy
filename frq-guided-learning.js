@@ -14,7 +14,25 @@ window.__frqGuidedRules=[
     [/lingua franca/, all(/\b(?:common|shared|same|second|bridge|english|one language)\b/, /\b(?:communicat|understand|talk|trade|business|negotiat|interact|exchange|cooperat)\w*/), /\b(?:prevent|block|stop|hinder|limit)\w*.{0,25}\b(?:communicat|interact|understand)\w*/, 'Explain how a shared language lets people with different first languages communicate, trade, or exchange ideas.'],
     [/effect of cultural diffusion on local cultures/, all(/\b(?:local|traditional|traditions?|indigenous|native|minority)\b/, /\b(?:lose|loss|lost|disappear|replac|weaken|declin|homogen|westerniz|americaniz|assimilat|diverse|diversity|blend|syncret|hybrid|fusion|mix|combine|revival|revive|alike|similar)\w*/, /\b(?:global|popular culture|pop culture|outside|foreign|new|western|american|chains?|media|brands?|tourist|immigra|migra|spread)\w*/), /\b(?:stay|remain)\w* exactly the same|\bunchanged\b/, 'Explain a specific effect on local culture, such as traditions being replaced or blended, and what causes it.'],
 
-];})();
+];
+// Conservative review gates for claims the keyword rules cannot establish.
+// These gates withhold automatic credit; they do not declare unfamiliar prose wrong.
+window.__frqGuidedReviewReason=function(part,text){
+ const p=part[2].toLowerCase(),t=String(text).toLowerCase().replace(/\s+/g,' ').trim();
+ if(/scale of analysis from regional to local/.test(p)&&/\bregional\b.{0,65}\bmore\b.{0,35}\bdetail\w*.{0,35}\b(?:local|neighborhood)/.test(t))return 'Check which scale reveals neighborhood detail.';
+ if(/planning decision that could improve access/.test(p)&&/\b(?:prevent|stop|block|hinder|restrict)\w*.{0,65}\b(?:reach|access|travel|commut)\w*/.test(t))return 'Explain how the decision improves, rather than obstructs, access.';
+ if(/demographic transition.*low birth rates and low death rates/.test(p)&&/\b(?:births?|deaths?)\b.{0,45}\bhigh\b/.test(t))return 'Check both birth and death rate evidence against the named stage.';
+ if(/effect of cultural diffusion on local cultures/.test(p)&&! /\b(?:lose|loses|losing|loss|lost|disappear\w*|replac\w*|weaken\w*|declin\w*|homogeni\w*|westerniz\w*|americaniz\w*|assimilat\w*|blend\w*|mix\w*|combin\w*|reviv\w*|become\w*|becoming|make\w*|lead\w*|result\w*|creat\w*|form\w*|chang\w*)\b/.test(t))return 'State a change to local culture and connect it to an incoming influence; terms alone do not establish that relationship.';
+ if(/globalization can speed up cultural diffusion/.test(p)&&/\b(?:diffusion|spread)\b.{0,35}\b(?:caus\w*|invent\w*|creat\w*)\b.{0,35}\b(?:internet|media|technology)/.test(t))return 'Check the direction from a connection mechanism to cultural spread.';
+ // A recognized statement followed by an unsupported causal clause is not fully verified.
+ const causal=t.match(/\bbecause\b(.+)$/);
+ const domains=[[/city's situation helped it grow/,/\b(?:transport\w*|rail\w*|road\w*|highway\w*|ship\w*|trade\w*|market\w*|access\w*|cost\w*|connect\w*|link\w*|travel\w*)\b/],
+ [/immigration.*shrinking workforce/,/\b(?:immigra\w*|migra\w*|newcomer\w*|arriv\w*|vacan\w*|labor|labour|workforce|working.age|unfilled|retir\w*)\b/],
+ [/lingua franca/,/\b(?:language\w*|speaker\w*|communicat\w*|understand\w*|talk\w*|translat\w*|trade\w*|exchange\w*)\b/]];
+ const domain=domains.find(([q])=>q.test(p));
+ if(causal&&domain&&!domain[1].test(causal[1]))return 'The checker cannot establish the stated causal mechanism. Compare the complete explanation with the rubric.';
+ return '';
+};})();
 // Units 1–3 only. Browser-local practice; no network grading or answer analytics.
 (function(){
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -40,7 +58,7 @@ window.__frqGuidedRules=[
     r.feedback=r.earned?`Your response supplies the required concept or relationship for this practice criterion: ${r.criterion}`:
       r.contradiction?`Your explanation reverses or contradicts the geographic relationship. Check the direction of the effect. ${r.criterion}`:
       r.outcome==='not-yet'?`This response does not yet demonstrate the required idea. ${r.criterion}`:
-      `This checker cannot confidently judge your wording. Compare your response with these requirements: ${r.criterion}`;
+      `This checker cannot confidently judge your wording. ${r.reviewReason||'Compare your response with these requirements:'} ${r.criterion}`;
     return r;
   };
   const oldPage=window.frqPage,oldHtml=window.aiResultHtml,oldCheck=window.gradeWithAI;

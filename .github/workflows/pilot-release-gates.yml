@@ -1,0 +1,32 @@
+name: Units 1–3 pilot release gates
+on:
+  pull_request:
+    paths: ['frq-guided-learning.js', 'frq-part-scoring.js', 'student-reliability-patch.js', 'tests/frq-pilot-independent.cjs', 'scripts/verify-pilot-entry.cjs', '.github/workflows/pilot-release-gates.yml']
+permissions:
+  contents: read
+jobs:
+  independent-scoring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/frq-pilot-independent.cjs
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.55.0
+      - run: npx playwright install --with-deps chromium
+      - run: python3 -m http.server 8765 > /tmp/pilot-server.log 2>&1 &
+      - run: node scripts/verify-pilot-entry.cjs
+      - run: node scripts/verify-frq-guided.cjs
