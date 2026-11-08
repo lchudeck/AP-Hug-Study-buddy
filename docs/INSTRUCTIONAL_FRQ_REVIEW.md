@@ -8,9 +8,10 @@ Reuses lazy loading, browser-tab storage, the unit selector, original writing pr
 Old session writing is displayed as an ungraded archive without deletion or migration into an unrelated task. Originals become immutable on first submission; revision remains editable. Storage errors produce a visible copy-work warning. Session storage normally ends on tab closure, can be restored by browsers, and does not sync.
 
 ## Academic desk review (distinct from browser evidence)
-Sources checked: current public College Board course page and CED, including task verbs (printed p.159), topics 1.4/1.6, 2.9/2.12, 3.4/3.6; public 2024 Set 1 scoring guidelines as an example of task-specific acceptable alternatives. Original fictional scenarios; no secure AP Classroom content copied.
+Sources checked: current public College Board course page and CED, including the June 2026 clarifications (front matter/resource references, no change to these lesson targets), task verbs (printed p.159), topics 1.4/1.6, 2.9/2.12, 3.4/3.6; public 2024 Set 1 scoring guidelines as an example of task-specific acceptable alternatives. Original fictional scenarios; no secure AP Classroom content copied.
 - https://apcentral.collegeboard.org/courses/ap-human-geography
 - https://apcentral.collegeboard.org/media/pdf/ap-human-geography-course-and-exam-description.pdf
+- https://apcentral.collegeboard.org/media/pdf/ap-human-geography-course-and-exam-description-clarifications.pdf
 - https://apcentral.collegeboard.org/media/pdf/ap24-sg-human-geography-set-1.pdf
 
 | Lesson | Academic criteria and limits |
@@ -19,13 +20,26 @@ Sources checked: current public College Board course page and CED, including tas
 | 2 | Aging can create pension/service pressure and vacancies through retirement. Qualified migrants who may work can fill open jobs, adding available labor. Working age does not equal employment; immigration does not guarantee an end to aging or every shortage. |
 | 3 | Stimulus diffusion requires adaptation of a spreading underlying idea. Movement carrying traits illustrates relocation; online learning/sharing can spread traits without movement. Adaptation and communication are distinguished explicitly. |
 
-Each lesson contrasts incomplete reasoning with a stronger explanation and annotates accuracy, evidence, mechanism, direction and scenario connection. Short sufficient Describe responses are explicitly accepted as instructional examples. No required wording, connector, word count or grammar score. These lessons are targeted practice, not full unit coverage or official College Board scoring rubrics. Independent teacher review is still needed before classroom use; no student learning has been measured.
+Each lesson contrasts incomplete reasoning with a stronger explanation and annotates accuracy, evidence, mechanism, direction and scenario connection. Short sufficient Describe responses are explicitly accepted as instructional examples. No required wording, connector, word count or grammar score. These lessons are targeted practice, not full unit coverage or official College Board scoring rubrics. Teacher review is built into the supervised pilot; no student learning has been measured.
 
 ## Historical scoring evidence and gates
-HISTORICAL_PILOT_SCORING_RESULTS.json and HISTORICAL_PILOT_RELEASE_DECISION.md are unchanged copies from #75 at ad437a9. Their negative labels and failures remain historical failures; the scorer was not repaired. Existing frq-guided-accuracy.cjs and its bank are retained. The former scored UI test is preserved as frq-guided-session-historical.cjs (historical only). That gate no longer applies to this ungraded UI; the active session/browser checks test absence of grading and preservation of writing instead. Retained core/simulator/drill-engine tests remain active. Unit 2 integration removes only assertions for the removed scored Coach interface and its prior Unit 1/3 guided rule layer.
+HISTORICAL_PILOT_SCORING_RESULTS.json and HISTORICAL_PILOT_RELEASE_DECISION.md are unchanged copies from #75 at ad437a9. Their negative labels and failures remain historical failures; the scorer was not repaired. Existing frq-guided-accuracy.cjs and its bank are retained. The former scored UI test is preserved as frq-guided-session-historical.cjs (historical only). The scored-UI gate no longer applies to this ungraded interface; active session/browser checks test absence of grading and preservation of writing instead. The original accuracy bank remains an active CI check for the retained shared scorer; passing it does not erase the later holdout failures or establish general scoring accuracy. Retained core/simulator/drill-engine tests remain active. Unit 2 integration removes only assertions for the removed scored Coach interface and its prior Unit 1/3 guided rule layer.
 
 ## Validation
 DOM workflow, response variants (nonsense, contradiction, short answer, misspelling), lesson isolation, core FRQ scoring and Unit 2 scorer/simulator checks pass locally. Generated delivery: 48 scripts / 995,617 startup JS bytes. Instructional file loads afterward.
-Local Chromium launch is blocked by the environment's socket/ptrace restrictions. Real desktop/phone-sized Chromium evidence will be recorded from the focused PR workflow; this report must not be read as a browser pass until that run succeeds. No physical phone, Safari or learning-outcome claim.
+Production startup script tags and the lazy Coach bytes were fetched and match main/#73. #74/#75 are not deployed. Index HTML itself differs beyond the script list; no complete-production equivalence claim is made.
 
-Readiness pending browser execution and teacher review: CONDITIONAL.
+### Real Chromium evidence (not an academic or learning assessment)
+Application commit: 4306ed6c96f3fadf1a52e2113fa23eb020857cd1. Later changes are test/report/pilot files only.
+- Focused six-workflow PASS: https://github.com/lchudeck/AP-Hug-Study-buddy/actions/runs/42430531557
+- Release browser smoke PASS: https://github.com/lchudeck/AP-Hug-Study-buddy/actions/runs/42430531782
+- Updated reliability, privacy, performance and affected navigation/Coach checks pass. The obsolete rubric-count logging error in the older fast test was corrected; its updated run passes: https://github.com/lchudeck/AP-Hug-Study-buddy/actions/runs/42430630217
+
+Each unit completed worked-example comparison, a plausible flawed draft, checklist reflection, revision, annotated example comparison, different transfer and completion at 1280x900 and 390x844. Checks cover blank blocking, nonsense/contradictory/short/misspelled input without grading, original preservation, mid-draft and completed refresh recovery, home resume, navigation away/back, per-lesson isolation/position, early-example support labeling, keyboard activation/focus, old writing archive, unavailable session storage warnings, horizontal overflow, uncaught JavaScript exceptions, and absence of synthetic writing in outgoing request bodies. These tests do not establish general privacy certification.
+
+Local Chromium launch is blocked by socket/ptrace restrictions; browser evidence is real GitHub-hosted Chromium. Phone-sized means a desktop Chromium viewport, not a physical phone. No Safari, Firefox, screen-reader, physical-phone, actual student or learning-outcome claim. Final focused run PASS, including console capture with no console-error entries or uncaught JavaScript exceptions: https://github.com/lchudeck/AP-Hug-Study-buddy/actions/runs/42430763448. The corresponding release smoke also passes: https://github.com/lchudeck/AP-Hug-Study-buddy/actions/runs/42430763421.
+
+### Decision
+READY FOR SUPERVISED PILOT after explicit merge/deployment approval. No known critical technical blocker in the exercised workflows. Pilot targets remain proposed and unmeasured. Teacher review should examine accuracy, improved reasoning and transfer using anonymous paper records. This decision covers only the three targeted lessons, not full Units 1–3 content or the separate Unit 3 Learning Lab release.
+
+No merge or deployment performed. Historical scoring failures remain failures; other scored surfaces have not become validated graders because this Coach is now instructional.

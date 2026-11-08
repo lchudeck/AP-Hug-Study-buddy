@@ -13,7 +13,7 @@ Use 6–9 volunteers across Units 1–3, including students needing reading/voca
 | 21–26 | Cover the site and complete the other form independently. |
 | 26–28 | Identify one misconception corrected or a question remaining. Record confusing directions, lost work or needed help. |
 
-Timing is provisional; allow accommodations/extra time and record unfinished steps. Do not coach answers to improve completion statistics. Half each unit group uses A as baseline and B as exit, half reverses. Keep keys and other form hidden. Existing pilot's site/situation, aging/immigration and diffusion focuses are reused; new parallel forms match the short lessons.
+Timing is provisional; allow accommodations/extra time and record unfinished steps. Do not coach answers to improve completion statistics. Half each unit group uses A as baseline and B as exit, half reverses. This is a teacher packet: print or transcribe each form onto a separate student sheet. Keep keys and the other form hidden. Existing pilot's site/situation, aging/immigration and diffusion focuses are reused; new parallel forms match the short lessons.
 
 ## Independent baseline and parallel exit forms
 For each form, answer both parts; brief sufficient answers are welcome.
