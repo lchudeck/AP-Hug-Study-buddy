@@ -165,6 +165,9 @@
     if(!clean) return {letter,verb,earned:false,status:'incorrect',feedback:`Part ${letter}: 0/1. This part is blank.`,fix:model};
     if(looksNonsense(text)) return {letter,verb,earned:false,status:'incorrect',feedback:`Part ${letter}: 0/1. The response does not contain a recognizable AP Human Geography idea that answers this part.`,fix:model};
 
+    const reviewReason=window.__frqGuidedReviewReason?.(part,text);
+    if(reviewReason)return {letter,verb,earned:false,status:'unverified',coachingOnly:true,reviewReason,feedback:reviewReason,fix:model};
+
     const unit2=unit2Rubric(part,text);
     if(unit2)return !unit2.earned&&!/Check the direction/.test(unit2.feedback)&&offTask(part,text)?tooBrief(part):unit2;
 
