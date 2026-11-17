@@ -37,6 +37,8 @@ const good=[
  for(const p of prompts){
    const full=p.parts.map(x=>x[0]+'. '+x[3]).join('\n');
    assert.equal(w.localGradeFRQ(full,p).score,7,'Unit '+p.unit+' model');
+   // Scoped Coach is ungraded; preserve scored UI checks for the remaining surfaces.
+   if(p.unit>3){
    // Exercise the actual student-facing Coach submit and rewrite.
    w.eval(`active='frq'; selectedPrompt=${prompts.indexOf(p)}; aiResult=null`);w.render();
    app.querySelector('#mainAnswer').value=full;
@@ -48,6 +50,7 @@ const good=[
    app.querySelector('#mainAnswer').value=broken[1]+'. '+broken[2];
    app.querySelector('#mainAnswer').dispatchEvent(new w.Event('input',{bubbles:true}));await w.gradeWithAI();
    assert.match(app.querySelector('.ai-result').textContent,/Locally verified: 0\/7/);
+   }
    for(const response of ['It helps things.','Income.','', 'asdf qwrty zzzzz']){
      assert.equal(w.__gradeFrqPart(p.parts[1],response).earned,false);
    }

@@ -35,12 +35,10 @@ jobs:
             if(visible.length!==6) throw new Error('Expected six visible student navigation paths, found '+labels.join(', '));
             const frq=visible.find(b=>/FRQ Coach/i.test(b.textContent));
             if(!frq)throw new Error('FRQ nav missing'); frq.click(); await sleep(20);
-            const ta=d.querySelector('#mainAnswer'); if(!ta)throw new Error('FRQ answer box missing');
-            ta.value='A. qwrty\nB. nonsense\nC. random\nD. blah\nE. zzz\nF. qqq\nG. nope';ta.dispatchEvent(new dom.window.Event('input',{bubbles:true}));
-            const check=[...d.querySelectorAll('button')].find(b=>/Check my answer/i.test(b.textContent)); if(!check)throw new Error('FRQ check button missing');check.click();await sleep(400);
-            if(!d.querySelector('.freshman-progress-payoff'))throw new Error('Progress payoff missing after result');
-            const actions=[...d.querySelectorAll('.payoff-actions button')].map(b=>b.textContent.trim());
-            for(const x of ['Practice a weak spot','Review my unit',"I'm done for now"]) if(!actions.includes(x))throw new Error('Payoff action missing '+x);
+            const w=dom.window;if(!w.frqWritingMove)throw Error('Instructional Coach missing');
+            w.frqWritingMove(1);w.frqWritingMove(1);w.frqWritingInput('draft','nonsense ungraded practice');w.frqWritingMove(1);
+            if(d.querySelector('.score-circle'))throw Error('Ungraded Coach fabricated points');
+            if(!d.querySelector('#writing-revision'))throw Error('Revision opportunity missing');
             console.log('Final freshman polish passed.');
             dom.window.close();process.exit(0);
           })().catch(e=>{console.error(e);process.exit(1)});

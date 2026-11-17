@@ -80,7 +80,8 @@
   window.__studentReliabilityRegression=function(){const p=['A','Explain','Explain how improved transportation can affect market access.','Improved transportation increases market access because lower travel time connects producers with more consumers.'],cases=[['correct','Better roads led to lower travel time, connecting farmers to more buyers.','verified'],['alternate-valid','Faster rail resulted in producers reaching a larger customer base.','verified'],['partial','Transportation can help farmers.','unverified'],['vague','It makes things better for people.','unverified'],['nonsense','asdf qwrty zzzzz','incorrect']];return cases.map(([name,text,expected])=>{const r=window.__gradeFrqPart(p,text);return {name,expected,actual:r.status,pass:r.status===expected};});};
 })();
 
-// Load focused Coach UI after startup. Wait before grading if it is still loading.
-(function(){let ready;const loaded=new Promise(r=>ready=r),prior=window.gradeWithAI;
-window.gradeWithAI=async function(){if(prompts[selectedPrompt]?.unit<=3){await loaded;if(window.gradeWithAI!==waiting)return window.gradeWithAI();}return prior();};const waiting=window.gradeWithAI;
-function load(){const s=document.createElement('script');s.src='frq-guided-learning.js?v=1';s.onload=()=>ready();s.onerror=()=>{window.gradeWithAI=prior;ready();};document.head.appendChild(s);}if(document.readyState==='complete')load();else window.addEventListener('load',load,{once:true});})();
+// Fail closed while the ungraded Coach loads; never expose the old scorer for Units 1–3.
+(function(){const priorPage=window.frqPage,priorGrade=window.gradeWithAI;
+window.frqPage=function(){if(prompts[selectedPrompt]?.unit<=3)return '<main><section class="card"><h2>Guided writing</h2><p id="coachLoading" role="status">Loading ungraded writing practice…</p></section></main>';return priorPage();};
+window.gradeWithAI=function(){if(prompts[selectedPrompt]?.unit<=3)return;return priorGrade();};
+function load(){const s=document.createElement('script');s.src='frq-guided-learning.js?v=3';s.onerror=()=>{const n=document.getElementById('coachLoading');if(n)n.textContent='Writing practice could not load. Refresh to try again. Existing saved work is unchanged.';};document.head.appendChild(s);}if(document.readyState==='complete')load();else window.addEventListener('load',load,{once:true});})();
