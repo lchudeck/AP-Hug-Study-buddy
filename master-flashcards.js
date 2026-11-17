@@ -29,7 +29,7 @@
     [1,'1.5','Renewable Resource','A resource replenished naturally on a human time scale.','Solar energy.'],
     [1,'1.5','Nonrenewable Resource','A resource formed much more slowly than it is used.','Petroleum.'],
     [1,'1.5','Sustainability','Meeting present needs without undermining future needs.','Water conservation.'],
-    [1,'1.6','Map Scale','Relationship between map distance and Earth distance.','1:24,000.'],
+    [1,'1.6','Map Scale','The relationship between a distance on a map and the distance it represents on Earth. This differs from scale of analysis (local, regional, national, global).','At 1:24,000, 1 cm on the map represents 24,000 cm (240 m) on Earth.'],
     [1,'1.6','Large-Scale Map','Shows a smaller area with more detail.','Neighborhood map.'],
     [1,'1.6','Small-Scale Map','Shows a larger area with less detail.','World map.'],
     [1,'1.6','Aggregation','Combining data into larger geographic units.','Neighborhood data combined into a city average.'],
@@ -79,6 +79,16 @@
     [2,'2.12','Remittance','Money migrants send to people in their home community.','Workers send earnings to family abroad.']
   ];
   core12.forEach(x=>add(...x));
+  // Directly observed gaps in the Units 1–3 vocabulary-to-FRQ student path.
+  [
+    [2,'2.3','Working-Age Population','People in the age range commonly used for demographic comparisons, usually ages 15–64; they are not necessarily all employed.','Dependency ratios compare dependents with working-age people, not only people who currently have jobs.'],
+    [2,'2.10','Immigration','Movement into a country to live there.','A person moving from Mexico to live in Canada is an immigrant to Canada.'],
+    [2,'2.10','Emigration','Movement out of a country to live elsewhere.','The same person moving from Mexico to Canada is an emigrant from Mexico.'],
+    [3,'3.4','Expansion Diffusion','A cultural trait spreads outward while remaining present in its source area. Contagious, hierarchical, and stimulus diffusion are types.','A song remains popular in its home city while spreading to other cities; people need not move permanently.']
+  ].forEach(x=>add(...x));
+  const dependency=flashcards.find(c=>c.unit===2&&c.term==='Dependency Ratio');
+  if(dependency){dependency.def='The number of dependents (usually ages 0–14 and 65+) compared with the working-age population (usually ages 15–64), often per 100 working-age people.';dependency.ex='60 dependents for every 100 working-age people gives a dependency ratio of 60. Working-age does not mean everyone is employed.';}
+
   const epidemiology=flashcards.find(c=>c.unit===2&&c.term==='Epidemiological Transition Model');
   if(epidemiology){epidemiology.def='Changes in causes of death and disease burden over time; distinct from the DTM, which tracks birth and death rates.';epidemiology.ex='Sanitation and vaccination can reduce infectious mortality. Longer lives can make chronic disease a larger share of deaths; outbreaks and unequal access can disrupt this pattern.';}
 

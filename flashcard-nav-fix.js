@@ -68,7 +68,7 @@
       return;
     }
     const p=document.createElement('script');
-    p.src='personalized-unit1-coach.js';
+    p.src='personalized-unit1-coach.js?v=2';
     p.dataset.personalCoach='true';
     p.defer=true;
     p.addEventListener('load',loadUnits27Coach,{once:true});

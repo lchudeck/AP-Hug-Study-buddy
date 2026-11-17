@@ -1023,7 +1023,7 @@ function unitHtml(u,r){
   </div>
 
   <h3>Key vocabulary</h3>
-  <div class="chips">${flashcards.filter(c=>c.unit===u.id).map(c=>`<span class="chip">${c.term}</span>`).join("")}</div>
+  <div class="chips">${flashcards.filter(c=>c.unit===u.id).map(c=>`${u.id<=3?`<details class="chip"><summary>${htmlEscape(c.term)}</summary><p>${htmlEscape(c.def)}</p><p><b>Example:</b> ${htmlEscape(c.ex)}</p></details>`:`<span class="chip">${c.term}</span>`}`).join("")}</div>
 
   <div class="mini-practice">
     <b>Quick practice question:</b>

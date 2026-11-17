@@ -124,7 +124,7 @@
     }catch(e){}
   }
   function weakestTopic(){
-    const s=load(),rows=Object.entries(s.topics).map(([topic,t])=>({topic,...t,rate:t.checks?t.correct/t.checks:0}));
+    const s=load(),rows=Object.entries(s.topics).filter(([topic])=>Object.prototype.hasOwnProperty.call(topicNames,topic)).map(([topic,t])=>({topic,...t,rate:t.checks?t.correct/t.checks:0}));
     if(!rows.length)return null;
     rows.sort((a,b)=>(b.misses-b.rescues)-(a.misses-a.rescues)||a.rate-b.rate||b.last-a.last);return rows[0];
   }
