@@ -19,7 +19,13 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-save --no-package-lock playwright@1.55.0
-      - run: npx playwright install --with-deps chromium
+      - name: Select Chromium for browser validation
+        run: |
+          if command -v google-chrome >/dev/null; then
+            echo "CHROMIUM_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
       - name: Serve candidate for pull-request validation
         if: github.event_name == 'pull_request'
         run: python3 -m http.server 8765 > /tmp/aphg-server.log 2>&1 &

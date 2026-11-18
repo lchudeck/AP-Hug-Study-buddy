@@ -241,15 +241,17 @@ window.__frqGuidedRules=[
   }
   const coachPage=window.frqPage;
   window.frqPage=()=>lessonId?showLesson():coachPage().replace(/(<main[^>]*>)/,'$1'+pilotLinks());
+  const goToPage=window.go;
+  window.go=(page,openPilot=false)=>{
+    if(page==='frq'&&!openPilot)lessonId=null;
+    return goToPage(page);
+  };
   window.openFrqSelfScore=id=>{
     if(!Object.hasOwn(lessons,id))return;
     lessonId=id;
-    saved.lastLesson=id;
-    save();
-    go('frq');
+    go('frq',true);
     document.getElementById('pilot-title')?.focus();
   };
-  if(Object.hasOwn(lessons,saved.lastLesson))lessonId=saved.lastLesson;
 
   document.addEventListener('input',event=>{
     const field=event.target.dataset.frqPilotField;
@@ -276,7 +278,7 @@ window.__frqGuidedRules=[
     if(!lessonId)return;
     const s=getState();
     switch(action){
-      case 'exit': lessonId=null;delete saved.lastLesson;break;
+      case 'exit': lessonId=null;break;
       case 'hint': s.hint=true;break;
       case 'example': s.examples[s.exampleIndex??0]=value;break;
       case 'next-example': s.exampleIndex=(s.exampleIndex??0)+1;break;

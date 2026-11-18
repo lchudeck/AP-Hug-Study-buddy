@@ -93,6 +93,7 @@ async function run(browser, viewport) {
     await page.reload({waitUntil:'load'});
     await coachReady();
     await nav(/FRQ Coach/);
+    await page.getByRole('button',{name:fixture.lesson,exact:true}).click();
     assert.equal(await pilot.getByLabel('Your revised answer').inputValue(),fixture.revision);
     await pilot.getByText('Self-scored practice · 1 point',{exact:true}).waitFor();
     await click('Try a new question');
