@@ -1,7 +1,7 @@
 name: Focused release browser smoke
 on:
   pull_request:
-    paths: ['assets/**', 'scripts/startup-assets.json', 'scripts/build-startup-assets.cjs', 'tests/release-browser-smoke.cjs', 'index.html', '.github/workflows/release-browser-smoke.yml']
+    paths: ['assets/**', 'scripts/startup-assets.json', 'scripts/build-startup-assets.cjs', 'tests/release-browser-smoke.cjs', 'tests/frq-self-scoring-browser.cjs', 'frq-guided-learning.js', 'index.html', '.github/workflows/release-browser-smoke.yml']
   push:
     branches: [main]
   workflow_dispatch:
@@ -26,6 +26,9 @@ jobs:
       - name: Validate candidate in real Chromium
         if: github.event_name == 'pull_request'
         run: node tests/release-browser-smoke.cjs
+      - name: Validate FRQ self-scoring at desktop and phone widths
+        if: github.event_name == 'pull_request'
+        run: node tests/frq-self-scoring-browser.cjs
       - name: Wait for production to publish the approved assets
         if: github.event_name != 'pull_request'
         run: |

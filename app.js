@@ -698,7 +698,7 @@ function frqPage(){
       ${p.parts.map(x=>`
       <div class="scaffold-box">
         <label>${x[0]}. ${x[1]} — <span style="font-style:italic;font-weight:normal">${frame(x[1])}</span></label>
-        <textarea oninput="updateScaffold('${x[0]}',this.value)" placeholder="Write part ${x[0]} here...">${scaffoldAnswers[x[0]]||""}</textarea>
+        <textarea oninput="updateScaffold('${x[0]}',this.value);window.saveClassicFrqDraft?.()" placeholder="Write part ${x[0]} here...">${htmlEscape(scaffoldAnswers[x[0]]||"")}</textarea>
         <div style="font-size:13px;color:#475569;margin-top:6px"><b>Rubric:</b> ${rubricForPart(x)}</div>
         ${rewriteButtonHtml(x)}
       </div>`).join("")}
@@ -706,7 +706,7 @@ function frqPage(){
     <button class="btn-secondary" onclick="buildFromScaffold()">⬇ Build my full answer from above</button>
 
     <h3 style="margin-top:18px">Your full answer</h3>
-    <textarea class="answer-textarea" id="mainAnswer" oninput="answer=this.value" placeholder="Write your full answer here. Label A through G. Use because for explain parts.">${answer}</textarea>
+    <textarea class="answer-textarea" id="mainAnswer" oninput="answer=this.value;window.saveClassicFrqDraft?.()" placeholder="Write your full answer here. Label A through G. Use because for explain parts.">${htmlEscape(answer)}</textarea>
 
     <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn-ai" onclick="gradeWithAI()">Check my answer</button>
@@ -766,6 +766,7 @@ function buildFromScaffold(){
     if(!val)return "";
     return l+". "+val;
   }).filter(Boolean).join("\n");
+  window.saveClassicFrqDraft?.();
   render();
 }
 
