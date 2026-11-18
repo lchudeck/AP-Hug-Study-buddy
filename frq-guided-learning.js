@@ -25,7 +25,7 @@ window.__frqGuidedRules=[
  ];
   const key='aphg-frq-guided-v1';
   let sessions={},storageAvailable=true;try{const saved=JSON.parse(sessionStorage.getItem(key)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))sessions=saved;}catch(e){storageAvailable=false;}
-  if(Number.isInteger(sessions.lastPrompt)&&sessions.lastPrompt>=0&&sessions.lastPrompt<3)selectedPrompt=sessions.lastPrompt;
+  if(Number.isInteger(sessions.lastPrompt)&&sessions.lastPrompt>=0&&sessions.lastPrompt<prompts.length)selectedPrompt=sessions.lastPrompt;
   const scoped=()=>prompts[selectedPrompt]?.unit<=3;
   const state=()=>{sessions.lastPrompt=selectedPrompt;return sessions[selectedPrompt]||(sessions[selectedPrompt]={draft:'',checks:{}});};
   const save=()=>{try{sessionStorage.setItem(key,JSON.stringify(sessions));}catch(e){storageAvailable=false;}};
@@ -44,24 +44,55 @@ window.__frqGuidedRules=[
     return r;
   };
   const oldPage=window.frqPage,oldHtml=window.aiResultHtml,oldCheck=window.gradeWithAI;
-  window.frqGuidedDraft=function(value){state().draft=value;answer=value;save();};
+  window.saveClassicFrqDraft=function(){
+    if(scoped())return;
+    const s=state();
+    s.draft=answer;
+    s.scaffold={...scaffoldAnswers};
+    s.classicResult=aiResult;
+    save();
+  };
+  window.frqGuidedDraft=function(value){state().draft=value;save();};
   window.frqGuidedCheck=function(letter,checked){state().checks[letter]=checked;save();};
   window.frqGuidedModels=function(){state().models=true;save();render();};
   window.frqGuidedSkip=function(){state().skipped=true;state().models=true;save();render();};
-  window.frqGuidedNew=function(){delete sessions[selectedPrompt];answer='';aiResult=null;save();render();};
+  window.frqGuidedNew=function(){delete sessions[selectedPrompt];save();render();};
   window.gradeWithAI=async function(){
-    if(!scoped())return oldCheck();
+    if(!scoped()){
+      const s=state();
+      const text=document.getElementById('mainAnswer')?.value||'';
+      if(!text.trim())return oldCheck();
+      s.draft=text;
+      s.classicResult=localGradeFRQ(text,prompts[selectedPrompt]);
+      save();
+      render();
+      return;
+    }
     const s=state();if(s.revised||s.skipped)return;
     const text=document.getElementById('mainAnswer')?.value||s.draft;
     if(!text.trim()){alert('Write a labeled answer first.');return;}
     const result=localGradeFRQ(text,prompts[selectedPrompt]);
     if(!s.first){s.first={text,result};}else{s.revised={text,result};}
-    s.draft=text;answer=text;aiResult=result;save();render();
+    s.draft=text;save();render();
   };
+  let renderedPrompt;
   window.frqPage=function(){
-    if(!scoped())return oldPage();
+    if(renderedPrompt!==selectedPrompt){
+      showKey=false;
+      visibleRewrite={};
+      renderedPrompt=selectedPrompt;
+    }
+    if(!scoped()){
+      const s=state();
+      answer=s.draft;
+      scaffoldAnswers=s.scaffold||{};
+      aiResult=s.classicResult||null;
+      save();
+      return oldPage();
+    }
     const p=prompts[selectedPrompt],s=state(),result=s.revised?.result||s.first?.result;
-    answer=s.draft;aiResult=result||null;
+    aiResult=result||null;
+    save();
     return `<main><section class="card"><h2>FRQ Coach · Unit ${p.unit}</h2>
       <p>Original Study Buddy practice rubric, aligned to AP content. This limited checker verifies evidence it recognizes; rubric review is separate from confirmed points.</p>
       <label for="guidedPrompt">Choose a prompt</label><select id="guidedPrompt" class="frq-select" onchange="selectedPrompt=Number(this.value);render()">${prompts.map((x,i)=>`<option value="${i}" ${i===selectedPrompt?'selected':''}>Unit ${x.unit}: ${esc(x.title)}</option>`).join('')}</select>
@@ -89,4 +120,183 @@ window.__frqGuidedRules=[
       ${done&&!s.models?'<button class="btn-secondary" onclick="frqGuidedModels()">Compare model answers</button>':''}
       ${done?'<button class="btn-secondary" onclick="frqGuidedNew()">Start a new practice attempt</button>':''}</div>`;
   };
+})();
+
+// Original, one-point lessons. The student decides the score on this device.
+(function(){
+  const lessons={
+    devolution:{
+      unit:4,title:'Regional identity and devolution',
+      question:prompts[3].parts[3][2],
+      scenario:prompts[3].scenario,
+      hint:'What might people in the region want to decide for themselves?',
+      criteria:['Point to a specific feature of regional identity, such as a shared language.',
+        'Show how that feature motivates people to demand power over a decision from the central government.'],
+      diagnostic:'Where does your answer show what people want to control and why their regional identity motivates that demand?',
+      examples:[
+        ['Families want schools to teach in their regional language. They press the central government to give the region control over education.',1,'“Teach in their regional language” gives the motive. “Give the region control over education” explains the demand for power.'],
+        ['The region has its own language.',0,'This identifies a cultural difference. Add why it makes people demand control over a decision.'],
+        ['The regional language creates devolution because it makes the country more united under the central government.',0,'Greater unity under the central government does not explain a demand for regional authority. Show how identity motivates local control.']
+      ],
+      transfer:{
+        scenario:'A mountain province has a distinct cultural identity and a tradition of managing its communal forests. A national agency takes over forest decisions, and a regional party begins campaigning.',
+        question:'Explain how the province’s regional identity could lead to a demand for devolution.',
+        model:'Residents see local forest management as part of their identity, so they support a party that wants forest decisions returned to the provincial government.',
+        criteria:['Name the province’s tradition of managing its forests or another relevant detail from the scenario.',
+          'Explain why people want forest decisions moved from the national agency to a regional government.']
+      }
+    },
+    pyramid:{
+      unit:2,title:'Population pyramid and demographic consequences',
+      chart:true,
+      question:'Using the population pyramid, explain one consequence of the age structure for public services or the labor force.',
+      hint:'Compare the bars near the youngest ages with bars near the top. Who might need more services or enter the workforce later?',
+      criteria:['Cite a visible age pattern, such as ages 60–79 having wider bars than ages 0–19.',
+        'Explain how that pattern could change service demand or the labor force, such as growing demand for elder care.'],
+      diagnostic:'Which age bars support your claim, and how would their size change demand for a service or the number of future workers?',
+      examples:[
+        ['The bars for people in their 60s and 70s are wider than the bars for the youngest age groups. More older residents could mean more demand for elder care.',1,'Names the visible age groups and connects the larger older cohorts to demand for elder care.'],
+        ['The bars for ages 60–79 are wider than the bars for ages 0–19.',0,'This describes the source. Add a consequence and explain why the pattern could produce it.'],
+        ['The wide bars near the top mean there are more children, so the country needs more primary schools.',0,'The labels show older people near the top. Check which ages the bars represent before linking them to a service.']
+      ],
+      transfer:{
+        chart:true,
+        question:'Using the new population pyramid, explain one consequence of the age structure for public services or the labor force.',
+        model:'The youngest age groups have wider bars than the older age groups. More children will enter school, increasing demand for classrooms and teachers.',
+        criteria:['Cite the wide younger bars, such as ages 0–19 compared with ages 60–79.',
+          'Explain a plausible consequence, such as larger young cohorts increasing demand for schools or later increasing the number of people entering the labor force.']
+      }
+    }
+  };
+
+  const key='aphg-frq-self-score-v1';
+  const escape=value=>htmlEscape(String(value??''));
+  let saved={}, canSave=true, lessonId=null;
+  try{saved=JSON.parse(sessionStorage.getItem(key)||'{}')||{};}catch(e){canSave=false;}
+  const save=()=>{try{sessionStorage.setItem(key,JSON.stringify(saved));}catch(e){canSave=false;}};
+  const getState=()=>saved[lessonId]??={step:0,examples:{},draft:'',revision:'',transfer:'',evidence:{},scores:{}};
+  const labels=['Write','Score examples','Score my answer','Revise','Try a new question'];
+  const scores={'1':'1 point','0':'0 points',unsure:'I’m unsure'};
+  const button=(action,label,value='')=>`<button type="button" class="btn-secondary" data-frq-pilot-action="${action}" data-value="${value}">${label}</button>`;
+  const field=(id,label,value)=>`<label for="pilot-${id}"><b>${label}</b></label><textarea id="pilot-${id}" class="answer-textarea" data-frq-pilot-field="${id}">${escape(value)}</textarea>`;
+  const quote=text=>`<p style="white-space:pre-wrap;overflow-wrap:anywhere">${escape(text||'(Blank)')}</p>`;
+  function task(item, transfer){
+    const chart=item.chart?APHGPopulationPyramid(!transfer).replace(/Illustrative (?:aging|youthful) age-sex pyramid/, 'Illustrative age-sex pyramid'):'';
+    return `${chart}${item.scenario?`<p>${escape(item.scenario)}</p>`:''}<p><b>${escape(item.question)}</b></p>`;
+  }
+
+  function selfScore(s, lesson, response, attempt){
+    const item=attempt==='transfer'?lesson.transfer:lesson;
+    const value=s.scores[attempt];
+    const writing=attempt==='draft'?(s.original??s.draft):s[attempt];
+    const example=attempt==='transfer'?lesson.transfer.model:lesson.examples[0][0];
+    const diagnostic=attempt==='transfer'?'Which detail from this new source supports your claim, and where do you explain what it causes?':lesson.diagnostic;
+    return `<p><b>What earns the point</b></p><ul>${item.criteria.map(c=>`<li>${escape(c)}</li>`).join('')}</ul>
+      ${field(response,'Copy the words that satisfy the checklist, or name the part that is missing.',s.evidence[attempt])}
+      <div class="button-row">${Object.entries(scores).map(([score,label])=>button('score',label,`${attempt}:${score}`)).join('')}</div>
+      ${value!==undefined?`<p role="status"><b>Self-scored practice · ${scores[value]}</b></p>`:''}
+      ${value==='unsure'?`<div class="box-info"><p>${escape(diagnostic)}</p>
+        <p><b>Compare a 1-point example</b></p>${quote(example)}</div>`:''}
+      ${!writing.trim()?'<p>A blank response earns 0 points.</p>':''}`;
+  }
+
+  function showLesson(){
+    const lesson=lessons[lessonId],s=getState();
+    const title=`<div class="button-row">${button('exit','Back to FRQ Coach')}</div>
+      <h2 tabindex="-1" id="pilot-title">Unit ${lesson.unit} · ${lesson.title}</h2>
+      <p>Step ${s.step+1} of 5 · <b>${labels[s.step]}</b></p>`;
+    let content;
+    if(s.step===0){
+      content=`${task(lesson,false)}<p><b>Explain</b> means show how one thing leads to another.</p>
+        ${field('draft','Your first answer',s.draft)}${s.hint?`<p class="box-info">${escape(lesson.hint)}</p>`:button('hint','I’m stuck')}
+        ${button('advance','Score examples')}`;
+    }else if(s.step===1){
+      const index=s.exampleIndex??0;
+      const [example,score,why]=lesson.examples[index];
+      const chosen=s.examples[index];
+      content=`${task(lesson,false)}<h3>Example ${index+1} of 3</h3>${quote(example)}
+        ${chosen===undefined?`<div class="button-row">${button('example','Earns the point','1')}${button('example','Doesn’t earn the point','0')}</div>`:
+        `<div class="box-info" role="status"><b>${score} / 1 point</b><p>${escape(why)}</p></div>${button(index<2?'next-example':'advance',index<2?'Next example':'Score my answer')}`}`;
+    }else if(s.step===2){
+      content=`${task(lesson,false)}<h3>Your first answer</h3>${quote(s.original)}
+        ${selfScore(s,lesson,'draft-evidence','draft')}${s.scores.draft!==undefined?button('advance','Revise my answer'):''}`;
+    }else if(s.step===3){
+      content=`${task(lesson,false)}<details><summary>Read your first answer</summary>${quote(s.original)}</details>
+        ${field('revision','Your revised answer',s.revision)}
+        ${selfScore(s,lesson,'revision-evidence','revision')}${s.scores.revision!==undefined?button('advance','Try a new question'):''}`;
+    }else{
+      content=`${task(lesson.transfer,true)}
+        ${s.transferSubmitted?`<h3>Your new answer</h3>${quote(s.transfer)}${selfScore(s,lesson,'transfer-evidence','transfer')}`:
+        `${field('transfer','Your answer to the new question',s.transfer)}${button('submit-transfer','Check against the rubric')}`}
+        ${s.scores.transfer!==undefined?`<p><b>First answer:</b> ${scores[s.scores.draft]}. <b>Revision:</b> ${scores[s.scores.revision]}. <b>New question:</b> ${scores[s.scores.transfer]}.</p>
+        <p>${s.hint?'You used a hint on the first question.':'You opened no hints on the first question.'} You wrote the new answer before opening its rubric.</p>`:''}`;
+    }
+    return `<main><section class="card" id="frq-pilot">${title}${content}
+      <p>${canSave?'This tab keeps your practice during refresh.':'This tab could not save your practice for refresh.'} Leave names and personal details out of your answer.</p></section></main>`;
+  }
+
+  function pilotLinks(){
+    return `<section class="card" aria-label="FRQ self-scoring lessons"><h3>Learn to score one FRQ point</h3>
+      <div class="button-row">${button('open','Unit 2 · Population pyramid','pyramid')}${button('open','Unit 4 · Devolution','devolution')}</div></section>`;
+  }
+  const coachPage=window.frqPage;
+  window.frqPage=()=>lessonId?showLesson():coachPage().replace(/(<main[^>]*>)/,'$1'+pilotLinks());
+  const goToPage=window.go;
+  window.go=(page,openPilot=false)=>{
+    if(page==='frq'&&!openPilot)lessonId=null;
+    return goToPage(page);
+  };
+  window.openFrqSelfScore=id=>{
+    if(!Object.hasOwn(lessons,id))return;
+    lessonId=id;
+    go('frq',true);
+    document.getElementById('pilot-title')?.focus();
+  };
+
+  document.addEventListener('input',event=>{
+    const field=event.target.dataset.frqPilotField;
+    if(!lessonId||!field)return;
+    const s=getState();
+    if(field.endsWith('-evidence'))s.evidence[field.replace('-evidence','')]=event.target.value;
+    else{
+      s[field]=event.target.value;
+      if(field==='revision'&&s.scores.revision!==undefined){
+        delete s.scores.revision;
+        const next=document.querySelector('#frq-pilot [data-frq-pilot-action="advance"]');
+        next?.remove();
+        document.querySelector('#frq-pilot [role="status"]')?.remove();
+      }
+    }
+    save();
+  });
+
+  document.addEventListener('click',event=>{
+    const control=event.target.closest('button[data-frq-pilot-action]');
+    if(!control)return;
+    const {frqPilotAction:action,value}=control.dataset;
+    if(action==='open'){window.openFrqSelfScore(value);return;}
+    if(!lessonId)return;
+    const s=getState();
+    switch(action){
+      case 'exit': lessonId=null;break;
+      case 'hint': s.hint=true;break;
+      case 'example': s.examples[s.exampleIndex??0]=value;break;
+      case 'next-example': s.exampleIndex=(s.exampleIndex??0)+1;break;
+      case 'advance':
+        if(s.step===0)s.original=s.draft;
+        if(s.step===2)s.revision=s.original;
+        s.step++;
+        break;
+      case 'score': {
+        const [attempt,score]=value.split(':');
+        const writing=attempt==='draft'?s.original:s[attempt];
+        s.scores[attempt]=score==='1'&&!writing.trim()?'0':score;
+        break;
+      }
+      case 'submit-transfer': s.transferSubmitted=true;break;
+    }
+    save();
+    render();
+    document.getElementById('pilot-title')?.focus();
+  });
 })();
