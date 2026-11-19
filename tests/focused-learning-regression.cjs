@@ -91,7 +91,9 @@ const good=[
  const checks=[[/highest GDP per capita/,'7.3'],[/Why does HDI improve/,'7.3'],[/Which concept best describes the sequence shown/,'7.6'],[/Rents and property taxes rise rapidly/,'6.10'],[/Which process is most consistent with the full pattern/,'6.10']];
  for(const [re,topic]of checks){const q=pool.find(q=>re.test(q.prompt));assert.ok(q);assert.equal(q.topic,topic);w.APHGTopicSkillMastery.recordEvidence(q,false);assert.ok(w.APHGTopicSkillMastery.topicEvidence().some(e=>e.topic===topic&&e.stat.attempts));w.sspStartTopic(topic);assert.ok(w.APHGStudentSuccess.session().deck.every(q=>q.topic===topic));}
  const district=w.__visualPractice37.sets.find(s=>s.unit===4),farm=w.__visualPractice37.sets.find(s=>s.unit===5);
- assert.match(district.q[2],/voter and election data/);assert.match(farm.stimulus,/>A<.*>B<.*>C</);assert.match(farm.q[2],/Ring A/);
+ assert.match(district.q[2],/District 4 covers more land area than district 7/);
+ assert.match(district.q[3],/voting or demographic data/);
+ assert.match(w.__visualPractice37.frqs.find(f=>f.unit===4).parts[1][3],/not where groups of voters live/);assert.match(farm.stimulus,/>A<.*>B<.*>C</);assert.match(farm.q[2],/Ring A/);
  assert.deepEqual(errors,[]);
  console.log('Focused learning: 13 incorrect/reversed cases; 11 alternatives; all seven Coach submit/rewrite/model flows; 70 shuffled planner routes; topic retry, evidence recording, seven practice/mastery sessions and visual tasks passed.');
  }finally{dom.window.close();}
