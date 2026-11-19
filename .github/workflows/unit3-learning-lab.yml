@@ -1,0 +1,24 @@
+name: Unit 3 Learning Lab
+on:
+  pull_request:
+    paths:
+      - unit-3-learning-lab.html
+      - ap-human-geography-unit-3.html
+      - scripts/test-unit3-learning-lab.cjs
+      - .github/workflows/unit3-learning-lab.yml
+permissions:
+  contents: read
+jobs:
+  unit3-learning-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save --no-package-lock playwright@1.55.0
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/test-unit3-learning-lab.cjs --browser
